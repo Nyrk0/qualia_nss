@@ -1,29 +1,41 @@
-name: Deploy to qualia-nss.com via SFTP
+# A name for your entire workflow
+name: Deploy Website via FTPS
 
+# Specifies the trigger for this workflow
 on:
   push:
     branches: [ "main" ]
-  workflow_dispatch:
+  workflow_dispatch: # Allows you to run this workflow manually
 
+# A workflow run is made up of one or more jobs
 jobs:
   deploy:
-    # ⬇️ A runner environment is required for the job to execute.
-    runs-on: ubuntu-latest
-    name: Deploy to server via SFTP
+    # The 'name' is what shows up in the GitHub UI
+    name: Deploy to Server
     
-    # ⬇️ Actions are executed as steps within a job.
-    steps:
-    # ⬇️ First, check out the repository's code.
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    # Each job needs a runner environment to execute on
+    runs-on: ubuntu-latest
 
-    # ⬇️ Then, run the SFTP deployment action.
-    - name: Deploy to server via SFTP
-      uses: wlixcc/SFTP-Deploy-Action@v1.2.4
-      with:
-        server: ${{ secrets.SFTP_HOST }}
-        username: ${{ secrets.SFTP_USERNAME }}
-        password: ${{ secrets.SFTP_PASSWORD }}
-        local_path: './'
-        remote_path: ${{ secrets.SFTP_REMOTE_PATH }}
-        sftp_only: true
+    # 'steps' are the sequence of tasks that will be executed
+    steps:
+      # Step 1: Check out your repository's code so the runner can access it
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Your FTPS deployment step, correctly indented
+      - name: Deploy to server via FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USERNAME }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./
+          server-dir: ${{ secrets.SFTP_REMOTE_PATH }}
+          exclude: |
+            **/.git*
+            **/.github/**
+            **/node_modules/**
+            **/.DS_Store
+          dry-run: false
+          log-level: verbose
