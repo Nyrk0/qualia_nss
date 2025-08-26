@@ -19,7 +19,7 @@ jobs:
             server: ${{ secrets.SFTP_HOST }}
             username: ${{ secrets.SFTP_USERNAME }}
             password: ${{ secrets.SFTP_PASSWORD }}
-            protocol: ftps
+            protocol: sftp
             local-dir: ./
             server-dir: ${{ secrets.SFTP_REMOTE_PATH }}
             exclude: |
@@ -28,5 +28,6 @@ jobs:
               **/node_modules/**
               **/.DS_Store
               **/dev/**
+              **/docs/**
             dry-run: false
             log-level: verbose
