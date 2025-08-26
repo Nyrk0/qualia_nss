@@ -11,25 +11,57 @@ This section contains key documents for project planning, architecture, and UI/U
 
 ---
 
-
 ## Project Structure Overview
 ```
 qualia-nss/
-├── CLAUDE.md                    # Project instructions for Claude Code
-├── REFACTOR_PLAN.md            # Detailed refactor plan
-├── WORKSPACE_INDEX.md          # This index file
-├── assets/                     # Shared project assets
-│   ├── css/                    # CSS files (created by refactor)
-│   │   ├── main.css           # Main stylesheet
-│   │   └── components.css     # UI components stylesheet
-│   ├── js/                     # Shared JavaScript
-│   │   ├── core/              # Core functionality
-│   │   └── components/        # Reusable components
-│   ├── images/                # Images and icons
-│   └── data/                  # Sample data files
-├── modules/                   # Audio analysis modules (main apps)
-├── docs/                      # Documentation and analysis
-└── qualia_nss/               # Legacy full-stack app (to be extracted from)
+├── .github/
+│   └── workflows/
+│       ├── deploy.yml
+│       └── test-sftp.yml
+├── assets/
+│   ├── data/                  # Sample CSVs and frequency curves
+│   └── src/
+│       └── four_leaf_clover.svg
+├── dev/
+│   ├── st00-wireframe/
+│   │   ├── APP_SHELL_WIREFRAME.md
+│   │   └── ARCHITECTURE.md
+│   ├── DEPLOYMENT_SETUP.md
+│   └── deploy.yml
+├── docs/
+│   ├── NSS-Setup-Analysis/
+│   ├── SPL-samples/
+│   ├── chrome-music-lab/
+│   └── spectrogram/
+├── modules/
+│   ├── 7band-level-meter/
+│   ├── comb-filtering/
+│   ├── spectrogram/
+│   └── spectrum-analyzer/
+├── src/
+│   ├── cabinets/
+│   │   ├── index.html
+│   │   └── index.js
+│   ├── filters/
+│   │   ├── index.html
+│   │   └── index.js
+│   ├── speakers/
+│   │   ├── index.html
+│   │   └── index.js
+│   └── tests/
+│       ├── index.html
+│       └── index.js
+├── .htaccess                  # Security and routing for static hosting
+├── app.js                     # App shell, SPA routing, module loader, theme mgmt
+├── index.html                 # Main entry with navbar and content wrapper
+├── style.css                  # Theming, layout, responsive styles
+├── WORKSPACE_INDEX.md         # This index file
+├── CLAUDE.md
+├── UI-wireframe.md
+├── ARCHITECTURE.md
+├── DEVELOPMENT_PLAN.md
+├── README.md
+└── CHANGELOG.md
 ```
 
 ## Core Audio Modules (/modules/)
@@ -101,61 +133,35 @@ qualia-nss/
 - `SPL-samples/` - Audio measurement samples
 - `assets/data/` - CSV test files and frequency curves
 
-## Legacy Assets to Extract (/qualia_nss/)
-
-### UI Components (Priority for Gemini)
-- `core/components/navbar/qualia_navbar_comp.js` - Navigation component
-- `modules/landing_page/landing_page_comp.js` - Landing page
-- `core/styles/aluminum_theme.css` - Premium aluminum theme
-- `core/styles/audio_colors.css` - Audio frequency color system
-
-### Utilities
-- `core/utils/localStorage.js` - Settings persistence
-- `core/utils/theme_manager_svc.js` - Theme management
-- `core/utils/spl-file-selector.js` - File handling utilities
-
-### Backend to Remove
-- `backend/` - Python Flask backend (deprecated)
-- `database/` - MySQL database (deprecated)  
-- `docker-compose.yml` - Docker setup (deprecated)
-- React components in `src/` - (being replaced with vanilla JS)
-
-## Key Files by Function
+## App Shell & SPA
 
 ### Main Entry Points
-- **Landing Page**: To be created at `/index.html`
-- **Spectrogram**: `/modules/spectrogram/index.html`
-- **Level Meter**: `/modules/7band-level-meter/index.html`
-- **Spectrum Analyzer**: `/modules/spectrum-analyzer/index.html`
-- **Comb Filter Demo**: `/modules/comb-filtering/demo.html`
+- **Landing Page**: `/index.html`
+- **App Shell JS**: `/app.js` (SPA routing, dynamic module/sidebars, theme persistence)
+- **Global Styles**: `/style.css`
+
+### Module Entry Points (SPA loaded)
+- **Speakers**: `/src/speakers/index.html` + `/src/speakers/index.js`
+- **Filters**: `/src/filters/index.html` + `/src/filters/index.js`
+- **Cabinets**: `/src/cabinets/index.html` + `/src/cabinets/index.js`
+- **Tests**: `/src/tests/index.html` + `/src/tests/index.js`
 
 ### Configuration & Setup
-- `CLAUDE.md` - Development instructions
-- `docs/deployment-workflows.md` - Deployment setup
-- `REFACTOR_PLAN.md` - Implementation roadmap
-
-### Requirements & Specifications  
-- `docs/spectrogram/spectrogram-prd.md` - **Complete feature requirements**
-- `modules/*/README.md` - Individual module documentation
-
-### Audio Processing Libraries
-- `modules/comb-filtering/*.js` - Complete comb filtering detection library
-- `docs/chrome-music-lab/` - Reference implementations
-- Sample audio files in `modules/spectrogram/snd/`
+- `.htaccess` - Directory protection and headers; pretty root URL to `index.html`
+- `.github/workflows/*` - Deployment pipelines
 
 ## Development Workflow
 
-### Current Phase: Module Reorganization ✅
+### Current Phase: Module Reorganization 
 - [x] Created modular directory structure
-- [x] Moved existing modules to `/modules/` 
+- [x] Moved existing modules to `/modules/`
 - [x] Preserved all functionality
 - [x] Prepared for UI component extraction
 
 ### Next Phase: UI Integration (Gemini)
-- [ ] Extract UI components from `qualia_nss/`
-- [ ] Create main landing page
-- [ ] Implement unified navigation
-- [ ] Apply consistent theming
+- [ ] Create main landing page sections/content
+- [ ] Implement unified navigation (active state done)
+- [ ] Apply consistent theming across modules
 
 ### Next Phase: Spectrogram Enhancement (PRD)
 - [ ] Implement custom FFT with windowing functions
@@ -171,18 +177,18 @@ qualia-nss/
 - [ ] Cross-browser testing
 
 ## Technology Stack
-- **Frontend**: Vanilla HTML/CSS/JavaScript (ES6+)
+- **Frontend**: Vanilla HTML/CSS/JavaScript (ES6+), Bootstrap 5 (CSS only) + Bootstrap Icons
 - **Audio**: Web Audio API with custom FFT processing
 - **3D Graphics**: WebGL 2.0 (with WebGL 1.0 fallback)
 - **Deployment**: Static hosting via GitHub Actions
 - **Domain**: qualia-nss.com
 
 ## Dependencies
-- **Zero external dependencies** for final modules
+- **Minimal external dependencies**: Bootstrap CSS + Icons for UI baseline
 - Chrome Music Lab source for reference and techniques
 - Web Audio API for all audio processing
 - WebGL for 3D spectrogram visualization
 
 ---
 
-*This workspace contains a complete audio analysis suite being refactored from full-stack to pure frontend architecture for professional deployment.*
+*This workspace contains a complete audio analysis suite being refactored to a pure frontend architecture for professional deployment.*
