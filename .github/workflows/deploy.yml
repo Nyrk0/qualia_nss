@@ -1,11 +1,11 @@
 name: Deploy to qualia-nss.com via SFTP
 
-  on:
+on:
     push:
       branches: [ "main" ]
     workflow_dispatch:
 
-  jobs:
+jobs:
     deploy:
       runs-on: ubuntu-latest
 
