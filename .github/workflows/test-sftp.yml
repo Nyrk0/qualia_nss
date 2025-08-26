@@ -1,0 +1,47 @@
+on:
+  workflow_dispatch:
+
+jobs:
+  test-connection:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check secrets availability
+        run: |
+          echo "Testing secret availability..."
+          echo "SFTP_HOST exists: ${{ secrets.SFTP_HOST != '' }}"
+          echo "SFTP_USERNAME exists: ${{ secrets.SFTP_USERNAME != '' }}"
+          echo "SFTP_PASSWORD exists: ${{ secrets.SFTP_PASSWORD != '' }}"
+          echo "SFTP_REMOTE_PATH exists: ${{ secrets.SFTP_REMOTE_PATH != '' }}"
+          
+      - name: Install SFTP client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass openssh-client
+          
+      - name: Test SFTP connection
+        run: |
+          echo "Testing SFTP connection to: ${{ secrets.SFTP_HOST }}"
+          echo "Username: ${{ secrets.SFTP_USERNAME }}"
+          echo "Remote path: ${{ secrets.SFTP_REMOTE_PATH }}"
+          
+          # Test basic connectivity
+          echo "Testing host connectivity..."
+          nc -zv ${{ secrets.SFTP_HOST }} 22 || echo "Port 22 (SSH/SFTP) is not accessible"
+          
+          # Test SFTP login
+          echo "Testing SFTP authentication..."
+          sshpass -p '${{ secrets.SFTP_PASSWORD }}' sftp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{ secrets.SFTP_USERNAME }}@${{ secrets.SFTP_HOST }} <<< 'pwd; ls -la; quit' || echo "SFTP connection failed"
+          
+      - name: Test alternative ports
+        run: |
+          echo "Testing alternative SFTP ports..."
+          nc -zv ${{ secrets.SFTP_HOST }} 21 || echo "Port 21 (FTP) is not accessible"
+          nc -zv ${{ secrets.SFTP_HOST }} 990 || echo "Port 990 (FTPS) is not accessible"
+          nc -zv ${{ secrets.SFTP_HOST }} 2222 || echo "Port 2222 (Alternative SSH) is not accessible"
+          
+      - name: Test DNS resolution
+        run: |
+          echo "Testing DNS resolution..."
+          nslookup ${{ secrets.SFTP_HOST }} || echo "DNS resolution failed"
+          ping -c 3 ${{ secrets.SFTP_HOST }} || echo "Ping failed"
