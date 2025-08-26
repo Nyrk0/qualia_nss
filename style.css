@@ -5,9 +5,10 @@
     --text-color: #e0e0e0;
     --panel-bg-color: #1e1e1e;
     --panel-border-color: #333;
-    --accent-color: #6aa9ff;
-    --accent-hover-color: #8bbfff;
+    --accent-color: #0088ff; /* Electric blue */
+    --accent-hover-color: #3399ff;
     --muted-text-color: #888;
+    --neutral-text-color: #aaa;
 }
 
 body.light-theme {
@@ -15,9 +16,10 @@ body.light-theme {
     --text-color: #333333;
     --panel-bg-color: #ffffff;
     --panel-border-color: #dddddd;
-    --accent-color: #0056b3;
-    --accent-hover-color: #007bff;
+    --accent-color: #0088ff; /* Electric blue */
+    --accent-hover-color: #3399ff;
     --muted-text-color: #666;
+    --neutral-text-color: #777;
 }
 
 /* Import Google Fonts for Qualia-NSS branding */
@@ -25,7 +27,7 @@ body.light-theme {
 
 /* General Styles */
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
     background-color: var(--bg-color);
     color: var(--text-color);
@@ -33,7 +35,17 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    font-size: 0.85rem;
 }
+
+/* Typography - Reduced sizes */
+h1 { font-size: 1.5rem; margin: 0.5rem 0; }
+h2 { font-size: 1.25rem; margin: 0.45rem 0; }
+h3 { font-size: 1.1rem; margin: 0.4rem 0; }
+h4 { font-size: 1rem; margin: 0.35rem 0; }
+h5 { font-size: 0.9rem; margin: 0.3rem 0; }
+h6 { font-size: 0.8rem; margin: 0.25rem 0; }
+p { font-size: 0.85rem; margin: 0.4rem 0; line-height: 1.4; }
 
 a {
     color: var(--accent-color);
@@ -57,48 +69,51 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 2rem;
+    padding: 0.25rem 1rem;
     backdrop-filter: blur(10px);
 }
 
 .nav-left, .nav-center, .nav-right {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 0.75rem;
 }
 
 .logo {
     color: white;
-    margin-right: 24px;
-    font-size: 1.5rem;
+    margin-right: 12px;
+    font-size: 1rem;
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     cursor: pointer;
     font-weight: 500;
     letter-spacing: -0.02em;
     text-transform: uppercase;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    padding: 0.25rem 0.5rem;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    transition: all 0.2s ease;
 }
 
 .logo:hover {
-    transform: translateY(-1px);
+    border-color: #666;
 }
 
 .logo-clover {
-    height: 32px;
-    width: 32px;
+    height: 18px;
+    width: 18px;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)) brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%);
-    transition: transform 0.2s ease;
-}
-
-.logo:hover .logo-clover {
-    transform: rotate(5deg);
 }
 
 .logo-text {
-    color: var(--text-color);
+    color: var(--neutral-text-color);
+}
+
+.logo.active {
+    border-color: var(--accent-color);
 }
 
 .nav-item {
@@ -128,28 +143,36 @@ header {
     background: var(--panel-bg-color);
     border: 1px solid var(--panel-border-color);
     color: var(--text-color);
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
-    font-size: 18px;
+    font-size: 14px;
     transition: all 0.2s ease;
     backdrop-filter: blur(10px);
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .theme-toggle-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    border-color: var(--accent-color);
+    border-color: #666;
 }
-.light-theme .icon-sun { display: none; }
-.icon-moon { display: none; }
-.light-theme .icon-moon { display: inline; }
+
+.theme-toggle-btn i {
+    transition: color 0.2s ease;
+}
+
+/* Lightbulb icon color changes based on theme */
+body:not(.light-theme) .theme-toggle-btn i {
+    color: var(--muted-text-color);
+}
+
+body.light-theme .theme-toggle-btn i {
+    color: var(--accent-color);
+}
 
 
 /* Main Content Area */
@@ -159,20 +182,221 @@ header {
 }
 
 #sidebar {
-    width: 250px;
+    width: 280px;
     background-color: var(--panel-bg-color);
     border-right: 1px solid var(--panel-border-color);
-    padding: 1rem;
-    display: none; /* Hidden by default */
+    padding: 0;
+    display: block;
+    overflow-y: auto;
+    height: 100%;
 }
 
-#content-wrapper.with-sidebar #sidebar {
-    display: block; /* Shown when class is added */
+/* Sidebar navigation styling */
+#sidebar .nav-item,
+#sidebar button,
+#sidebar .btn {
+    color: var(--neutral-text-color) !important;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+#sidebar .nav-item:hover,
+#sidebar button:hover,
+#sidebar .btn:hover {
+    color: var(--text-color) !important;
+}
+
+#sidebar .nav-item.active,
+#sidebar button.active,
+#sidebar .btn.active {
+    color: var(--accent-color) !important;
+    border-color: var(--accent-color);
+    font-weight: 600;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+    background-color: var(--accent-color);
+    color: white;
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--panel-border-color);
+}
+
+.sidebar-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.btn-close-sidebar {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.btn-close-sidebar:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Sidebar Sections */
+.sidebar-section {
+    padding: 1rem;
+    border-bottom: 1px solid var(--panel-border-color);
+}
+
+.sidebar-section:last-child {
+    border-bottom: none;
+}
+
+.sidebar-section h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-section h4 i {
+    color: var(--accent-color);
+}
+
+/* Control Groups */
+.control-group {
+    margin-bottom: 1rem;
+}
+
+.control-group:last-child {
+    margin-bottom: 0;
+}
+
+.control-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+    color: var(--muted-text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Sidebar Buttons */
+.btn-sidebar {
+    display: block;
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    margin-bottom: 0.3rem;
+    background: var(--panel-bg-color);
+    border: 1px solid var(--panel-border-color);
+    color: var(--neutral-text-color);
+    font-size: 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    display: flex;
+    align-items: center;
+}
+
+.btn-sidebar:hover {
+    border-color: #666;
+    background-color: rgba(106, 169, 255, 0.05);
+}
+
+.btn-sidebar.btn-primary {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+}
+
+.btn-sidebar.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.btn-sidebar.btn-outline-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+    background: transparent;
+}
+
+.btn-sidebar.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-sidebar:last-child {
+    margin-bottom: 0;
+}
+
+/* FFT Display */
+.fft-display {
+    display: flex;
+    align-items: end;
+    height: 40px;
+    gap: 2px;
+    padding: 4px;
+    background: var(--bg-color);
+    border-radius: 4px;
+    border: 1px solid var(--panel-border-color);
+}
+
+.fft-bar {
+    flex: 1;
+    background: linear-gradient(to top, var(--accent-color), var(--accent-hover-color));
+    min-height: 2px;
+    border-radius: 1px 1px 0 0;
+    animation: fft-pulse 2s ease-in-out infinite;
+}
+
+@keyframes fft-pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* Status Dots */
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
 }
 
 #main-content {
     flex-grow: 1;
-    padding: 1.5rem;
+    padding: 1rem;
+}
+
+/* Home page specific styles */
+.home-page #main-content.full-width {
+    width: 100%;
+    max-width: none;
+    padding: 2rem;
+    text-align: center;
+}
+
+.home-page #main-content.full-width h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.home-page #main-content.full-width p {
+    font-size: 1.1rem;
+    color: var(--muted-text-color);
 }
 
 /* Custom Workflow Items */
@@ -246,12 +470,83 @@ header {
     opacity: 0.3;
 }
 
+/* Bootstrap Navbar Theme Integration */
+.nav-center .navbar-nav .nav-link {
+    color: var(--neutral-text-color) !important;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    padding: 0.25rem 0.5rem !important;
+    background: none !important;
+    background-color: transparent !important;
+    border: 1px solid transparent !important;
+    border-radius: 6px !important;
+    margin: 0 0.15rem !important;
+}
+
+.nav-center .navbar-nav .nav-link:hover {
+    border-color: #666 !important;
+    background: none !important;
+    background-color: transparent !important;
+}
+
+.nav-center .navbar-nav .nav-link.active {
+    color: var(--neutral-text-color) !important;
+    background: none !important;
+    background-color: transparent !important;
+    border-color: var(--accent-color) !important;
+}
+
+.nav-center .navbar-nav .nav-link.disabled {
+    color: var(--muted-text-color) !important;
+    opacity: 0.6;
+}
+
+.nav-center .navbar-nav .nav-link i {
+    color: inherit;
+}
+
+/* Force navbar to stay horizontal always */
+.nav-center .navbar-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+}
+
+.nav-center .navbar-nav .nav-link {
+    white-space: nowrap;
+}
+
+/* Responsive navbar - hide text on narrow screens, keep icons only */
+@media (max-width: 768px) {
+    .nav-center .navbar-nav .nav-link {
+        padding: 0.25rem 0.3rem !important;
+    }
+    
+    .nav-center .navbar-nav .nav-link i {
+        margin-right: 0 !important;
+    }
+    
+    /* Hide text content, keep only icons/emojis */
+    .nav-center .navbar-nav .nav-link {
+        font-size: 0 !important;
+    }
+    
+    .nav-center .navbar-nav .nav-link i,
+    .nav-center .navbar-nav .nav-link span.me-2 {
+        font-size: 1rem !important;
+    }
+    
+    .nav-center .navbar-nav .nav-link span:not(.me-2) {
+        display: none !important;
+    }
+}
+
 /* Footer */
 footer {
     text-align: center;
-    padding: 1rem;
+    padding: 0.25rem;
     background-color: var(--panel-bg-color);
     border-top: 1px solid var(--panel-border-color);
     color: var(--muted-text-color);
-    font-size: 0.9rem;
+    font-size: 0.6rem;
 }

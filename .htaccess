@@ -1,0 +1,40 @@
+# Disable directory listing
+Options -Indexes
+
+# Default index files
+DirectoryIndex index.html index.htm
+
+# Prevent access to sensitive files
+<Files "*.md">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files ".htaccess">
+    Order allow,deny  
+    Deny from all
+</Files>
+
+<Files "*.log">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options DENY
+    Header always set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# Pretty URLs - redirect to index.html for root access
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^$ /index.html [L]
+
+# Prevent access to dev directory in production
+<Directory "dev">
+    Order allow,deny
+    Deny from all
+</Directory>

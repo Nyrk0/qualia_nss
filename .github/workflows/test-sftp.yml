@@ -1,3 +1,4 @@
+name: Test SFTP Connection
 on:
   workflow_dispatch:
 

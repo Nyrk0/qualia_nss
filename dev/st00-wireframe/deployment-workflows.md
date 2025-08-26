@@ -1,61 +1,55 @@
 # Deployment and Auto‑Sync Workflows for qualia-nss.com
 
-Last updated: 2025-08-24
+Last updated: 2025-08-26
 
 ## Overview
-This document summarizes reliable ways to edit locally and deploy automatically to your hosting for `qualia-nss.com`. Choose the option that matches your host’s capabilities (SFTP/SSH vs FTP-only vs cPanel Git).
+This document summarizes reliable ways to edit locally and deploy automatically to your hosting for `qualia-nss.com`. Choose the option that matches your host's capabilities (SFTP/SSH vs FTP-only vs cPanel Git).
 
-Project structure reference (local):
-- `7band-level-meter/`
-- `spectogram/`
-- `spectrum-analyzer/`
+**Current Project Structure:**
+- Root `index.html` - Main application shell with navbar and SPA routing
+- `src/` - Module directories (speakers/, filters/, cabinets/, tests/)
+- `7band-level-meter/` - Standalone 7-band level meter app
+- `spectogram/` - Standalone 3D WebGL spectrogram app  
+- `spectrum-analyzer/` - Standalone spectrum analyzer app
+- `comb-filtering/` - JavaScript library for comb filtering detection
 
-Consider adding a root `index.html` that links to the above apps.
+**UI Implementation Complete:** Electric blue themed navbar with Bootstrap integration, responsive design, and modular SPA architecture.
 
 ---
 
-## Option A — GitHub Actions → SFTP/FTPS (recommended)
-- Push to `main` and the workflow syncs files to your server.
-- Requires SFTP or FTPS credentials.
+## Option A — GitHub Actions → SFTP/FTPS (recommended) ✅ ACTIVE
 
-Setup steps:
-1) Put the project in a GitHub repo.
-2) Add repository secrets:
-   - `SFTP_HOST`, `SFTP_USERNAME`, `SFTP_PASSWORD` (or `SFTP_PRIVATE_KEY`)
-   - `SFTP_REMOTE_PATH` (e.g., `/public_html` or `/var/www/html`)
-3) Create `.github/workflows/deploy.yml` similar to:
+**Status:** Currently deployed and working at https://github.com/Nyrk0/qualia_nss
+
+Push to `main` and the workflow syncs files to your server via FTPS.
+
+**Working Configuration:**
 ```yaml
-name: Deploy via SFTP/FTPS
+# .github/workflows/deploy.yml
+name: Deploy to qualia-nss.com
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # Optional: build/minify here
-
-      - name: Sync to server
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.SFTP_HOST }}
-          username: ${{ secrets.SFTP_USERNAME }}
-          password: ${{ secrets.SFTP_PASSWORD }}
-          protocol: sftp # change to ftps if only FTPS is supported
-          local-dir: .
-          server-dir: ${{ secrets.SFTP_REMOTE_PATH }}
-          exclude: |
-            **/.git*
-            **/.github/**
-            **/node_modules/**
-            **/.DS_Store
+    - uses: actions/checkout@v4
+    - name: Deploy to server
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: qualia-nss.com
+        username: ${{ secrets.FTPS_USERNAME }}
+        password: ${{ secrets.FTPS_PASSWORD }}
+        protocol: ftps
+        server-dir: public_html/
 ```
-Notes:
-- Switch `protocol` to `ftps` if SFTP isn’t available.
-- The workflow uploads only changed files by default and supports deletes.
+
+**GitHub Secrets Required:**
+- `FTPS_USERNAME` - FTP username 
+- `FTPS_PASSWORD` - FTP password
+
+**Security:** Directory listing blocked via `.htaccess`, dev/ folder protected
 
 ---
 
@@ -112,12 +106,15 @@ make deploy
 
 ---
 
-## Recommended next steps
-- Confirm what your host supports: SFTP/SSH, FTPS/FTP only, cPanel Git.
-- If using GitHub Actions, add the workflow and GitHub secrets.
-- Optionally create a root landing `index.html` linking to:
-  - `7band-level-meter/`
-  - `spectogram/`
-  - `spectrum-analyzer/`
+## Current Status ✅
 
-Need help wiring any option? Provide your server path and protocol, and I’ll tailor the config exactly.
+**Deployment:** GitHub Actions with FTPS is active and working
+**UI:** Complete navbar shell with SPA routing for audio analysis modules
+**Security:** Directory protection and proper routing implemented
+
+**Live Structure:**
+- Root: Modern web app shell with electric blue theme
+- Modules: Speakers, Filters, Cabinets, Tests with interactive controls
+- Legacy apps: 7-band level meter, 3D spectrogram, spectrum analyzer available
+
+**Next Development:** Module functionality implementation (Web Audio API integration)
