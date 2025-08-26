@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NSS Analyzer</title>
+  <link rel="stylesheet" href="demo.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>NSS Analyzer</h1>
+    </header>
+
+    <main>
+      <!-- Controls Row -->
+      <div class="controls-row">
+        <select id="deviceSelect" disabled>
+          <option value="">Select microphone...</option>
+        </select>
+        <button id="refreshDevices">Refresh</button>
+        <button id="micToggle">Start Microphone</button>
+        <button id="startMeasurement">Start NSS Measurement</button>
+      </div>
+
+      <!-- Status Display -->
+      <div id="measurementStatus" class="status">
+        <h3>Ready</h3>
+        <p>Click "Start Microphone" for real-time monitoring or "Start NSS Measurement" for full analysis</p>
+      </div>
+
+      <!-- Progress Bar -->
+      <div id="progressBar" class="progress-bar hidden">
+        <div class="progress-fill"></div>
+        <span id="progressText">Initializing...</span>
+      </div>
+
+      <!-- Spectrum Visualization -->
+      <div class="visualization">
+        <canvas id="spectrumCanvas" width="800" height="300"></canvas>
+        
+        <div id="detectionBanner" class="detection-banner hidden">
+          <h3>Comb Filtering Detected</h3>
+          <div class="detection-info">
+            <div class="info-item">
+              <span class="label">Delay:</span>
+              <span id="delayValue" class="value">0.00 ms</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Notch Spacing:</span>
+              <span id="notchSpacing" class="value">0.0 Hz</span>
+            </div>
+            <div class="confidence-meter">
+              <div class="meter-fill"></div>
+              <span id="confidencePercent" class="confidence-text">0%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Display -->
+      <div id="resultsSection" class="results-section hidden">
+        <h3>NSS Analysis Results</h3>
+        <div id="resultsContent"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="fft.js"></script>
+  <script src="comb-filter.js"></script>
+  <script src="demo.js"></script>
+</body>
+</html>
