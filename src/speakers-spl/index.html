@@ -1,0 +1,42 @@
+<div class="spl-viewer">
+  <div class="spl-main-grid">
+    <div class="spl-chart-section">
+      <div class="spl-chart-container">
+        <canvas id="spl-chart"></canvas>
+      </div>
+    </div>
+
+    <div class="spl-analysis-panel">
+      <div class="spl-analysis-header">
+        <h3 class="h6 mb-0"><i class="bi bi-bar-chart-line me-1"></i> Analysis</h3>
+      </div>
+      <div class="spl-analysis-content" id="spl-analysis-content">
+        <div class="spl-metric-group">
+          <h4 class="h6">Overview</h4>
+          <div class="spl-metric"><span>Loaded Curves</span><strong id="spl-curves-count">0</strong></div>
+          <div class="spl-metric"><span>Total Points</span><strong id="spl-points-count">0</strong></div>
+          <div class="spl-metric"><span>Memory Usage</span><strong id="spl-memory-usage">0 MB</strong></div>
+        </div>
+
+        <div class="spl-metric-group" id="spl-acoustic-metrics" style="display:none;">
+          <h4 class="h6">Acoustic</h4>
+          <div class="spl-metric"><span>A-weighted SPL</span><strong id="spl-a-weighted-spl">-- dB(A)</strong></div>
+          <div class="spl-metric"><span>Peak Level</span><strong id="spl-peak-level">-- dB</strong></div>
+          <div class="spl-metric"><span>Crest Factor</span><strong id="spl-crest-factor">-- dB</strong></div>
+          <div class="spl-metric"><span>Resonances</span><strong id="spl-resonances-count">0</strong></div>
+        </div>
+
+        <div class="spl-metric-group" id="spl-validation-metrics" style="display:none;">
+          <h4 class="h6">Validation</h4>
+          <div class="spl-metric"><span>Math Tests</span><strong id="spl-math-tests">-- / 13</strong></div>
+          <div class="spl-metric"><span>Quality Score</span><strong id="spl-quality-score">--%</strong></div>
+          <div class="spl-metric"><span>Coherence</span><strong id="spl-coherence">--</strong></div>
+        </div>
+
+        <div class="spl-curve-list" id="spl-curve-list">
+          <h4 class="h6"><i class="bi bi-list-check me-1"></i> Loaded Curves</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

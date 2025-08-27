@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     const themeToggleButton = document.getElementById('theme-toggle');
     const body = document.body;
@@ -83,32 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentModule = null;
 
     const moduleHTML = {
-        speakers: `<div class="module-content">
-    <h1>Speakers Module</h1>
-    <p>Speaker configuration and analysis tools will be loaded here.</p>
-    
-    <div class="speakers-controls">
-        <div class="control-group">
-            <label for="speaker-type">Speaker Type:</label>
-            <select id="speaker-type">
-                <option value="bookshelf">Bookshelf</option>
-                <option value="floor">Floor Standing</option>
-                <option value="center">Center Channel</option>
-                <option value="subwoofer">Subwoofer</option>
-            </select>
-        </div>
-        
-        <div class="control-group">
-            <label for="impedance">Impedance (Ω):</label>
-            <select id="impedance">
-                <option value="4">4Ω</option>
-                <option value="8">8Ω</option>
-                <option value="16">16Ω</option>
-            </select>
-        </div>
-        
-        <button class="btn-primary">Analyze Speakers</button>
-    </div>
+        'speakers-spl': `<div class="module-content">
+    <div id="speakers-spl-root" class="spl-viewer"></div>
 </div>`,
         filters: `<div class="module-content">
     <h1>Filters Module</h1>
@@ -211,40 +186,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const sidebarHTML = {
-        speakers: `
-            <div class="sidebar-header">
-                <h3><i class="bi bi-speaker me-2"></i>Speakers Control</h3>
-                <button class="btn-close-sidebar" onclick="hideSidebar()">&times;</button>
-            </div>
-            
+        'speakers-spl': `
             <div class="sidebar-section">
-                <h4><i class="bi bi-soundwave me-2"></i>Driver Selection</h4>
-                <div class="control-group">
-                    <label>Driver Type</label>
-                    <button class="btn-sidebar btn-primary"><i class="bi bi-soundwave me-1"></i>Woofer</button>
-                    <button class="btn-sidebar"><i class="bi bi-soundwave me-1"></i>Tweeter</button>
-                    <button class="btn-sidebar"><i class="bi bi-soundwave me-1"></i>Mid-range</button>
-                </div>
-                <div class="control-group">
-                    <label>Analysis Progress</label>
-                    <div class="progress mb-2">
-                        <div class="progress-bar bg-info" style="width: 65%">65%</div>
+                <div class="control-group" style="display:flex; flex-direction:column; gap:.5rem;">
+                    <div class="spl-file-input-wrapper">
+                        <input type="file" id="spl-file-input" accept=".csv" multiple />
+                        <label for="spl-file-input" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-folder2-open me-1"></i> Select CSV Files
+                        </label>
                     </div>
-                    <small class="text-muted">Frequency response mapping...</small>
-                </div>
-            </div>
-
-            <div class="sidebar-section">
-                <h4><i class="bi bi-graph-up me-2"></i>Response Analysis</h4>
-                <div class="control-group">
-                    <label>Frequency Range</label>
-                    <button class="btn-sidebar btn-primary"><i class="bi bi-bar-chart me-1"></i>20Hz - 20kHz</button>
-                    <button class="btn-sidebar"><i class="bi bi-bar-chart me-1"></i>Custom Range</button>
-                </div>
-                <div class="control-group">
-                    <label>Measurement Type</label>
-                    <button class="btn-sidebar btn-primary"><i class="bi bi-activity me-1"></i>SPL</button>
-                    <button class="btn-sidebar"><i class="bi bi-activity me-1"></i>Impedance</button>
+                    <button class="btn btn-outline-danger w-100" id="spl-clear-btn"><i class="bi bi-trash me-1"></i> Clear</button>
                 </div>
             </div>
         `,
@@ -364,8 +315,28 @@ document.addEventListener('DOMContentLoaded', () => {
         `
     };
 
+    // Helper: set navbar active based on module name
+    const setNavActiveForModule = (moduleName) => {
+        try {
+            const map = {
+                'speakers-spl': '.navbar-nav .nav-link:nth-child(1)',
+                'filters': '.navbar-nav .nav-link:nth-child(2)',
+                'cabinets': '.navbar-nav .nav-link:nth-child(3)',
+                'tests': '.navbar-nav .nav-link:nth-child(4)'
+            };
+            const sel = map[moduleName];
+            if (!sel) return;
+            const el = document.querySelector(sel);
+            if (el) setActiveNav(el);
+        } catch(_) {}
+    };
+
     const loadModule = (moduleName) => {
         try {
+            // Redirect legacy module name to new module
+            if (moduleName === 'speakers') {
+                moduleName = 'speakers-spl';
+            }
             // Destroy current module if exists
             if (currentModule && currentModule.instance) {
                 currentModule.instance.destroy();
@@ -401,11 +372,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 const script = document.createElement('script');
                 script.src = `src/${moduleName}/index.js`;
                 script.onload = () => {
-                    const ModuleClass = window[`${moduleName.charAt(0).toUpperCase() + moduleName.slice(1)}Module`];
+                    // Resolve ModuleClass from moduleName, supporting kebab-case (e.g., speakers-spl -> SpeakersSplModule)
+                    const toPascal = (name) => name
+                        .split('-')
+                        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+                        .join('');
+                    const ModuleClass = window[`${toPascal(moduleName)}Module`];
                     if (ModuleClass) {
                         const instance = new ModuleClass();
                         currentModule = { name: moduleName, instance };
                         instance.init();
+                        // Remember last opened module
+                        try { localStorage.setItem('lastModule', moduleName); } catch(_) {}
+                        // Reflect active nav
+                        setNavActiveForModule(moduleName);
                     }
                 };
                 script.onerror = () => {
@@ -459,12 +439,29 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- MODULE NAVIGATION ---
-    window.loadSpeakers = () => loadModule('speakers');
+    // Load Speakers module (redirects internally to speakers-spl)
+    window.loadSpeakers = () => loadModule('speakers-spl');
+
+    window.loadSpeakersSpl = () => loadModule('speakers-spl');
     window.loadFilters = () => loadModule('filters');
     window.loadCabinets = () => loadModule('cabinets');
     window.loadTests = () => loadModule('tests');
 
     console.log('App shell initialized.');
     console.log('You can test the sidebar with showSidebar() and hideSidebar() in the console.');
+
+    // Auto-restore last opened module if available
+    try {
+        const last = localStorage.getItem('lastModule');
+        if (last && (last in moduleHTML)) {
+            loadModule(last);
+            // Ensure navbar reflects restored module immediately
+            setTimeout(() => setNavActiveForModule(last), 0);
+        } else {
+            window.showWelcome();
+        }
+    } catch (_) {
+        window.showWelcome();
+    }
 
 });

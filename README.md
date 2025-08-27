@@ -20,7 +20,17 @@ The project is composed of several standalone and integrated modules:
 
 ## Getting Started
 
-(To be defined)
+You can run the app either via a simple HTTP server or directly from the file system.
+
+### Option A: Serve over HTTP (recommended)
+- Python: `python3 -m http.server 8080`
+- Node: `npx http-server -p 8080`
+- Open http://localhost:8080/
+
+### Option B: Open via file://
+- Some browsers block `fetch()` for local files (origin `null`).
+- Modules in `src/` gracefully fallback by inlining their HTML fragments when `fetch` is blocked, so you can still test without a server.
+- For production-like behavior, prefer Option A.
 
 ---
 

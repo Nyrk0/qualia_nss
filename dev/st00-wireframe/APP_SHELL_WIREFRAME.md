@@ -6,18 +6,19 @@ This document outlines the visual layout and functional logic of the main applic
 
 ## 1. Visual Layout
 
-This is a simple text-based wireframe to illustrate the main components of the user interface.
+The application uses a flexible, single-page application (SPA) layout managed by a main header, a content area, and a footer.
 
 ```
 +------------------------------------------------------------------------------+
 | [QUALIA🍀NSS]      | [Speakers] [Filters] [Cabinets] [Tests] |    [💡]        |
 +==============================================================================+
-|                     |                                                        |
-|                     |          <--- MAIN CONTENT AREA --->                   |
-|                     |                                                        |
-|                     |              (Module Content)                          |
-|                     |                                                        |
-|                     |                                                        |
+| +------------+      +------------------------------------------------------+ |
+| |            |      |                                                      | |
+| |  SIDEBAR   |      |               <--- MAIN CONTENT AREA --->            | |
+| | (Module   |      |                                                      | |
+| | Controls)  |      |                  (Module View)                       | |
+| |            |      |                                                      | |
+| +------------+      +------------------------------------------------------+ |
 +------------------------------------------------------------------------------+
 | (c) 2025 Qualia-NSS                                                          |
 +------------------------------------------------------------------------------+
@@ -25,64 +26,78 @@ This is a simple text-based wireframe to illustrate the main components of the u
 
 ### Component Breakdown:
 
-*   **Header:**
-    *   A single, sticky navbar with Bootstrap styling and electric blue (#0088ff) theming.
-    *   **Left:** QUALIA🍀NSS logo with clover icon, shows active state with electric blue border.
-    *   **Center:** Horizontal navbar with icon + text for Speakers, Filters, Cabinets, Tests modules.
-    *   **Right:** Lightbulb theme toggle button for light/dark mode switching.
-
-*   **Main Content Area:**
-    *   Full-width content area where modules are dynamically loaded via SPA routing.
-    *   No sidebar - modules inject their controls directly into main content.
-
-*   **Footer:**
-    *   Minimal footer with reduced height and font size for copyright.
+*   **Header:** A sticky top navbar containing the logo, main navigation links (Speakers, Filters, etc.), and a theme toggle.
+*   **Content Wrapper:** A flexbox container that fills the space between the header and footer. It is dynamically populated with:
+    *   **Sidebar (`#sidebar`):** A left-hand panel (280px width) that holds the primary controls for the currently active module. Its content is injected dynamically.
+    *   **Main Content (`#main-content`):** The primary view area where the module's main interface (e.g., charts, visualizations) is rendered.
+*   **Footer:** A minimal, single-line footer for copyright information.
 
 ---
 
-## 2. Module Loading Logic
+## 2. Core Architectural Patterns
 
-Single Page Application (SPA) routing system without page reloads:
+### 2.1. Module Loading & Layout Logic
 
-*   When a user clicks a navbar module (Speakers, Filters, Cabinets, Tests):
-    1.  The clicked item gets electric blue border active state while others remain neutral.
-    2.  HTML content is injected from embedded templates in `app.js`.
-    3.  Module JavaScript is dynamically loaded from `src/{module}/index.js`.
-    4.  Module class is instantiated and initialized with event binding.
-*   Module cleanup: Previous module instance is destroyed before loading new one.
-*   Landing page: QUALIA logo shows active state, main content shows welcome message.
+The application functions as an SPA, loading modules into the main content area without page reloads.
+
+*   **Module Selection:** When a user clicks a navigation link (e.g., "Speakers"), the `loadModule()` function in `app.js` is triggered.
+*   **Dynamic Injection:**
+    1.  The `loadModule()` function injects the appropriate sidebar HTML into the `#sidebar` div.
+    2.  It injects the module's main view HTML into the `#main-content` div.
+    3.  A corresponding JavaScript file for the module is loaded to handle its specific logic.
+*   **Layout Management:**
+    *   The main container, `#content-wrapper`, uses `display: flex` to position the sidebar and main content area side-by-side.
+    *   The `#main-content` area is also a flex container, allowing the content within it to be structured flexibly.
+
+### 2.2. Chart.js Resizing Pattern (Simplified Approach)
+
+**Problem:** Chart.js components fail to resize correctly when browser viewport changes from narrow to wider layouts. From wider to narrow works acceptably, but narrow to wider requires page refresh to display correctly.
+
+**Analysis:** Chart.js responsive behavior has timing issues with CSS flexbox recalculation. Complex timing solutions (ResizeObserver, nested requestAnimationFrame) add unnecessary complexity without fully solving the issue.
+
+**Adopted Solution (Simplified Pattern):** Use the simplest approach that works for most use cases:
+
+**CSS Requirements:**
+```css
+.chart-container {
+  position: relative;
+  flex: 1 1 auto;
+  height: 100%;  /* Key: Use 100% not 'auto' for proper flexbox inheritance */
+  min-height: 360px;
+}
+.chart-container canvas { 
+  width: 100% !important; 
+  height: 100% !important; 
+  display: block; 
+}
+```
+
+**JavaScript Implementation:**
+```javascript
+// Simple window resize handler
+const onWindowResize = () => this._scheduleResize();
+window.addEventListener('resize', onWindowResize);
+
+_scheduleResize() {
+  if (!this.chart) return;
+  if (this._resizeTimer) clearTimeout(this._resizeTimer);
+  this._resizeTimer = setTimeout(() => {
+    try {
+      this.chart.resize();
+    } catch (e) {
+      console.error("Chart resize failed:", e);
+    }
+  }, 100);
+}
+```
+
+**Known Limitation:** Narrow-to-wider viewport changes may still require manual page refresh. This limitation is accepted in favor of code simplicity and maintainability.
+
+**Implementation Status:** Applied in `src/speakers-spl/` module as the standard pattern for Chart.js components.
 
 ---
 
-## 3. Current Implementation Status (As of 2025-08-26)
+## 3. Responsive Behavior
 
-*   **HTML Structure:** Complete navbar with Bootstrap integration, logo with clover icon, theme toggle.
-*   **CSS Styling:** Electric blue (#0088ff) theme system with consistent hover states:
-    *   Neutral gray (#666) border hover for all interactive elements
-    *   Electric blue border for active states (no font color/weight changes)
-    *   Responsive design with icon-only navbar on narrow screens
-*   **JavaScript Logic:** 
-    *   **Theme Management:** Light/dark mode toggle with localStorage persistence
-    *   **SPA Routing:** Embedded HTML templates with dynamic module loading
-    *   **Active State Management:** `setActiveNav()` function for consistent styling
-*   **Modules:** Four complete modules with control interfaces:
-    *   **Speakers:** Type selection, impedance configuration, analysis controls
-    *   **Filters:** Filter type, cutoff frequency, Q factor with live displays  
-    *   **Cabinets:** Cabinet type, volume, port parameters with conditional controls
-    *   **Tests:** Test type, signal selection, amplitude control with start/stop
-*   **Security:** Directory listing protection via `.htaccess` with proper routing
-
----
-
-## 4. Responsive Behavior
-
-*   **Sidebar:** 280px width with electric blue header, contains all module controls
-    *   Speakers: Driver selection buttons, analysis progress bars
-    *   Filters: Filter bank buttons, animated FFT display bars
-    *   Cabinets: Cabinet model selection, volume calculator badges
-    *   Tests: Test suite controls, real-time signal status dots
-    *   Global: Reset controls and system-wide functions
-*   **Navbar:** Forced horizontal layout that never stacks vertically
-*   **Small Screens:** Text labels hidden on screens <768px, icons remain visible
-*   **Module Content:** Full-width responsive controls with proper form layouts
-*   **Layout:** Two-column design with sidebar + main content area
+*   **Layout:** The primary layout is a two-column design with a fixed-width sidebar and a flexible main content area.
+*   **Navbar:** The main navigation bar is designed to be responsive. On narrower screens (<768px), the text labels for the navigation links are hidden, showing only the icons to save space while maintaining functionality. The navbar itself never stacks vertically.
