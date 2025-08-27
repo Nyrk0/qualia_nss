@@ -8,7 +8,6 @@
       this.uploadService = new (window.UploadService || function(){ return { checkHealth: async()=>true, validateCSVFile: ()=>true, uploadFile: async ()=>({}) }; })();
       this._handlers = [];
       this._disposers = [];
-      this._resizeTimer = null;
       this._persistTimer = null;
       this.colors = ['#ff6b6b','#4ecdc4','#45b7d1','#96ceb4','#ffeaa7','#dda0dd','#98d8c8','#f7dc6f','#bb8fce','#85c1e9'];
     }
@@ -37,13 +36,6 @@
 
       // Init Chart.js
       this._initChart();
-      // Apply initial sizing so chart container respects viewport/footer immediately
-      this._scheduleResize();
-
-      // Simple window resize handling
-      const onWindowResize = () => this._scheduleResize();
-      window.addEventListener('resize', onWindowResize);
-      this._disposers.push(() => window.removeEventListener('resize', onWindowResize));
 
       // Restore persisted datasets if present
       this._restoreState();
@@ -116,17 +108,7 @@
       });
     }
 
-    _scheduleResize() {
-      if (!this.chart) return;
-      if (this._resizeTimer) clearTimeout(this._resizeTimer);
-      this._resizeTimer = setTimeout(() => {
-        try {
-          this.chart.resize();
-        } catch (e) {
-          console.error("Chart resize failed:", e);
-        }
-      }, 100);
-    }
+
 
     _persistState(immediate=false){
       if (!this.chart) return;

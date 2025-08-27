@@ -1,3 +1,11 @@
+// Early global stubs so inline onclick handlers don't error before initialization
+// These are replaced with full implementations inside DOMContentLoaded below.
+window.setActiveNav = window.setActiveNav || function(){ /* no-op until initialized */ };
+window.loadSpeakersSpl = window.loadSpeakersSpl || function(){ document.addEventListener('DOMContentLoaded', () => window.loadSpeakersSpl()); };
+window.loadFilters = window.loadFilters || function(){ document.addEventListener('DOMContentLoaded', () => window.loadFilters()); };
+window.loadCabinets = window.loadCabinets || function(){ document.addEventListener('DOMContentLoaded', () => window.loadCabinets()); };
+window.loadTests = window.loadTests || function(){ document.addEventListener('DOMContentLoaded', () => window.loadTests()); };
+
 document.addEventListener('DOMContentLoaded', () => {
     const themeToggleButton = document.getElementById('theme-toggle');
     const body = document.body;
@@ -196,6 +204,37 @@ document.addEventListener('DOMContentLoaded', () => {
                         </label>
                     </div>
                     <button class="btn btn-outline-danger w-100" id="spl-clear-btn"><i class="bi bi-trash me-1"></i> Clear</button>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h4 style="font-size:0.8rem; margin-bottom:0.5rem;"><i class="bi bi-bar-chart-line me-1"></i>Analysis</h4>
+                <div id="spl-analysis-content" style="font-size:0.75rem; max-height: calc(100vh - 300px); overflow-y: auto;">
+                    <div class="spl-metric-group" style="margin-bottom:0.75rem;">
+                        <h5 style="font-size:0.7rem; margin-bottom:0.25rem; color: var(--bs-secondary-color);">Overview</h5>
+                        <div class="spl-metric"><span>Loaded Curves</span><strong id="spl-curves-count">0</strong></div>
+                        <div class="spl-metric"><span>Total Points</span><strong id="spl-points-count">0</strong></div>
+                        <div class="spl-metric"><span>Memory Usage</span><strong id="spl-memory-usage">0 MB</strong></div>
+                    </div>
+
+                    <div class="spl-metric-group" id="spl-acoustic-metrics" style="display:none; margin-bottom:0.75rem;">
+                        <h5 style="font-size:0.7rem; margin-bottom:0.25rem; color: var(--bs-secondary-color);">Acoustic</h5>
+                        <div class="spl-metric"><span>A-weighted SPL</span><strong id="spl-a-weighted-spl">-- dB(A)</strong></div>
+                        <div class="spl-metric"><span>Peak Level</span><strong id="spl-peak-level">-- dB</strong></div>
+                        <div class="spl-metric"><span>Crest Factor</span><strong id="spl-crest-factor">-- dB</strong></div>
+                        <div class="spl-metric"><span>Resonances</span><strong id="spl-resonances-count">0</strong></div>
+                    </div>
+
+                    <div class="spl-metric-group" id="spl-validation-metrics" style="display:none; margin-bottom:0.75rem;">
+                        <h5 style="font-size:0.7rem; margin-bottom:0.25rem; color: var(--bs-secondary-color);">Validation</h5>
+                        <div class="spl-metric"><span>Math Tests</span><strong id="spl-math-tests">-- / 3</strong></div>
+                        <div class="spl-metric"><span>Quality Score</span><strong id="spl-quality-score">--%</strong></div>
+                        <div class="spl-metric"><span>Coherence</span><strong id="spl-coherence">--</strong></div>
+                    </div>
+
+                    <div id="spl-curve-list">
+                        <h5 style="font-size:0.7rem; margin-bottom:0.25rem; color: var(--bs-secondary-color);"><i class="bi bi-list-check me-1"></i>Loaded Curves</h5>
+                    </div>
                 </div>
             </div>
         `,
