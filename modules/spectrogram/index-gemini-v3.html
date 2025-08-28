@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Spectrogram v3</title>
+  <style>
+    body { margin: 0; overflow: hidden; background-color: #141414; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; }
+    #controls {
+      width: 0;
+      background: #2a2a2a;
+      padding: 0;
+      height: 100vh;
+      box-sizing: border-box;
+      overflow-y: auto;
+      visibility: hidden;
+      transition: width 0.3s, padding 0.3s;
+    }
+    #start-button { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; padding: 15px 25px; font-size: 1.2em; cursor: pointer; }
+    #canvas-container { flex-grow: 1; position: relative; }
+    #spectrogram { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    .control-row { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-size: 0.9em; color: #ccc; }
+    input[type=range] { width: 100%; }
+    span { float: right; color: #a0a0a0; }
+    h3 { margin-top: 20px; border-bottom: 1px solid #444; padding-bottom: 5px; }
+    .axis-label { position: absolute; color: white; background-color: rgba(0,0,0,0.6); padding: 3px 7px; border-radius: 4px; font-size: 0.8em; pointer-events: none; display: none; }
+    /* MusicLab legend approximating HSV hue range [0.7..0.0] (blue→red) */
+    #color-map-legend {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 150px;
+      height: 20px;
+      background: linear-gradient(to right,
+        #2a5bff, /* ~h=0.7 (252deg) blue */
+        #00b5ff, /* cyan */
+        #00ff9b, /* aqua-green */
+        #80ff00, /* green-yellow */
+        #ffcc00, /* yellow-orange */
+        #ff6600, /* orange */
+        #ff0000  /* ~h=0.0 red */
+      );
+      border: 1px solid #555;
+    }
+    #legend-title { position: absolute; bottom: 72px; right: 20px; color: #ddd; font-size: 0.8em; }
+    #legend-text { position: absolute; bottom: 45px; right: 20px; color: white; font-size: 0.8em; display: flex; justify-content: space-between; width: 150px; }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <div class="control-row">
+      <label>Audio Source</label>
+      <label style="display:inline-block; margin-right:10px;"><input type="radio" name="sourceMode" id="sourceDry" value="dry"> Dry (Output)</label>
+      <label style="display:inline-block;"><input type="radio" name="sourceMode" id="sourceWet" value="wet" checked> Wet (Microphone)</label>
+    </div>
+    <div class="control-row">
+      <h3>Microphone DSP</h3>
+      <label style="display:block; font-weight:normal;">
+        <input type="checkbox" id="micEchoCancellation"> Echo Cancellation
+      </label>
+      <label style="display:block; font-weight:normal;">
+        <input type="checkbox" id="micNoiseSuppression"> Noise Suppression
+      </label>
+      <label style="display:block; font-weight:normal;">
+        <input type="checkbox" id="micAutoGainControl"> Auto Gain Control
+      </label>
+      <div style="color:#888; font-size:0.8em; margin-top:6px;">Disable these for measurement accuracy; enable for communications-style capture.</div>
+    </div>
+    <div class="control-row">
+      <label for="rotX">Rotate X</label>
+      <input type="range" id="rotX" min="-360" max="360" value="-90" class="slider">
+      <span id="rotX-value">-90</span>
+    </div>
+    <div class="control-row">
+      <label for="rotY">Rotate Y</label>
+      <input type="range" id="rotY" min="-360" max="360" value="0" class="slider">
+      <span id="rotY-value">0</span>
+    </div>
+    <div class="control-row">
+      <label for="rotZ">Rotate Z</label>
+      <input type="range" id="rotZ" min="-360" max="360" value="90" class="slider">
+      <span id="rotZ-value">90</span>
+    </div>
+    <div class="control-row">
+      <label for="posY">Position Y</label>
+      <input type="range" id="posY" min="-10" max="10" value="-3.5" step="0.1" class="slider">
+      <span id="posY-value">-3.5</span>
+    </div>
+    <div class="control-row">
+      <label for="posZ">Zoom (Position Z)</label>
+      <input type="range" id="posZ" min="-20" max="0" value="-7.5" step="0.1" class="slider">
+      <span id="posZ-value">-7.5</span>
+    </div>
+    <div class="control-row">
+      <label for="vScale">Vertical Scale</label>
+      <input type="range" id="vScale" min="0.1" max="6" value="3.5" step="0.1" class="slider">
+      <span id="vScale-value">3.5</span>
+    </div>
+    <div class="control-row">
+      <label for="dbfsOffset">dBFS Offset</label>
+      <input type="number" id="dbfsOffset" min="-60" max="60" step="0.1" value="0.0">
+      <span id="dbfsOffset-help" style="display:block;margin-top:4px;color:#888;font-size:0.8em;">Align displayed dBFS to calibrated mic level</span>
+    </div>
+  </div>
+  <div id="canvas-container">
+      <canvas id="spectrogram"></canvas>
+      <button id="start-button">Start Microphone</button>
+      <div id="x-axis-label" class="axis-label">Frequency</div>
+      <div id="y-axis-label" class="axis-label">Amplitude</div>
+      <div id="z-axis-label" class="axis-label">Time</div>
+      <div id="legend-title">MusicLab Colormap</div>
+      <div id="color-map-legend"></div>
+      <div id="legend-text"><span>Min</span><span>Max</span></div>
+  </div>
+  <script src="spectrogram-gemini-v3.js"></script>
+</body>
+</html>

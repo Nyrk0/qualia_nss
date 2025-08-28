@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Qualia NSS • Microphone Spectrogram (SPA)</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    body { display: grid; grid-template-rows: auto 1fr auto; background:#0b0b0b; color:#e5e7eb; }
+    header { padding: 10px 16px; display:flex; gap:12px; align-items:center; border-bottom:1px solid #1f2937; }
+    header h1 { font-size: 16px; margin: 0; font-weight: 600; color:#f3f4f6; }
+    .controls { display:flex; flex-wrap: wrap; gap:8px 12px; align-items:center; margin-left:auto; }
+    .controls > * { background:#111827; color:#e5e7eb; border:1px solid #374151; border-radius:8px; padding:8px 10px; font-size: 13px; }
+    button.primary { background:#2563eb; border-color:#1d4ed8; color:white; }
+    button.warn { background:#7c3aed; border-color:#6d28d9; color:white; }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    main { display:grid; grid-template-rows: 1fr; }
+    #stage { width:100%; height:100%; display:grid; place-items:center; padding:10px; }
+    canvas { width:100%; height:100%; background:black; border-radius:10px; box-shadow: 0 0 0 1px #111 inset; image-rendering: pixelated; }
+    footer { padding:8px 12px; font-size:12px; color:#9ca3af; border-top:1px solid #1f2937; display:flex; gap:8px; align-items:center; }
+    a { color:#93c5fd; }
+    .row { display:flex; gap:8px; align-items:center; }
+    label { color:#cbd5e1; font-size:12px; }
+    input[type="range"] { width:140px; }
+    .notice { color:#f59e0b; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Microphone Spectrogram</h1>
+    <div class="controls">
+      <button id="btn-start" class="primary">Start Microphone</button>
+      <button id="btn-stop" class="warn" disabled>Stop</button>
+      <div class="row">
+        <label for="sel-fft">FFT</label>
+        <select id="sel-fft">
+          <option value="1024">1024</option>
+          <option value="2048" selected>2048</option>
+          <option value="4096">4096</option>
+          <option value="8192">8192</option>
+        </select>
+      </div>
+      <div class="row">
+        <label for="rng-smooth">Smoothing</label>
+        <input id="rng-smooth" type="range" min="0" max="0.95" step="0.05" value="0.8" />
+      </div>
+    </div>
+  </header>
+  <main>
+    <div id="stage">
+      <canvas id="spectrogram" width="1024" height="512"></canvas>
+    </div>
+  </main>
+  <footer>
+    <div id="status">Idle</div>
+    <div id="file-warning" class="notice" style="display:none">Note: Some browsers block microphone on file:// pages. If you see an error, use Safari or run a local server (e.g. python -m http.server) or enable the appropriate flag.</div>
+  </footer>
+
+  <script src="./spectrogram.js"></script>
+</body>
+</html>

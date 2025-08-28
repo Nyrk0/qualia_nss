@@ -1,0 +1,8 @@
+Frequency Band,Range,Color,HEX Color,Audio Sources
+"Sub-bass,20-60Hz,Deep Red,#8b0000,""Bass drum, pipe organ, thunder"""
+"Bass,60-250Hz,Crimson,#dc143c,""Bass guitar, male vocals (low register), cello"""
+"Low Mid,250-500Hz,Tomato,#ff6347,""Saxophone, piano (mid-range), human speech"""
+"Midrange,500-2000Hz,Dark Orange,#ff8c00,""Female vocals, violin, acoustic guitar"""
+"Upper Mid,2000-4000Hz,Lime Green,#32cd32,""Sibilance (S sounds), cymbals, snare drum"""
+"Presence,4000-6000Hz,Dodger Blue,#1e90ff,""Synthesizer harmonics, wind chimes, birdsong"""
+"Brilliance,6000-20000Hz,Medium Orchid,#9370db,""High-frequency overtones, hiss, shimmer"""

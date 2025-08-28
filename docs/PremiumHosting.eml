@@ -1,0 +1,571 @@
+Delivered-To: alex.rettig@globalmac.cl
+Received: by 2002:a2e:be89:0:b0:334:905:e472 with SMTP id a9csp99130ljr;
+        Thu, 14 Aug 2025 19:49:54 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFv3qJN3F7x4wZwi1udL1titrbMdXfTzhrlxLIykkmgdDPm0HDjhRsYnb6jPIMaLUtJMrVw
+X-Received: by 2002:a05:6a21:6da0:b0:240:454b:80c5 with SMTP id adf61e73a8af0-240d2f668e4mr438876637.7.1755226194227;
+        Thu, 14 Aug 2025 19:49:54 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1755226194; cv=none;
+        d=google.com; s=arc-20240605;
+        b=Vpg7qkyulIM+zJGXowad8Mwt94heuD4gmxexpSk3S6oyRuOYrHHWUOSmDv7Nzc3Zvk
+         pxUUa6Ep+o5tYJjP55KaowsJf1M4w61o/uW9FDnvzUVsCKA/VKR56LxU0zTS8IU8l9gN
+         QGzHHSrAZWkhUFQdTPaNDl4AzNKdDlKVGFKvfZXwFYe2vCKfuN9QP5PVTvG4doV7fKFz
+         B0MflEhc2WnLNXuishL9rgtiRDwUQ7+l0V+7cvwVsOtbtOZHwieJkGpvpjeQd4QJcvuY
+         IZNnf5yawhOtFj5wY3Y9sigspWmnx3uN9YO7hHFMqAVJG6/i+H29G5gM8b2lSwfjewlg
+         DS2g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:mime-version:message-id:subject:reply-to
+         :from:to:date:dkim-signature;
+        bh=Ztlod0bWT/NV+KHFxadXNv+kWX2jHGBv5JJhJaSzVcE=;
+        fh=29FWFDV6xwK3m/Sz1Y35z/ddHQ1UZi1aYIOIGdwrFuM=;
+        b=CAVLSCGQykqKbh4Jrfds0MdAvvxPWmHbe+6eDKpl8nvNHhV/6uglr1oR1MpLSoxuef
+         fKL0e3tSy8tfLhlFpClgyuGCCE+zk1frsrwVJt67vnJpPOXX3A+SQ8/JQ3VoUKVLJypF
+         GfE9yo11y0eIOAajrORyDw+/5pqOWbl9/q1KJHYNZ6uVzG4s0S8nataYGjuS47fIaUDK
+         eqZUQoGU4Ej/ToNoWKLdqTC6K7Ljj+mKGlAtDmCk96KNlrFY9w5rr9J0JmaCCW5IkeFR
+         VuG645ZDOrcBHti3NxQ32rzAwv5qlg6yZGypkrUy4soZqTOhnrqaWWvPFjpKq5+VDIpr
+         RCyw==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@premiumhosting.cl header.s=nu8DD7CFF57918072 header.b="F/XVLrZU";
+       spf=pass (google.com: domain of mailing@premiumhosting.cl designates 23.172.139.251 as permitted sender) smtp.mailfrom=mailing@premiumhosting.cl;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=premiumhosting.cl
+Return-Path: <mailing@premiumhosting.cl>
+Received: from mail-139-mta251.mxyeet.net (mail-139-mta251.mxyeet.net. [23.172.139.251])
+        by mx.google.com with ESMTPS id 41be03b00d2f7-b472d78b16fsi78546a12.414.2025.08.14.19.49.53
+        for <alex.rettig@globalmac.cl>
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 14 Aug 2025 19:49:54 -0700 (PDT)
+Received-SPF: pass (google.com: domain of mailing@premiumhosting.cl designates 23.172.139.251 as permitted sender) client-ip=23.172.139.251;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@premiumhosting.cl header.s=nu8DD7CFF57918072 header.b="F/XVLrZU";
+       spf=pass (google.com: domain of mailing@premiumhosting.cl designates 23.172.139.251 as permitted sender) smtp.mailfrom=mailing@premiumhosting.cl;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=premiumhosting.cl
+Received: from us1.workspace.org ([162.244.93.81])
+	by mx1.mxfilter.net with esmtpa (Exim 4.94.2)
+	(envelope-from <mailing@premiumhosting.cl>)
+	id 1umkXI-00Cxy7-Sq
+	for alex.rettig@globalmac.cl; Thu, 14 Aug 2025 19:49:54 -0700
+DKIM-Signature: v=1; a=rsa-sha256; d=premiumhosting.cl; s=nu8DD7CFF57918072;
+	c=relaxed/relaxed; t=1755226190;
+	h=date:to:from:reply-to:subject:message-id:x-mailer:mime-version;
+	bh=Ztlod0bWT/NV+KHFxadXNv+kWX2jHGBv5JJhJaSzVcE=;
+	b=F/XVLrZUDG6wDs1wyLYiZadHutZrXiKbbvt7KW8/wy4Mqy7/0PSDnakbpEKQtJbb8NxUhLswlDz
+	STXti2NYGbuBUXVXfpUBrQYKSRYw0DVeVyRb8I3cnDPk7mQDda7TeZTnFzfQdeOtAwbwUfGyyThAn
+	vpsnN1gENCcYJdcPIGsTXH5ZaSLy6bD65+0dlyXiSucc2hcUsUtpeenBvUTolIbA06b6opZsyXGQn
+	iR0s1CxwVeXgfE1d2HE6bHq+jg5EPyq86intIHQZ/o0Ecrf+xvtMkZBBAhU70YSKDWYyYmzqYNnNa
+	K/pBx4jcnfgpvuCihBqFpyMuarQLLjqeNfTA==
+Date: Thu, 14 Aug 2025 22:49:41 -0400
+To: Alex Rettig <alex.rettig@globalmac.cl>
+From: PremiumHosting <mailing@premiumhosting.cl>
+Reply-To: PremiumHosting <mailing@premiumhosting.cl>
+Subject: Informacion de su nuevo Servicio DA - PremiumHosting
+Message-ID: <d6OH2O4zhWqWbqheRTjjuJfDtCXvsjDZwD42MdAEQbk@ph.premiumcloud.cl>
+X-Mailer: PHPMailer 6.9.3 (https://github.com/PHPMailer/PHPMailer)
+MIME-Version: 1.0
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Originating-IP: 162.244.93.81
+X-SpamExperts-Domain: mxyeet.net
+X-SpamExperts-Username: smartermail
+Authentication-Results: mxfilter.net; auth=pass (login) smtp.auth=smartermail@mxyeet.net
+X-SpamExperts-Outgoing-Class: ham
+X-SpamExperts-Outgoing-Evidence: Combined (0.04)
+X-Recommended-Action: accept
+X-Filter-ID: 9kzQTOBWQUFZTohSKvQbgI7ZDo5ubYELi59AwcWUnuWZWF9e82AF5pnnCs0EWCySf+6Ee0Yeapwk
+ r+9/Pmquiyu2SmbhJN1U9FKs8X3+Nt1IdL38FBd0eYYUU4+Au+EQezIRCYS8rmh/MDACo6fN9XUa
+ 0e+DN3Ngd/LCEDe+KLs0tbbVkDcuN4WZz4nILH9vlDtR/qCXMVqSLVxeSwueS0r/pqDh7apldsyM
+ rNwI+mb6BpeseSBELv+0jcKNeZXKfK987mwL9VnSSQl4O7ylJ5wm3EEYPtf9m0E3nM6DqVmWcVkA
+ p9lvLNGFwqm5OgpBFMezBtsH+Fr5latICLxKTLVn5uVOziAob7UesvhGecnH3nfv/utnYfV8/jAb
+ G6uKQ7uD0x/9Y/MF6exFt7k4K/hhiKkY5DM9o76pUDkoCG23XRA4FIh3sKMDvFuMWCHAcIAWOl+M
+ vbAigUiTd5e5+BGE3MqH1GuGi/5k++Cs4cIB4BzfgSOdfrbzWOGBisJW31/E3ahF5MMcDI7KdpjQ
+ KYMZ6OqET1VMn1cLpQlcG4KZGhFuTCOvBcOwwmgZ1EN+RzjSgN+Ml6WkNvJzLqQmE8SLLpEkwSMJ
+ SQNgn3B0EJOEU1utNskUAORCV2WFZX0jExWlcWdGZRsKxmvzKSE3+k+usNIWxaYTTMHPEcnKGffm
+ mdtgYVTQpVqL7kP1F76EaoWus9TnImzeykYFBwXcNMOT0YUI/RALWzutnXdALT7rce/yja8lj1X9
+ smfLvXyM0AEyOcHAwWvRGU7hPctHAOnr/iaL1rP1yP+WihOsvimDqVprEAGrsXmEdLOKN0Iuy3Vj
+ UA1lJsQJmkucdinHNlFfEoXm0/FPF8PR0w363lnP4m6PrkhlTsfrI7NjQkxC+g8VkhKEFJ2lUlbk
+ duNBMDI8vEYUsEGqMgMBOaPJhiK27orfJatTS3Yftg8pbui32N2u/1unRCDKVygrS7fvXs9Rv91d
+ PHQHDpk5pGFMp+kwbVA/fmexh8/zhz5EUrcqzveb9ZeGy8o+u2/hFObXjw==
+X-Report-Abuse-To: spam@mx1.mxfilter.net
+X-Complaints-To: abuse@mx1.mxfilter.net
+
+<!DOCTYPE html>
+<html lang=3D"es" xmlns=3D"http://www.w3.org/1999/xhtml" xmlns:v=3D"urn:sch=
+emas-microsoft-com:vml" xmlns:o=3D"urn:schemas-microsoft-com:office:office"=
+>
+<head><meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf=
+-8">
+    <meta charset=3D"utf-8">
+    <meta name=3D"viewport" content=3D"width=3Ddevice-width, initial-scale=3D=
+1.0">
+    <meta http-equiv=3D"X-UA-Compatible" content=3D"IE=3Dedge">
+    <title>Informacion de su nuevo Servicio DA - PremiumHosting</title>
+
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:AllowPNG/>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+        </o:OfficeDocumentSettings>
+    </xml>
+    <![endif]-->
+
+   =20
+<style type=3D"text/css">@media screen and (max-width: 600px){.email-body_i=
+nner,.email-footer{width: 100% !important;}}</style></head>
+<body style=3D'-webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; =
+font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; mso-line-height-r=
+ule: exactly; background-color: #F2F4F6; height: 100%; margin: 0; width: 10=
+0%; padding: 0;'>
+    <center style=3D"width: 100%; background-color: #F2F4F6;">
+        <!--[if (gte mso 9)|(IE)]>
+        <table align=3D"center" border=3D"0" cellspacing=3D"0" cellpadding=3D=
+"0" width=3D"700">
+        <tr>
+        <td align=3D"center" valign=3D"top" width=3D"700">
+        <![endif]-->
+       =20
+        <table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" width=3D"10=
+0%" style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; ms=
+o-table-lspace: 0pt; mso-table-rspace: 0pt; max-width: 700px; margin: 0 aut=
+o;">
+            <!-- HEADER / LOGO -->
+            <tr>
+                <td align=3D"center" style=3D"-webkit-text-size-adjust: 100=
+%; -ms-text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt=
+; padding: 25px 0; text-align: center;">
+                    <a href=3D"https://premiumhosting.cl" target=3D"_blank"=
+ style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; color=
+: #3869d4; text-decoration: underline;">
+                        <img src=3D"https://premiumhosting.cl/libs/images/l=
+ogo.png" alt=3D"PremiumHosting.cl" width=3D"200" style=3D"-ms-interpolation=
+-mode: bicubic; line-height: 100%; outline: none; text-decoration: none; di=
+splay: block; margin: 0 auto; max-width: 200px; width: 100%; height: auto; =
+border: 0;">
+                    </a>
+                </td>
+            </tr>
+
+            <!-- EMAIL BODY -->
+            <tr>
+                <td width=3D"100%" style=3D"-webkit-text-size-adjust: 100%;=
+ -ms-text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; =
+background-color: #FFFFFF; border-top: 1px solid #EDEFF2; border-bottom: 1p=
+x solid #EDEFF2;">
+                    <table class=3D"email-body_inner" align=3D"center" widt=
+h=3D"100%" border=3D"0" cellpadding=3D"0" cellspacing=3D"0" role=3D"present=
+ation" style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;=
+ mso-table-lspace: 0pt; mso-table-rspace: 0pt; max-width: 700px; margin: 0 =
+auto;">
+                        <!-- Body content -->
+                        <tr>
+                            <td style=3D"-webkit-text-size-adjust: 100%; -m=
+s-text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; pad=
+ding: 35px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; fo=
+nt-size: 16px; line-height: 1.5em; color: #555555;">
+                                <!-- El contenido din=C3=A1mico de HostBill=
+ se inserta aqu=C3=AD -->
+                                <h1>=C2=A1Felicitaciones, Alex Rettig!</h1>
+
+<p>
+    Su orden ha sido procesada y su servicio de Hosting con DirectAdmin ha =
+sido **activado** con =C3=A9xito.
+    Estamos listos para que empiece a construir su presencia online.
+</p>
+
+<table class=3D"invoice-wrapper" width=3D"100%" cellspacing=3D"0" cellpaddi=
+ng=3D"0" style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100=
+%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin-top: 20px;">
+    <tbody>
+        <tr>
+            <td colspan=3D"2" style=3D"-webkit-text-size-adjust: 100%; -ms-=
+text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; paddi=
+ng-top: 20px; padding-bottom: 5px;">
+                <h2>Informaci=C3=B3n General del Servicio:</h2>
+            </td>
+        </tr>
+        <tr>
+            <td width=3D"40%" style=3D"-webkit-text-size-adjust: 100%; -ms-=
+text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; paddi=
+ng: 10px 0; border-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0; font-weight: bold;">Plan de Hosting:=
+</p>
+            </td>
+            <td width=3D"60%" style=3D"-webkit-text-size-adjust: 100%; -ms-=
+text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; paddi=
+ng: 10px 0; border-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0;">DA0 - LITE</p>
+            </td>
+        </tr>
+        <tr>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0; bo=
+rder-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0; font-weight: bold;">Dominio Principa=
+l:</p>
+            </td>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0; bo=
+rder-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0;">qualia-nss.com</p>
+            </td>
+        </tr>
+        <tr>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0; bo=
+rder-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0; font-weight: bold;">Pago Inicial:</p=
+>
+            </td>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0; bo=
+rder-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0;">$19.000 Pesos</p>
+            </td>
+        </tr>
+        <tr>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0; bo=
+rder-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0; font-weight: bold;">Monto Total:</p>
+            </td>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0; bo=
+rder-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0;">$19.000 Pesos</p>
+            </td>
+        </tr>
+        <tr>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0; bo=
+rder-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0; font-weight: bold;">Ciclo de Cobranz=
+a:</p>
+            </td>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0; bo=
+rder-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0;">Annually</p>
+            </td>
+        </tr>
+        <tr>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0;">
+                <p style=3D"margin: 0; font-weight: bold;">Pr=C3=B3xima Fec=
+ha de Cobro:</p>
+            </td>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0;">
+                <p style=3D"margin: 0;">14/08/2026</p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<table class=3D"invoice-wrapper" width=3D"100%" cellspacing=3D"0" cellpaddi=
+ng=3D"0" style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100=
+%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin-top: 30px;">
+    <tbody>
+        <tr>
+            <td colspan=3D"2" style=3D"-webkit-text-size-adjust: 100%; -ms-=
+text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; paddi=
+ng-top: 20px; padding-bottom: 5px;">
+                <h2>Datos de Acceso a su DirectAdmin:</h2>
+            </td>
+        </tr>
+        <tr>
+            <td width=3D"30%" style=3D"-webkit-text-size-adjust: 100%; -ms-=
+text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; paddi=
+ng: 10px 0; border-bottom: 1px dashed #EEEEEE; background-color: #F8F8F8;">
+                <p style=3D"margin: 0; font-weight: bold; color: #555;">Usu=
+ario:</p>
+            </td>
+            <td width=3D"70%" style=3D"-webkit-text-size-adjust: 100%; -ms-=
+text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; paddi=
+ng: 10px 0; border-bottom: 1px dashed #EEEEEE; background-color: #F8F8F8;">
+                <p style=3D"margin: 0; font-weight: bold; color: #3869D4;">=
+qualiann</p>
+            </td>
+        </tr>
+        <tr>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0; bo=
+rder-bottom: 1px dashed #EEEEEE; background-color: #F8F8F8;">
+                <p style=3D"margin: 0; font-weight: bold; color: #555;">Cla=
+ve:</p>
+            </td>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0; bo=
+rder-bottom: 1px dashed #EEEEEE; background-color: #F8F8F8;">
+                <p style=3D"margin: 0; font-weight: bold; color: #3869D4;">=
+Mfc28!1WB!9</p>
+            </td>
+        </tr>
+        <tr>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0; bo=
+rder-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0; font-weight: bold;">Acceso Temporal =
+(con IP):</p>
+            </td>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0; bo=
+rder-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0;"><a href=3D"https://162.249.168.66:2=
+222/" target=3D"_blank" style=3D"-webkit-text-size-adjust: 100%; -ms-text-s=
+ize-adjust: 100%; color: #3869d4; text-decoration: underline;">https://162.=
+249.168.66:2222/</a></p>
+            </td>
+        </tr>
+        <tr>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0;">
+                <p style=3D"margin: 0; font-weight: bold;">Acceso Final (co=
+n Dominio):</p>
+            </td>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0;">
+                <p style=3D"margin: 0;">Una vez propagados sus DNS (6-12 ho=
+ras):<br>
+                    <a href=3D"https://qualia-nss.com:2222/" target=3D"_bla=
+nk" style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; co=
+lor: #3869d4; text-decoration: underline;">https://qualia-nss.com:2222/</a>
+                </p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<table class=3D"invoice-wrapper" width=3D"100%" cellspacing=3D"0" cellpaddi=
+ng=3D"0" style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100=
+%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin-top: 30px;">
+    <tbody>
+        <tr>
+            <td colspan=3D"2" style=3D"-webkit-text-size-adjust: 100%; -ms-=
+text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; paddi=
+ng-top: 20px; padding-bottom: 5px;">
+                <h2>Configuraci=C3=B3n de DNS (Si usa un dominio existente)=
+:</h2>
+            </td>
+        </tr>
+        <tr>
+            <td colspan=3D"2" style=3D"-webkit-text-size-adjust: 100%; -ms-=
+text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
+                <p style=3D"margin: 0;">Si est=C3=A1 utilizando un Dominio =
+registrado previamente, deber=C3=A1 actualizar sus Servidores de Nombres (D=
+NS) a los siguientes:</p>
+            </td>
+        </tr>
+        <tr>
+            <td width=3D"30%" style=3D"-webkit-text-size-adjust: 100%; -ms-=
+text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; paddi=
+ng: 10px 0; border-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0; font-weight: bold;">Nombre del Servi=
+dor:</p>
+            </td>
+            <td width=3D"70%" style=3D"-webkit-text-size-adjust: 100%; -ms-=
+text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; paddi=
+ng: 10px 0; border-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0;">Srv. DA008 PRO - DC NY</p>
+            </td>
+        </tr>
+        <tr>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0; bo=
+rder-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0; font-weight: bold;">IP del Servidor:=
+</p>
+            </td>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0; bo=
+rder-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0;">162.249.168.66</p>
+            </td>
+        </tr>
+        <tr>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0; bo=
+rder-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0; font-weight: bold;">DNS 1:</p>
+            </td>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0; bo=
+rder-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0;">dns129.servidoresph.com (162.249.16=
+8.66)</p>
+            </td>
+        </tr>
+        <tr>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0;">
+                <p style=3D"margin: 0; font-weight: bold;">DNS 2:</p>
+            </td>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0;">
+                <p style=3D"margin: 0;">dns130.servidoresph.com (162.249.16=
+8.67)</p>
+            </td>
+        </tr>
+                    </tbody>
+</table>
+
+<table class=3D"invoice-wrapper" width=3D"100%" cellspacing=3D"0" cellpaddi=
+ng=3D"0" style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100=
+%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin-top: 30px;">
+    <tbody>
+        <tr>
+            <td colspan=3D"2" style=3D"-webkit-text-size-adjust: 100%; -ms-=
+text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; paddi=
+ng-top: 20px; padding-bottom: 5px;">
+                <h2>Gu=C3=ADas R=C3=A1pidas para Empezar:</h2>
+            </td>
+        </tr>
+        <tr>
+            <td width=3D"30%" style=3D"-webkit-text-size-adjust: 100%; -ms-=
+text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; paddi=
+ng: 10px 0; border-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0; font-weight: bold;">Instalar WordPre=
+ss:</p>
+            </td>
+            <td width=3D"70%" style=3D"-webkit-text-size-adjust: 100%; -ms-=
+text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; paddi=
+ng: 10px 0; border-bottom: 1px dashed #EEEEEE;">
+                <p style=3D"margin: 0;">Instale su sitio web con WordPress =
+de forma r=C3=A1pida y sencilla siguiendo nuestra gu=C3=ADa:</p>
+                <ul style=3D"margin: 5px 0 0 20px; padding: 0;">
+                    <li>
+                        <a href=3D"https://docs.premiumhosting.cl/documenta=
+cion/instalando-wordpress-con-premiumhosting/" target=3D"_blank" style=3D"-=
+webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; color: #3869d4; =
+text-decoration: underline;">Tutorial: Instalando WordPress con PremiumHost=
+ing</a>
+                    </li>
+                </ul>
+                <p style=3D"margin: 10px 0 0 0; font-size: 13px; color: #74=
+787E;">
+                    Si lo necesita, podemos ayudarle con la instalaci=C3=B3=
+n inicial de WordPress.
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0;">
+                <p style=3D"margin: 0; font-weight: bold;">Configurar su Co=
+rreo:</p>
+            </td>
+            <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adju=
+st: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 10px 0;">
+                <p style=3D"margin: 0;">Para configurar sus cuentas de corr=
+eo, siga estos dos sencillos pasos con nuestros tutoriales:</p>
+                <ul style=3D"margin: 5px 0 0 20px; padding: 0;">
+                    <li><strong>1. Crear Cuentas de Correo en DirectAdmin:<=
+/strong><br>
+                        <a href=3D"https://docs.premiumhosting.cl/documenta=
+cion/crear-cuentas-de-correo-en-directadmin/" target=3D"_blank" style=3D"-w=
+ebkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; color: #3869d4; t=
+ext-decoration: underline;">https://docs.premiumhosting.cl/documentacion/cr=
+ear-cuentas-de-correo-en-directadmin/</a>
+                    </li>
+                    <li><strong>2. Configurar Correo en su Aplicaci=C3=B3n =
+(Outlook, Celular, etc.):</strong><br>
+                        <a href=3D"https://docs.premiumhosting.cl/documenta=
+cion/configurar-tu-correo-de-premiumhosting-en-otros-clientes-de-correo/" t=
+arget=3D"_blank" style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adj=
+ust: 100%; color: #3869d4; text-decoration: underline;">https://docs.premiu=
+mhosting.cl/documentacion/configurar-tu-correo-de-premiumhosting-en-otros-c=
+lientes-de-correo/</a>
+                    </li>
+                </ul>
+                <p style=3D"margin: 10px 0 0 0; font-size: 13px; color: #74=
+787E;">
+                    Si lo necesita, podemos ayudarle con la configuraci=C3=B3=
+n de sus cuentas de correo.
+                </p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p style=3D"text-align: center; margin-top: 30px; font-weight: bold;">
+    =C2=BFNecesita ayuda para empezar con DirectAdmin?
+</p>
+<table class=3D"email-action" align=3D"center" width=3D"100%" cellpadding=3D=
+"0" cellspacing=3D"0" style=3D"-webkit-text-size-adjust: 100%; -ms-text-siz=
+e-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin-top: 1=
+5px;">
+    <tr>
+        <td align=3D"center" style=3D"-webkit-text-size-adjust: 100%; -ms-t=
+ext-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
+            <table width=3D"100%" border=3D"0" cellspacing=3D"0" cellpaddin=
+g=3D"0" style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%=
+; mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
+                <tr>
+                    <td align=3D"center" style=3D"-webkit-text-size-adjust:=
+ 100%; -ms-text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace:=
+ 0pt;">
+                        <a href=3D"https://docs.premiumhosting.cl/categoria=
+s/directadmin/" class=3D"button button--blue" target=3D"_blank" style=3D"-m=
+s-text-size-adjust: 100%; display: block; width: 280px; background-color: #=
+3869D4; border-radius: 3px; color: #ffffff; font-size: 15px; line-height: 4=
+5px; text-align: center; text-decoration: none; -webkit-text-size-adjust: n=
+one; mso-hide: all;">Acceder a Nuestros Tutoriales de DirectAdmin</a>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<p style=3D"text-align: center; margin-top: 30px;">
+    Si tiene alguna otra pregunta o necesita asistencia adicional, no dude =
+en contactar a nuestro equipo de soporte.
+</p>
+
+<p style=3D"text-align: center; margin-top: 15px;">
+    Gracias por elegir PremiumHosting.
+</p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <!-- FOOTER -->
+            <tr>
+                <td style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-=
+adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
+                    <table class=3D"email-footer" align=3D"center" width=3D=
+"100%" border=3D"0" cellpadding=3D"0" cellspacing=3D"0" role=3D"presentatio=
+n" style=3D"-webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; mso=
+-table-lspace: 0pt; mso-table-rspace: 0pt; max-width: 700px; margin: 0 auto=
+; text-align: center;">
+                        <tr>
+                            <td style=3D"-webkit-text-size-adjust: 100%; -m=
+s-text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; pad=
+ding: 35px;">
+                                <p style=3D"text-align: center; font-size: =
+12px; color: #AEAEAE; line-height: 1.5em;">
+                                    Copyright =C2=A9 2011-2025 - Derechos r=
+eservados<br>
+                                    <strong>Premium Hosting Solutions SpA</=
+strong>, Santiago de Chile<br>
+                                    RUT: 76.457.436-2<br>
+                                    <em>Emprendimiento Chileno desde el 201=
+1</em>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+        <!--[if (gte mso 9)|(IE)]>
+        </td>
+        </tr>
+        </table>
+        <![endif]-->
+    </center>
+</body>
+</html>
+
+

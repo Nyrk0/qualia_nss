@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             <div class="sidebar-section">
                 <h4 style="font-size:0.8rem; margin-bottom:0.5rem;"><i class="bi bi-bar-chart-line me-1"></i>Analysis</h4>
-                <div id="spl-analysis-content" style="font-size:0.75rem; max-height: calc(100vh - 300px); overflow-y: auto;">
+                <div id="spl-analysis-content" class="scroll-hidden" style="font-size:0.75rem; max-height: calc(100vh - 300px); overflow-y: auto;">
                     <div class="spl-metric-group" style="margin-bottom:0.75rem;">
                         <h5 style="font-size:0.7rem; margin-bottom:0.25rem; color: var(--bs-secondary-color);">Overview</h5>
                         <div class="spl-metric"><span>Loaded Curves</span><strong id="spl-curves-count">0</strong></div>
@@ -393,6 +393,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     sidebar.id = 'sidebar';
                     contentWrapper.insertBefore(sidebar, contentWrapper.firstChild);
                 }
+                // Ensure hidden scrollbars globally
+                sidebar.classList.add('scroll-hidden');
                 
                 // Update sidebar content for this module
                 if (sidebarHTML[moduleName]) {

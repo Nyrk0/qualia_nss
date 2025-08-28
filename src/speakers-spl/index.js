@@ -37,6 +37,12 @@
       // Init Chart.js
       this._initChart();
 
+      // React to theme changes (body.light-theme toggled in app.js)
+      const body = document.body;
+      const observer = new MutationObserver(() => this._applyChartTheme());
+      observer.observe(body, { attributes: true, attributeFilter: ['class'] });
+      this._disposers.push(() => observer.disconnect());
+
       // Restore persisted datasets if present
       this._restoreState();
 
@@ -106,6 +112,9 @@
           }
         }
       });
+
+      // Apply theme-aware colors once chart is created
+      this._applyChartTheme();
     }
 
 
@@ -167,37 +176,8 @@
     _inlineFragment() {
       return `
   <div class="spl-viewer">
-    <div class="spl-main-grid">
-      <div class="spl-chart-section">
-        <div class="spl-chart-container">
-          <canvas id="spl-chart"></canvas>
-        </div>
-      </div>
-
-      <aside class="spl-analysis-panel">
-        <div class="spl-analysis-header">
-          <h3 class="h6 mb-0"><i class="bi bi-activity me-1"></i> Analysis</h3>
-        </div>
-        <div class="spl-analysis-content">
-          <div class="spl-metric-group">
-            <div class="spl-metric"><span>Curves</span><strong id="spl-curves-count">0</strong></div>
-            <div class="spl-metric"><span>Points</span><strong id="spl-points-count">0</strong></div>
-            <div class="spl-metric"><span>Memory</span><strong id="spl-memory-usage">0 MB</strong></div>
-          </div>
-          <div id="spl-acoustic-metrics" class="spl-metric-group" style="display:none;">
-            <div class="spl-metric"><span>A-weighted SPL</span><strong id="spl-a-weighted-spl">—</strong></div>
-            <div class="spl-metric"><span>Peak Level</span><strong id="spl-peak-level">—</strong></div>
-            <div class="spl-metric"><span>Crest Factor</span><strong id="spl-crest-factor">—</strong></div>
-            <div class="spl-metric"><span>Resonances</span><strong id="spl-resonances-count">—</strong></div>
-          </div>
-          <div id="spl-validation-metrics" class="spl-metric-group" style="display:none;">
-            <div class="spl-metric"><span>Math tests</span><strong id="spl-math-tests">—</strong></div>
-            <div class="spl-metric"><span>Quality score</span><strong id="spl-quality-score">—</strong></div>
-            <div class="spl-metric"><span>Coherence</span><strong id="spl-coherence">—</strong></div>
-          </div>
-          <div id="spl-curve-list"></div>
-        </div>
-      </aside>
+    <div class="spl-chart-container">
+      <canvas id="spl-chart"></canvas>
     </div>
   </div>`;
     }
@@ -477,7 +457,8 @@
     }
 
     _updateAnalysisPanel(){
-      const setText = (sel, text)=>{ const el=this.root.querySelector(sel); if (el) el.textContent = text; };
+      // Write analysis to the app shell sidebar, not inside module root
+      const setText = (sel, text)=>{ const el=document.querySelector(sel); if (el) el.textContent = text; };
       const totalPoints = Array.from(this.curves.values()).reduce((s,c)=> s + c.data.length, 0);
       setText('#spl-curves-count', this.curves.size);
       setText('#spl-points-count', totalPoints.toLocaleString());
@@ -485,8 +466,8 @@
       setText('#spl-memory-usage', `${mb.toFixed(1)} MB`);
 
       if (this.curves.size>0){
-        const ac = this.root.querySelector('#spl-acoustic-metrics');
-        const vc = this.root.querySelector('#spl-validation-metrics');
+        const ac = document.querySelector('#spl-acoustic-metrics');
+        const vc = document.querySelector('#spl-validation-metrics');
         if (ac) ac.style.display = 'block';
         if (vc) vc.style.display = 'block';
         const analysisCurve = this.sumCurve || Array.from(this.curves.values())[0];
@@ -506,7 +487,7 @@
         }
       }
 
-      const list = this.root.querySelector('#spl-curve-list');
+      const list = document.querySelector('#spl-curve-list');
       if (list){
         list.innerHTML = '<h4 class="h6"><i class="bi bi-list-check me-1"></i> Loaded Curves</h4>';
         this.curves.forEach((curve, name)=>{
@@ -516,6 +497,43 @@
           list.appendChild(item);
         });
       }
+    }
+
+    // Theme helpers
+    _getCssVar(name, fallback){
+      try { return getComputedStyle(document.body).getPropertyValue(name).trim() || fallback; } catch(_) { return fallback; }
+    }
+
+    _applyChartTheme(){
+      if (!this.chart) return;
+      const isLight = document.body.classList.contains('light-theme');
+      const textColor = this._getCssVar('--text-color', isLight ? '#333333' : '#e0e0e0');
+      const gridColor = this._getCssVar('--panel-border-color', isLight ? '#dddddd' : '#333333');
+      const borderColor = gridColor;
+
+      // Apply to axes
+      const { scales, plugins } = this.chart.options;
+      if (scales?.x){
+        scales.x.grid = { color: gridColor, tickColor: gridColor };
+        scales.x.ticks = { color: textColor };
+        scales.x.title = { ...(scales.x.title||{}), color: textColor };
+      }
+      if (scales?.y){
+        scales.y.grid = { color: gridColor, tickColor: gridColor };
+        scales.y.ticks = { color: textColor };
+        scales.y.title = { ...(scales.y.title||{}), color: textColor };
+      }
+
+      // Legend label color
+      if (plugins?.legend){
+        plugins.legend.labels = { ...(plugins.legend.labels||{}), color: textColor, usePointStyle: true };
+      }
+
+      // Default color for elements
+      this.chart.options.color = textColor;
+      this.chart.options.borderColor = borderColor;
+
+      this.chart.update('none');
     }
   }
 

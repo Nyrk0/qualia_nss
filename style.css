@@ -185,12 +185,21 @@ body.light-theme .theme-toggle-btn i {
 
 #sidebar {
     flex: 0 0 280px;
-    background-color: var(--bg-color); /* match main content background */
+    background-color: var(--panel-bg-color); /* match panel background */
     border-right: 1px solid var(--panel-border-color);
     padding: 0;
     overflow-y: auto;
+    /* Permanently hide scrollbar visuals while keeping scroll behavior */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
     min-height: 0; /* participate in flex height without overflow */
 }
+
+#sidebar::-webkit-scrollbar { /* Chrome/Safari */
+    width: 0;
+    height: 0;
+}
+/* No hover reveal: keep hidden at all times */
 
 /* Sidebar navigation styling */
 #sidebar .nav-item,
@@ -577,6 +586,14 @@ footer {
     font-size: 0.6rem;
 }
 
+/* Global utility: permanently hide scrollbars while retaining scroll behavior */
+.scroll-hidden {
+    overflow: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+.scroll-hidden::-webkit-scrollbar { width: 0; height: 0; }
+
 
 /* --- MODULE-SPECIFIC STYLES --- */
 
@@ -609,11 +626,12 @@ footer {
     flex: 1;
     padding: 1rem;
     position: relative;
+    background-color: var(--panel-bg-color);
+    border: 1px solid var(--panel-border-color);
+    border-radius: 8px;
 }
 
-#spl-chart {
-    /* The chart library handles sizing. Do not set width/height here. */
-}
+/* The chart library handles sizing for #spl-chart; no explicit width/height needed. */
 
 .spl-analysis-header {
     padding: 0.5rem 1rem;
@@ -625,7 +643,17 @@ footer {
     flex: 1;
     overflow-y: auto;
     padding: 1rem;
+    /* Permanently hide scrollbar while keeping scroll behavior */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
 }
+
+/* WebKit: hide scrollbar visuals entirely */
+.spl-analysis-content::-webkit-scrollbar { width: 0; height: 0; }
+
+/* Ensure ID-based analysis container also hides scrollbars (current markup) */
+#spl-analysis-content { scrollbar-width: none; -ms-overflow-style: none; }
+#spl-analysis-content::-webkit-scrollbar { width: 0; height: 0; }
 
 .spl-metric-group {
     margin-bottom: 1.5rem;

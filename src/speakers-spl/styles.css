@@ -2,7 +2,7 @@
 .spl-viewer { 
   display: flex; 
   flex-direction: column; 
-  color: var(--bs-body-color); 
+  color: var(--text-color); 
   flex: 1 1 auto; 
   min-height: 0; 
   height: 100%; 
@@ -15,8 +15,8 @@
   height: 100%;
   min-width: 0;  /* Allows proper shrinking/expanding in flex */
   min-height: 0; /* Allows proper flexbox height calculation */
-  background: var(--bs-body-bg);
-  border: 1px solid var(--bs-border-color);
+  background: var(--panel-bg-color);
+  border: 1px solid var(--panel-border-color);
   border-radius: .5rem;
   padding: .5rem;
 }
@@ -30,10 +30,10 @@
 #sidebar .spl-file-input-wrapper { position: relative; }
 #sidebar #spl-file-input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 /* only style when not using .btn helpers */
-#sidebar .spl-file-input-label:not(.btn) { display: inline-flex; align-items: center; justify-content: center; padding: .375rem .75rem; border: 1px dashed var(--bs-border-color); border-radius: .375rem; cursor: pointer; background: var(--bs-body-bg); color: var(--bs-body-color); }
+#sidebar .spl-file-input-label:not(.btn) { display: inline-flex; align-items: center; justify-content: center; padding: .375rem .75rem; border: 1px dashed var(--panel-border-color); border-radius: .375rem; cursor: pointer; background: var(--panel-bg-color); color: var(--text-color); }
 
 /* Analysis metrics styles (moved to sidebar) */
-#sidebar .spl-metric-group { border: 1px solid var(--bs-border-color); border-radius: .375rem; padding: .5rem; background: var(--bs-body-bg); margin-bottom: .75rem; }
+#sidebar .spl-metric-group { border: 1px solid var(--panel-border-color); border-radius: .375rem; padding: .5rem; background: var(--panel-bg-color); margin-bottom: .75rem; }
 #sidebar .spl-metric { display: flex; justify-content: space-between; padding: .125rem 0; font-size: .8rem; }
 #sidebar .spl-curve-item { display: flex; align-items: center; gap: .5rem; padding: .25rem 0; font-size: .8rem; }
 #sidebar .spl-curve-color { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }

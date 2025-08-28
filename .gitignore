@@ -1,7 +1,7 @@
 # Huge folders not needed to deploy at qualia-nss.com
-docs/
-modules/
-dev/
+# docs/
+# modules/
+# dev/
 
 # MacOS
 .DS_Store
