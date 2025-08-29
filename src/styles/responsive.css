@@ -1,0 +1,76 @@
+/**
+ * Responsive Styles - Media Queries and Mobile Adaptations
+ * Part of the Qualia-NSS modular CSS architecture
+ */
+
+/* Responsive navbar - hide text on narrow screens, keep icons only - NO STACKING */
+@media (max-width: 768px) {
+    .nav-center .navbar-nav {
+        gap: 0.25rem !important;
+    }
+    
+    .nav-center .navbar-nav .nav-link {
+        padding: 0.4rem 0.5rem !important;
+        margin: 0 !important;
+        min-width: 2.5rem !important;
+        justify-content: center !important;
+    }
+    
+    /* Remove margins from icons/emojis */
+    .nav-center .navbar-nav .nav-link i,
+    .nav-center .navbar-nav .nav-link span.me-2 {
+        margin-right: 0 !important;
+        margin-left: 0 !important;
+        font-size: 1.1rem !important;
+        color: inherit !important;
+    }
+    
+    /* Hide text labels completely - keep only icons/emojis */
+    .nav-center .navbar-nav .nav-link span:not(.me-2) {
+        display: none !important;
+    }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1920px) and (min-height: 1080px) {
+    #main-content {
+        overflow: auto;
+    }
+}
+
+/* Tablet and small desktop adjustments */
+@media (max-width: 1024px) {
+    .main-navbar {
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .logo {
+        font-size: 0.9rem;
+    }
+    
+    #sidebar {
+        flex: 0 0 240px;
+    }
+}
+
+/* Mobile specific adjustments */
+@media (max-width: 480px) {
+    .home-page #main-content.full-width {
+        padding: 1rem;
+    }
+    
+    .home-page #main-content.full-width h1 {
+        font-size: 2rem;
+    }
+    
+    .sidebar-section {
+        padding: 0.75rem;
+    }
+    
+    .filters-controls, 
+    .cabinets-controls, 
+    .tests-controls {
+        padding: 1rem;
+        margin: 0.5rem;
+    }
+}

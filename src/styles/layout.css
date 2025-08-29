@@ -1,0 +1,144 @@
+/**
+ * Layout Styles - Main Content Area, Sidebar, and Grid Layouts
+ * Part of the Qualia-NSS modular CSS architecture
+ */
+
+/* Main Content Area */
+#content-wrapper {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0; /* allow children to size without forcing overflow */
+    max-height: 100%; /* prevent growing beyond parent */
+    align-items: stretch; /* ensure sidebar matches main height */
+    overflow: hidden; /* ensure no overflow from content wrapper */
+}
+
+#sidebar {
+    flex: 0 0 280px;
+    background-color: var(--panel-bg-color); /* match panel background */
+    border-right: 1px solid var(--panel-border-color);
+    padding: 0;
+    overflow: hidden; /* Prevent sidebar itself from scrolling */
+    min-height: 0; /* participate in flex height without overflow */
+    display: flex;
+    flex-direction: column;
+}
+
+#sidebar::-webkit-scrollbar { /* Chrome/Safari */
+    width: 0;
+    height: 0;
+}
+/* No hover reveal: keep hidden at all times */
+
+/* Sidebar navigation styling */
+#sidebar .nav-item,
+#sidebar button,
+#sidebar .btn {
+    color: var(--neutral-text-color) !important;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+#sidebar .nav-item:hover,
+#sidebar button:hover,
+#sidebar .btn:hover {
+    color: var(--text-color) !important;
+}
+
+#sidebar .nav-item.active,
+#sidebar button.active,
+#sidebar .btn.active {
+    color: var(--accent-color) !important;
+    border-color: var(--accent-color);
+    font-weight: 600;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+    background-color: var(--accent-color);
+    color: white;
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--panel-border-color);
+}
+
+.sidebar-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.btn-close-sidebar {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.btn-close-sidebar:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Sidebar Sections */
+.sidebar-section {
+    padding: 1rem;
+    border-bottom: 1px solid var(--panel-border-color);
+}
+
+.sidebar-section:last-child {
+    border-bottom: none;
+}
+
+.sidebar-section h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-section h4 i {
+    color: var(--accent-color);
+}
+
+#main-content {
+    flex: 1 1 auto;
+    min-height: 0; /* avoid forcing parent to overflow */
+    max-height: 100%; /* prevent growing beyond parent */
+    display: flex; /* allow module root to fill height */
+    flex-direction: column;
+    padding: 1rem;
+    overflow: hidden; /* ensure no overflow from main content */
+}
+
+/* Removed large screen override - consistent behavior across all screen sizes */
+
+/* Home page specific styles */
+.home-page #main-content.full-width {
+    width: 100%;
+    max-width: none;
+    padding: 2rem;
+    text-align: center;
+}
+
+.home-page #main-content.full-width h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.home-page #main-content.full-width p {
+    font-size: 1.1rem;
+    color: var(--muted-text-color);
+}

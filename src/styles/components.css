@@ -1,0 +1,246 @@
+/**
+ * Components - Buttons, Forms, Controls, and Interactive Elements
+ * Part of the Qualia-NSS modular CSS architecture
+ */
+
+/* Control Groups */
+.control-group {
+    margin-bottom: 1rem;
+}
+
+.control-group:last-child {
+    margin-bottom: 0;
+}
+
+.control-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+    color: var(--muted-text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Sidebar Buttons */
+.btn-sidebar {
+    display: block;
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    margin-bottom: 0.3rem;
+    background: var(--panel-bg-color);
+    border: 1px solid var(--panel-border-color);
+    color: var(--neutral-text-color);
+    font-size: 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    display: flex;
+    align-items: center;
+}
+
+.btn-sidebar:hover {
+    border-color: #666;
+    background-color: rgba(106, 169, 255, 0.05);
+}
+
+.btn-sidebar.btn-primary {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+}
+
+.btn-sidebar.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.btn-sidebar.btn-outline-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+    background: transparent;
+}
+
+.btn-sidebar.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-sidebar:last-child {
+    margin-bottom: 0;
+}
+
+.btn-primary {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-hover-color);
+}
+
+.btn-secondary {
+    background-color: var(--panel-border-color);
+    border-color: var(--panel-border-color);
+    color: var(--text-color);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background-color: #444;
+}
+
+/* Custom Workflow Items */
+.workflow-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    position: relative;
+}
+
+.workflow-item:hover {
+    background-color: rgba(106, 169, 255, 0.1);
+}
+
+.workflow-item.completed .check-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.workflow-item.completed .item-text {
+    color: var(--text-color);
+}
+
+.workflow-item.current .project-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.workflow-item.current .item-text {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+/* Add connecting lines between items */
+.nav-center {
+    position: relative;
+}
+
+.workflow-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.5rem;
+    height: 1px;
+    background-color: var(--accent-color);
+    opacity: 0.3;
+}
+
+/* FFT Display */
+.fft-display {
+    display: flex;
+    align-items: end;
+    height: 40px;
+    gap: 2px;
+    padding: 4px;
+    background: var(--bg-color);
+    border-radius: 4px;
+    border: 1px solid var(--panel-border-color);
+}
+
+.fft-bar {
+    flex: 1;
+    background: linear-gradient(to top, var(--accent-color), var(--accent-hover-color));
+    min-height: 2px;
+    border-radius: 1px 1px 0 0;
+    animation: fft-pulse 2s ease-in-out infinite;
+}
+
+@keyframes fft-pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* Status Dots */
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Form Controls */
+.filters-controls, .cabinets-controls, .tests-controls {
+    background-color: var(--panel-bg-color);
+    border: 1px solid var(--panel-border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    max-width: 600px;
+    margin: 1rem auto;
+}
+
+.filters-controls .control-group,
+.cabinets-controls .control-group,
+.tests-controls .control-group {
+    margin-bottom: 1.5rem;
+}
+
+.filters-controls label,
+.cabinets-controls label,
+.tests-controls label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.filters-controls input[type="range"],
+.tests-controls input[type="range"] {
+    width: 100%;
+}
+
+.filters-controls select,
+.cabinets-controls select,
+.tests-controls select,
+.cabinets-controls input[type="number"] {
+    width: 100%;
+    padding: 0.5rem;
+    background-color: var(--bg-color);
+    border: 1px solid var(--panel-border-color);
+    color: var(--text-color);
+    border-radius: 4px;
+}

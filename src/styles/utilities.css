@@ -1,0 +1,58 @@
+/**
+ * Utilities - Scroll Effects, Helper Classes, and Utility Functions
+ * Part of the Qualia-NSS modular CSS architecture
+ */
+
+/* Global utility: permanently hide scrollbars while retaining scroll behavior */
+.scroll-hidden {
+    overflow: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+.scroll-hidden::-webkit-scrollbar { width: 0; height: 0; }
+
+/* Scroll Fade Effects */
+.scroll-fade-container {
+    position: relative;
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+    flex: 1; /* Fill available space in flex container */
+    min-height: 0; /* Allow shrinking below content size */
+    max-height: 100%; /* Prevent growing beyond container */
+}
+
+.scroll-fade-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+.scroll-fade-container::before,
+.scroll-fade-container::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    pointer-events: none;
+    height: 25px;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.scroll-fade-container::before {
+    top: 0;
+    background: linear-gradient(to bottom, var(--panel-bg-color) 0%, transparent 100%);
+}
+
+.scroll-fade-container::after {
+    bottom: 0;
+    background: linear-gradient(to top, var(--panel-bg-color) 0%, transparent 100%);
+}
+
+.scroll-fade-container.show-top-fade::before {
+    opacity: 1;
+}
+
+.scroll-fade-container.show-bottom-fade::after {
+    opacity: 1;
+}

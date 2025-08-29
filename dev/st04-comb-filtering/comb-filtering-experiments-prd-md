@@ -1,0 +1,69 @@
+# Comb-Filtering Experiments
+
+https://gemini.google.com/app/cb2997d8d54da144
+
+
+This document outlines a series of educational experiments to understand and visualize the comb-filtering effect using a web-based audio tool with a sound generator and analyzer. The core principle of these experiments is to compare a controlled, predictable digital signal with a real-world acoustic signal.
+
+***
+
+### 1. Creating the Comb-Filter Effect
+
+A comb-filtering effect is created by combining a sound with a slightly delayed copy of itself. This results in constructive and destructive interference, which appears as a series of evenly spaced peaks and notches in the frequency spectrum, resembling the teeth of a comb. 
+
+#### Web Audio API Configuration
+
+* **Dry Signal Path:** A sound source (e.g., an `OscillatorNode` for a sine wave or `AudioBufferSourceNode` for a file) is connected directly to the audio context's destination.
+* **Wet Signal Path:** The same sound source is connected to a `DelayNode` with a controlled delay time (e.g., 1-50 ms). The output of the `DelayNode` is then mixed with the dry signal.
+* **Visualization:** An `AnalyserNode` is used to visualize the resulting frequency spectrum of the final mixed signal.
+
+***
+
+### 2. The Relationship Between Delay and Distance
+
+The time delay used to create the comb-filter effect is directly related to the physical distance a sound would travel. A delay of 1 to 50 milliseconds is equivalent to a distance difference of approximately **0.34 to 17.15 meters**, based on the speed of sound in air ($~343\ m/s$ at room temperature). This demonstrates how small differences in path length can cause significant changes in the sound's frequency response.
+
+***
+
+### 3. Experimental Methods
+
+The following three experiments are designed to progressively train your perception and understanding of comb-filtering, moving from a controlled digital environment to a real-world acoustic analysis.
+
+#### Experiment 1: The Controlled Comb-Filter (Dry)
+
+**Goal:** To visualize and hear the ideal, predictable comb-filtering effect.
+
+**Procedure:**
+1.  Use the Web Audio API to create a comb-filter as described above.
+2.  Feed the sound generator with **white noise** to see the static peaks and notches on the spectrum analyzer.
+3.  Also, feed the sound generator with a **sine sweep** to see the tone "blink" or "flutter" as it passes through the fixed notches of the filter. 
+
+#### Experiment 2: The Acoustic Comb-Filter (Wet)
+
+**Goal:** To see and hear how comb-filtering occurs naturally in a real room.
+
+**Procedure:**
+1.  **Turn off the intentional comb-filtering** from the digital generator. The source signal should now be a clean, unfiltered sound (e.g., white noise or music).
+2.  Send this clean signal to a single loudspeaker.
+3.  Connect a second `AnalyserNode` to the **microphone input** to analyze the sound after it has traveled from the speaker to the microphone.
+4.  Move the microphone around the room. You will observe that the frequency spectrum changes, showing new peaks and notches caused by sound reflecting off surfaces like walls, floors, and furniture.
+
+#### Experiment 3: Analyzing Room Acoustics
+
+**Goal:** To infer both comb-filtering and reverberation by comparing the "dry" and "wet" signals simultaneously.
+
+**Procedure:**
+1.  Run a clean, unfiltered signal (e.g., white noise) to the speakers.
+2.  Use two `AnalyserNodes`: one connected to the **digital output** (the "dry" signal) and another connected to the **microphone input** (the "wet" signal).
+3.  The dry signal's spectrum should appear flat, serving as your **baseline**.
+4.  Compare this baseline to the wet signal's spectrum.
+
+**Analysis:**
+* **Comb-filtering** will appear as **sharp, distinct peaks and notches** caused by a few early, strong reflections.
+* **Reverberation** will manifest as a more **complex, jagged frequency response** and a general high-frequency roll-off, caused by a dense multitude of reflections.
+
+***
+
+### 4. Summary and Analysis
+
+By performing these experiments, you can directly compare a perfectly measured digital signal with the complex reality of sound in a physical space. This process bridges the gap between the objective measurements of a spectral analyzer and the subjective listening experience, training your ears to identify the acoustic phenomena that cause comb-filtering and reverberation.

@@ -1,0 +1,41 @@
+/**
+ * Module Content Styles - Common styles for all modules
+ * Part of the Qualia-NSS modular CSS architecture
+ */
+
+/* --- Module Content --- */
+.module-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+/* --- Spectrogram Module --- */
+#canvas-container {
+    position: relative;
+    flex-grow: 1;
+    min-height: 400px;
+    width: 100%;
+    overflow: hidden;
+}
+
+#spectrogram {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.axis-label {
+    position: absolute;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 3px 7px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    pointer-events: none;
+    z-index: 5;
+}

@@ -1,0 +1,90 @@
+/*
+ * CSS for the custom scroll-fading effect - WIREFRAME SPECIFICATION
+ * Status: ✅ IMPLEMENTED with enhancements in src/styles/utilities.css
+ * 
+ * This specification has been implemented and enhanced in the modular architecture:
+ * - Location: src/styles/utilities.css (lines 14-58)
+ * - Enhancements: CSS variable theming, flex layout integration, viewport constraints
+ * - Integration: Automatically loaded in index.html, initialized by module-loader.js
+ * 
+ * This file serves as the original specification reference.
+ */
+
+.scroll-fade-container {
+  /* Establish a positioning context for the pseudo-elements. */
+  position: relative;
+
+  /* Enable vertical scrolling if content overflows. */
+  overflow-y: auto;
+
+  /* --- Hide the scrollbar --- */
+  /* For Firefox */
+  scrollbar-width: none;
+  /* For Internet Explorer and Edge */
+  -ms-overflow-style: none;
+}
+
+/* For Chrome, Safari, and Opera */
+.scroll-fade-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* 
+ * Define the pseudo-elements for the top and bottom fades.
+ * They are hidden by default (opacity: 0).
+ */
+.scroll-fade-container::before,
+.scroll-fade-container::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  pointer-events: none; /* Allow clicks to pass through */
+  height: 25px; /* The height/intensity of the fade effect */
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* Style the top fade (::before) */
+.scroll-fade-container::before {
+  top: 0;
+  /* ORIGINAL: Hard-coded Bootstrap dark background */
+  background: linear-gradient(to bottom, rgba(33, 37, 41, 1) 0%, rgba(33, 37, 41, 0) 100%);
+  /* IMPLEMENTED VERSION uses: var(--panel-bg-color) for theme support */
+}
+
+/* Style the bottom fade (::after) */
+.scroll-fade-container::after {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(33, 37, 41, 1) 0%, rgba(33, 37, 41, 0) 100%);
+  /* IMPLEMENTED VERSION uses: var(--panel-bg-color) for theme support */
+}
+
+/* 
+ * Classes to be toggled by JavaScript to show the fades.
+ */
+.scroll-fade-container.show-top-fade::before {
+  opacity: 1;
+}
+
+.scroll-fade-container.show-bottom-fade::after {
+  opacity: 1;
+}
+
+/* 
+ * IMPLEMENTATION STATUS: ✅ COMPLETED with enhancements
+ * 
+ * Current Implementation Enhancements:
+ * 1. CSS Variable Theming: Uses var(--panel-bg-color) instead of hard-coded colors
+ * 2. Flex Layout Integration: Added flex: 1, min-height: 0, max-height: 100%
+ * 3. Viewport Constraints: Proper sizing within modular layout system
+ * 4. Browser Scrollbar Prevention: Integrated with body height: 100vh constraints
+ * 
+ * Integration Points:
+ * - CSS: src/styles/utilities.css (automatically loaded)
+ * - JS: src/js/ui-utils.js (initializeScrollFade function)
+ * - Usage: Automatically initialized by module-loader.js for sidebar accordions
+ * 
+ * Test Status: ✅ Working in spectrogram module with advanced accordion sidebar
+ */

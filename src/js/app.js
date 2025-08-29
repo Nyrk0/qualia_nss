@@ -5,6 +5,7 @@ window.loadSpeakersSpl = window.loadSpeakersSpl || function(){ document.addEvent
 window.loadFilters = window.loadFilters || function(){ document.addEventListener('DOMContentLoaded', () => window.loadFilters()); };
 window.loadCabinets = window.loadCabinets || function(){ document.addEventListener('DOMContentLoaded', () => window.loadCabinets()); };
 window.loadTests = window.loadTests || function(){ document.addEventListener('DOMContentLoaded', () => window.loadTests()); };
+window.loadSpectrogram = window.loadSpectrogram || function(){ document.addEventListener('DOMContentLoaded', () => window.loadSpectrogram()); };
 
 document.addEventListener('DOMContentLoaded', () => {
     const themeToggleButton = document.getElementById('theme-toggle');
@@ -38,6 +39,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Apply the theme when the page loads
     applySavedTheme();
+
+    // --- SCROLL FADE FUNCTIONALITY ---
+    function initializeScrollFade(containerSelector) {
+        const container = document.querySelector(containerSelector);
+
+        if (!container) {
+            console.error(`Scroll-fade container with selector "${containerSelector}" not found.`);
+            return;
+        }
+
+        const handleScroll = () => {
+            const scrollEndTolerance = 2;
+            const showTopFade = container.scrollTop > 0;
+            container.classList.toggle('show-top-fade', showTopFade);
+            const showBottomFade = container.scrollTop < (container.scrollHeight - container.clientHeight - scrollEndTolerance);
+            container.classList.toggle('show-bottom-fade', showBottomFade);
+        };
+
+        container.addEventListener('scroll', handleScroll);
+        window.addEventListener('resize', handleScroll);
+        handleScroll();
+    }
     
     // --- ACTIVE STATE MANAGEMENT ---
     window.setActiveNav = (activeElement) => {
@@ -79,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- WORKFLOW ITEM CLICK HANDLERS ---
     
     const workflowItems = document.querySelectorAll('.workflow-item');
-    workflowItems.forEach((item, index) => {
+    workflowItems.forEach((item) => {
         item.addEventListener('click', () => {
             console.log(`Clicked on workflow item: ${item.querySelector('.item-text').textContent}`);
             // Add navigation logic here
@@ -190,7 +213,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <button class="btn-primary">Start Test</button>
         <button class="btn-secondary">Stop Test</button>
     </div>
-</div>`
+</div>`,
+        'spectrogram': `<div id="canvas-container" style="flex-grow: 1; position: relative; height: 100%;"><canvas id="spectrogram"></canvas><button id="start-button" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; padding: 15px 25px; font-size: 1.2em; cursor: pointer;">Start Microphone</button><div id="x-axis-label" class="axis-label" style="display: none;">Frequency</div><div id="y-axis-label" class="axis-label" style="display: none;">Amplitude</div><div id="z-axis-label" class="axis-label" style="display: none;">Time</div><div id="legend-title" style="position: absolute; bottom: 72px; right: 20px; color: #ddd; font-size: 0.8em;">MusicLab Colormap</div><div id="color-map-legend" style="position: absolute; bottom: 20px; right: 20px; width: 150px; height: 20px; background: linear-gradient(to right, #2a5bff, #00b5ff, #00ff9b, #80ff00, #ffcc00, #ff6600, #ff0000); border: 1px solid #555;"></div><div id="legend-text" style="position: absolute; bottom: 45px; right: 20px; color: white; font-size: 0.8em; display: flex; justify-content: space-between; width: 150px;"><span>Min</span><span>Max</span></div></div>`
     };
 
     const sidebarHTML = {
@@ -351,6 +375,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             </div>
+        `,
+        'spectrogram': `
+            <div class="accordion scroll-fade-container" id="sidebarAccordion">
+                <div class="accordion-item"><h2 class="accordion-header" id="headingOne"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">Experiment Setup</button></h2><div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#sidebarAccordion"><div class="accordion-body"><div class="form-check"><input class="form-check-input" type="radio" name="experimentType" id="expControlled" checked><label class="form-check-label" for="expControlled">Controlled Comb-Filter</label></div><div class="form-check"><input class="form-check-input" type="radio" name="experimentType" id="expAcoustic"><label class="form-check-label" for="expAcoustic">Acoustic Comb-Filter</label></div><div class="form-check"><input class="form-check-input" type="radio" name="experimentType" id="expAnalysis"><label class="form-check-label" for="expAnalysis">Room Acoustics Analysis</label></div></div></div></div>
+                <div class="accordion-item"><h2 class="accordion-header" id="headingTwo"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">Signal Generator</button></h2><div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#sidebarAccordion"><div class="accordion-body"><label for="signalType" class="form-label">Signal Type</label><select class="form-select mb-3" id="signalType"><option value="whitenoise" selected>White Noise</option><option value="sinesweep">Sine Sweep</option></select><label for="digitalDelay" class="form-label">Digital Delay</label><div class="input-group"><input type="range" class="form-range" id="digitalDelay" min="0" max="50" step="0.1"><span class="input-group-text" id="digitalDelayValue">0 ms</span></div></div></div></div>
+                <div class="accordion-item"><h2 class="accordion-header" id="headingThree"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">Analysis Source</button></h2><div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#sidebarAccordion"><div class="accordion-body"><p class="form-label">Source:</p><div class="form-check"><input class="form-check-input" type="radio" name="analysisSource" id="sourceDigital" checked><label class="form-check-label" for="sourceDigital">Digital Output</label></div><div class="form-check mb-3"><input class="form-check-input" type="radio" name="analysisSource" id="sourceMic"><label class="form-check-label" for="sourceMic">Microphone Input</label></div><p class="form-label">Microphone DSP:</p><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="micEchoCancellation"><label class="form-check-label" for="micEchoCancellation">Echo Cancellation</label></div><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="micNoiseSuppression"><label class="form-check-label" for="micNoiseSuppression">Noise Suppression</label></div><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="micAutoGain"><label class="form-check-label" for="micAutoGain">Auto Gain Control</label></div></div></div></div>
+                <div class="accordion-item"><h2 class="accordion-header" id="headingFour"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">3D Viewport</button></h2><div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#sidebarAccordion"><div class="accordion-body"><label for="rotX" class="form-label">Rotate X</label><input type="range" class="form-range" id="rotX"><label for="rotY" class="form-label">Rotate Y</label><input type="range" class="form-range" id="rotY"><label for="rotZ" class="form-label">Rotate Z</label><input type="range" class="form-range" id="rotZ"><label for="zoom" class="form-label">Zoom</label><input type="range" class="form-range" id="zoom"></div></div></div>
+                <div class="accordion-item"><h2 class="accordion-header" id="headingFive"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">Calibration</button></h2><div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#sidebarAccordion"><div class="accordion-body"><label for="dbfsOffset" class="form-label">dBFS Offset</label><div class="input-group"><input type="number" class="form-control" id="dbfsOffset" value="0.0" step="0.1"><span class="input-group-text">dB</span></div></div></div></div>
+            </div>
         `
     };
 
@@ -361,7 +394,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 'speakers-spl': '.navbar-nav .nav-link:nth-child(1)',
                 'filters': '.navbar-nav .nav-link:nth-child(2)',
                 'cabinets': '.navbar-nav .nav-link:nth-child(3)',
-                'tests': '.navbar-nav .nav-link:nth-child(4)'
+                'tests': '.navbar-nav .nav-link:nth-child(4)',
+                'spectrogram': '.navbar-nav .nav-link:nth-child(5)'
             };
             const sel = map[moduleName];
             if (!sel) return;
@@ -399,6 +433,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Update sidebar content for this module
                 if (sidebarHTML[moduleName]) {
                     sidebar.innerHTML = sidebarHTML[moduleName];
+                    // Initialize scroll-fade effect for the new sidebar content
+                    initializeScrollFade('#sidebar');
                 }
             }
 
@@ -410,24 +446,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 mainContent.innerHTML = moduleHTML[moduleName];
                 
                 // Load and initialize module JavaScript
+                // Special case for spectrogram, which doesn't follow the convention
+                const scriptSrc = (moduleName === 'spectrogram')
+                    ? 'src/spectrogram/spectrogram.js'
+                    : `src/${moduleName}/index.js`;
+
                 const script = document.createElement('script');
-                script.src = `src/${moduleName}/index.js`;
+                script.src = scriptSrc;
                 script.onload = () => {
-                    // Resolve ModuleClass from moduleName, supporting kebab-case (e.g., speakers-spl -> SpeakersSplModule)
-                    const toPascal = (name) => name
-                        .split('-')
-                        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-                        .join('');
-                    const ModuleClass = window[`${toPascal(moduleName)}Module`];
-                    if (ModuleClass) {
-                        const instance = new ModuleClass();
-                        currentModule = { name: moduleName, instance };
-                        instance.init();
-                        // Remember last opened module
-                        try { localStorage.setItem('lastModule', moduleName); } catch(_) {}
-                        // Reflect active nav
-                        setNavActiveForModule(moduleName);
+                    // For conventional modules, instantiate their class
+                    if (moduleName !== 'spectrogram') {
+                        const toPascal = (name) => name
+                            .split('-')
+                            .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+                            .join('');
+                        const ModuleClass = window[`${toPascal(moduleName)}Module`];
+                        if (ModuleClass) {
+                            const instance = new ModuleClass();
+                            currentModule = { name: moduleName, instance };
+                            instance.init();
+                        } else {
+                            console.log(`Module class not found for ${moduleName}`);
+                        }
                     }
+                    // Remember last opened module
+                    try { localStorage.setItem('lastModule', moduleName); } catch(_) {}
+                    // Reflect active nav
+                    setNavActiveForModule(moduleName);
                 };
                 script.onerror = () => {
                     console.log(`Module script not found for ${moduleName}, continuing without JavaScript module`);
@@ -487,6 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.loadFilters = () => loadModule('filters');
     window.loadCabinets = () => loadModule('cabinets');
     window.loadTests = () => loadModule('tests');
+    window.loadSpectrogram = () => loadModule('spectrogram');
 
     console.log('App shell initialized.');
     console.log('You can test the sidebar with showSidebar() and hideSidebar() in the console.');
