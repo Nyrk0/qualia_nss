@@ -1,35 +1,23 @@
-<div class="module-content">
-    <h1>Tests Module</h1>
-    <p>Audio measurement and testing suite.</p>
-    
-    <div class="tests-controls">
-        <div class="control-group">
-            <label for="test-type">Test Type:</label>
-            <select id="test-type">
-                <option value="frequency">Frequency Response</option>
-                <option value="thd">THD+N Analysis</option>
-                <option value="impedance">Impedance Sweep</option>
-                <option value="phase">Phase Response</option>
-            </select>
-        </div>
-        
-        <div class="control-group">
-            <label for="test-signal">Test Signal:</label>
-            <select id="test-signal">
-                <option value="sine">Sine Wave</option>
-                <option value="chirp">Chirp</option>
-                <option value="white-noise">White Noise</option>
-                <option value="pink-noise">Pink Noise</option>
-            </select>
-        </div>
-        
-        <div class="control-group">
-            <label for="amplitude">Amplitude (dB):</label>
-            <input type="range" id="amplitude" min="-60" max="0" value="-20">
-            <span id="amp-display">-20 dB</span>
-        </div>
-        
-        <button class="btn-primary">Start Test</button>
-        <button class="btn-secondary">Stop Test</button>
+<div class="container">
+  <h1>7‑Band Level Meter</h1>
+  <div class="bands-section">
+    <div class="controls controls-row">
+      <select id="deviceSelect" aria-label="Input device">
+        <option value="">Select microphone...</option>
+      </select>
+      <button id="refreshDevices">Refresh</button>
+      <button id="startBtn">Start Microphone</button>
+      <button id="retryBtn" style="display:none;">Retry</button>
+      <label for="calOffset" class="cal-label" style="margin-left:8px;white-space:nowrap;">Cal (dBFS):</label>
+      <input id="calOffset" type="number" step="0.1" value="0" aria-label="Calibration offset in dBFS" style="width:48px;">
+      <button id="calReset" title="Reset calibration to 0 dB">Reset</button>
+      <button id="whiteNoiseBtn">Start White Noise</button>
+      <button id="stopNoiseBtn" style="display:none;">Stop Noise</button>
     </div>
+    <div id="errorBox" class="error-box" role="alert" style="display:none"></div>
+    <div id="bandsContainer" class="bands-container"></div>
+    <div class="tone-control-container" aria-label="Sine tone generator controls">
+      <tone-control id="toneControl" value="0.566" aria-label="Sine frequency control"></tone-control>
+    </div>
+  </div>
 </div>

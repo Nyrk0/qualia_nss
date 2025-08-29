@@ -80,6 +80,51 @@ body {
     justify-content: center;
 }
 
+.tone-slider {
+    width: 100%;
+    max-width: 100%;
+    accent-color: var(--tone-color, #808080);
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    padding-inline: 7px; /* inset track so 14px thumb doesn't bleed past ends */
+}
+
+/* WebKit/Blink track & thumb (minimalist track) */
+.tone-slider::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 999px;
+    background: linear-gradient(to right, transparent 0, transparent 7px, #26303b 7px, #26303b calc(100% - 7px), transparent calc(100% - 7px), transparent 100%);
+}
+.tone-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: -4px;
+    border-radius: 50%;
+    background: var(--tone-color, #808080);
+    border: 0;
+}
+
+/* Firefox track & thumb */
+.tone-slider::-moz-range-track {
+    height: 6px;
+    border-radius: 999px;
+    background: linear-gradient(to right, transparent 0, transparent 7px, #26303b 7px, #26303b calc(100% - 7px), transparent calc(100% - 7px), transparent 100%);
+}
+.tone-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--tone-color, #808080);
+    border: 0;
+}
+
+/* Button styles: icon button that tints SVG with currentColor */
+.btn.icon { padding: 6px 8px; line-height: 1; background: #2a2a2a; color: #e0e0e0; border: 1px solid #3a3a3a; border-radius: 6px; }
+.btn.icon svg { display: block; width: 16px; height: 16px; fill: currentColor; stroke: none; }
+.btn.icon.active { box-shadow: 0 0 0 2px rgba(255,255,255,0.08) inset; background: #2a3440; }
+
 #toneSlider {
     width: 100%;
     max-width: 100%;
@@ -87,6 +132,7 @@ body {
     -webkit-appearance: none;
     appearance: none;
     background: transparent; /* we'll style tracks */
+    padding-inline: 7px; /* legacy control: same inset for both edges */
 }
 
 

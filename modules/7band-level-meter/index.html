@@ -29,17 +29,12 @@
             <div id="bandsContainer" class="bands-container"></div>
             <!-- Generator controls: wide slider under bands 1–7, Hz + toggle under Total -->
             <div class="generator-grid" aria-label="Sine tone generator controls">
-                <div class="generator-slider-cell">
-                    <input id="toneSlider" type="range" min="0" max="1" step="0.001" value="0.566" aria-label="Sine frequency (Hz)">
-                </div>
-                <div class="generator-info-cell">
-                    <span id="toneFreq" class="band-value">1000 Hz</span>
-                    <button id="toneToggle" class="icon-button" title="Toggle tone">🔈</button>
-                </div>
+                <tone-control id="toneControl"></tone-control>
             </div>
         </div>
     </div>
     
+    <script type="module" src="/lib/components/tone-control/tone-control.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

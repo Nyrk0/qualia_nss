@@ -93,20 +93,22 @@ This layout is designed for sophisticated modules like the Spectrogram and Comb-
 **✅ IMPLEMENTATION DETAILS:**
 
 **Scroll-Fade Integration:**
-- **CSS**: `scroll-fade.css` → Implemented in `src/styles/utilities.css` with CSS variable theming
-- **JS**: `scroll-fade.js` → Implemented in `src/js/ui-utils.js` with global availability
-- **HTML**: `advanced_sidebar_structure.html` → Implemented in `src/js/sidebar-manager.js` with functional enhancements
+- **CSS**: `scroll-fade.css` → Implemented in `src/styles/utilities.css` with theme-adaptive gradients and subtle shadows
+- **JS**: `scroll-fade.js` → Implemented in `src/js/ui-utils.js` with fixed positioning system
+- **HTML**: `advanced_sidebar_structure.html` → Implemented in `src/js/sidebar-manager.js` with clean structure
 
 **Current Implementation Enhancements:**
-1. **Automatic Integration**: Module-loader automatically initializes scroll-fade for accordion containers
-2. **Browser Scrollbar Prevention**: Body constrained to `height: 100vh` with `overflow: hidden`
-3. **Theme-Aware**: Uses CSS variables instead of hard-coded colors for light/dark theme support
-4. **Functional Controls**: All form elements connected to actual spectrogram functionality
+1. **Fixed Fade System**: Monitors `#sidebar-canvas` scroll, applies effects to `#sidebar` for window-edge positioning
+2. **Theme Integration**: Complete accordion and form control theming with CSS variables
+3. **Immediate Detection**: Multiple timeout checks and MutationObserver for instant overflow detection
+4. **Browser Scrollbar Prevention**: Hidden scrollbars with proper accessibility
 5. **Professional Styling**: Enhanced visual hierarchy and responsive behavior
 
 **Testing Status:**
+- ✅ Fixed fade effects at sidebar window edges
+- ✅ Theme-consistent accordion and form controls
+- ✅ Immediate overflow detection on page load
 - ✅ Bootstrap accordion expand/collapse working
-- ✅ Scroll-fade effects active on content overflow  
 - ✅ No browser scrollbars (internal scrolling only)
 - ✅ All form controls functional and updating spectrogram in real-time
 - ✅ Responsive behavior across different screen sizes
@@ -118,10 +120,30 @@ This layout is designed for sophisticated modules like the Spectrogram and Comb-
 ### Component Breakdown:
 
 *   **Header:** A sticky top navbar containing the logo, main navigation links (Speakers, Filters, etc.), and a theme toggle.
-*   **Content Wrapper:** A flexbox container that fills the space between the header and footer. It is dynamically populated with:
+*   **Content Wrapper (`#content-wrapper`):** A flexbox container that fills the space between the header and footer. It is dynamically populated with:
     *   **Sidebar (`#sidebar`):** A left-hand panel (280px width) that holds the primary controls for the currently active module. Its content is injected dynamically. For advanced modules, it should be structured with collapsible sections.
+        *   **Sidebar Canvas (`#sidebar-canvas`):** The scrollable viewport container (with scroll-fade effects)
+        *   **Sidebar Content (`#sidebar-content`):** The actual content container (accordion, controls, etc.)
     *   **Main Content (`#main-content`):** The primary view area where the module's main interface (e.g., charts, visualizations) is rendered.
 *   **Footer:** A minimal, single-line footer for copyright information.
+
+### Container Hierarchy for Complex Sidebar:
+
+**Container Hierarchy Created:**
+```
+#content-wrapper (flexbox container)
+├── #sidebar (280px fixed, scroll-fade-container, overflow: hidden)
+│   └── #sidebar-canvas (scrollable viewport)
+│       └── #sidebar-content (actual content)
+│           └── .accordion#sidebarAccordion (Bootstrap accordion)
+└── #main-content (flexible content area)
+```
+
+**Fade System Architecture:**
+- **Monitor**: `#sidebar-canvas` scroll position
+- **Apply**: Fade effects to `#sidebar` container
+- **Result**: Fixed fade overlays at sidebar window edges
+- **Behavior**: Independent of scrolling content, theme-adaptive
 
 ---
 

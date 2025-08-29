@@ -32,7 +32,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    z-index: 1;
+    z-index: 10;
     pointer-events: none;
     height: 25px;
     opacity: 0;
@@ -41,18 +41,25 @@
 
 .scroll-fade-container::before {
     top: 0;
-    background: linear-gradient(to bottom, var(--panel-bg-color) 0%, transparent 100%);
+    background: linear-gradient(to bottom, 
+        var(--panel-bg-color) 0%, 
+        var(--panel-bg-color) 20%, 
+        transparent 100%);
+    box-shadow: inset 0 -8px 8px -8px rgba(0, 0, 0, 0.1);
 }
 
 .scroll-fade-container::after {
     bottom: 0;
-    background: linear-gradient(to top, var(--panel-bg-color) 0%, transparent 100%);
+    background: linear-gradient(to top, 
+        var(--panel-bg-color) 0%, 
+        transparent 100%);
+    box-shadow: inset 0 8px 8px -8px rgba(0, 0, 0, 0.1);
 }
 
 .scroll-fade-container.show-top-fade::before {
-    opacity: 1;
+    opacity: 1 !important;
 }
 
 .scroll-fade-container.show-bottom-fade::after {
-    opacity: 1;
+    opacity: 1 !important;
 }

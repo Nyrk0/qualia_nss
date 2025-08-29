@@ -1,0 +1,35 @@
+<div class="module-content">
+    <h1>Tests Module</h1>
+    <p>Audio measurement and testing suite.</p>
+    
+    <div class="tests-controls">
+        <div class="control-group">
+            <label for="test-type">Test Type:</label>
+            <select id="test-type">
+                <option value="frequency">Frequency Response</option>
+                <option value="thd">THD+N Analysis</option>
+                <option value="impedance">Impedance Sweep</option>
+                <option value="phase">Phase Response</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label for="test-signal">Test Signal:</label>
+            <select id="test-signal">
+                <option value="sine">Sine Wave</option>
+                <option value="chirp">Chirp</option>
+                <option value="white-noise">White Noise</option>
+                <option value="pink-noise">Pink Noise</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label for="amplitude">Amplitude (dB):</label>
+            <input type="range" id="amplitude" min="-60" max="0" value="-20">
+            <span id="amp-display">-20 dB</span>
+        </div>
+        
+        <button class="btn-primary">Start Test</button>
+        <button class="btn-secondary">Stop Test</button>
+    </div>
+</div>

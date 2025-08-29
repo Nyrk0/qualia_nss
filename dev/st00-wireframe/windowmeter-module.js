@@ -63,33 +63,33 @@ class WindowMeter {
   _injectHTML() {
     const html = `
       <div id="windowmeter-container" class="sidebar-section">
-        <h4 style="font-size:0.8rem; margin-bottom:0.5rem;"><i class="bi bi-rulers me-1"></i>WindowMeter</h4>
-        <div id="windowmeter-table" style="font-size:0.7rem; font-family:monospace;">
-          <table style="width:100%; border-collapse:collapse;">
+        <h4 style="font-size:0.8rem; margin-bottom:0.5rem; color:var(--text-color);"><i class="bi bi-rulers me-1"></i>WindowMeter</h4>
+        <div id="windowmeter-table" style="font-size:0.7rem; font-family:monospace; color:var(--text-color);">
+          <table style="width:100%; border-collapse:collapse; background-color:var(--panel-bg-color);">
             <thead>
-              <tr style="border-bottom:1px solid var(--bs-border-color);">
-                <th style="text-align:left; padding:2px;">Element</th>
-                <th style="text-align:right; padding:2px;">W</th>
-                <th style="text-align:right; padding:2px;">H</th>
+              <tr style="border-bottom:1px solid var(--panel-border-color);">
+                <th style="text-align:left; padding:2px; color:var(--text-color);">Element</th>
+                <th style="text-align:right; padding:2px; color:var(--text-color);">W</th>
+                <th style="text-align:right; padding:2px; color:var(--text-color);">H</th>
               </tr>
             </thead>
             <tbody>
-              <tr><td>1. Canvas</td><td id="wm-canvas-w">-</td><td id="wm-canvas-h">-</td></tr>
-              <tr><td>2. Container</td><td id="wm-container-w">-</td><td id="wm-container-h">-</td></tr>
-              <tr><td>3. Section</td><td id="wm-section-w">-</td><td id="wm-section-h">-</td></tr>
-              <tr><td>4. Grid</td><td id="wm-grid-w">-</td><td id="wm-grid-h">-</td></tr>
-              <tr><td>5. Viewer</td><td id="wm-viewer-w">-</td><td id="wm-viewer-h">-</td></tr>
-              <tr><td>6. Module</td><td id="wm-module-w">-</td><td id="wm-module-h">-</td></tr>
-              <tr><td>7. Main</td><td id="wm-main-w">-</td><td id="wm-main-h">-</td></tr>
-              <tr><td>8. Wrapper</td><td id="wm-wrapper-w">-</td><td id="wm-wrapper-h">-</td></tr>
-              <tr><td>9. Window</td><td id="wm-window-w">-</td><td id="wm-window-h">-</td></tr>
-              <tr style="border-top:1px solid var(--bs-border-color);"><td><b>Chart.js</b></td><td id="wm-chart-w">-</td><td id="wm-chart-h">-</td></tr>
+              <tr style="color:var(--text-color);"><td>1. Canvas</td><td id="wm-canvas-w">-</td><td id="wm-canvas-h">-</td></tr>
+              <tr style="color:var(--text-color);"><td>2. Container</td><td id="wm-container-w">-</td><td id="wm-container-h">-</td></tr>
+              <tr style="color:var(--text-color);"><td>3. Section</td><td id="wm-section-w">-</td><td id="wm-section-h">-</td></tr>
+              <tr style="color:var(--text-color);"><td>4. Grid</td><td id="wm-grid-w">-</td><td id="wm-grid-h">-</td></tr>
+              <tr style="color:var(--text-color);"><td>5. Viewer</td><td id="wm-viewer-w">-</td><td id="wm-viewer-h">-</td></tr>
+              <tr style="color:var(--text-color);"><td>6. Module</td><td id="wm-module-w">-</td><td id="wm-module-h">-</td></tr>
+              <tr style="color:var(--text-color);"><td>7. Main</td><td id="wm-main-w">-</td><td id="wm-main-h">-</td></tr>
+              <tr style="color:var(--text-color);"><td>8. Wrapper</td><td id="wm-wrapper-w">-</td><td id="wm-wrapper-h">-</td></tr>
+              <tr style="color:var(--text-color);"><td>9. Window</td><td id="wm-window-w">-</td><td id="wm-window-h">-</td></tr>
+              <tr style="border-top:1px solid var(--panel-border-color); color:var(--text-color);"><td><b>Chart.js</b></td><td id="wm-chart-w">-</td><td id="wm-chart-h">-</td></tr>
             </tbody>
           </table>
-          <div style="margin-top:0.5rem; padding:0.25rem; background:var(--bs-secondary-bg); border-radius:0.25rem;">
+          <div style="margin-top:0.5rem; padding:0.25rem; background-color:var(--panel-bg-color); border:1px solid var(--panel-border-color); border-radius:0.25rem; color:var(--text-color);">
             <div>Status: <span id="wm-status">Ready</span></div>
             <div>Change: <span id="wm-change">-</span></div>
-            <button id="wm-snapshot-btn" style="margin-top:0.5rem; padding:0.25rem 0.5rem; background:var(--bs-primary); color:white; border:none; border-radius:0.25rem; font-size:0.7rem; width:100%; cursor:pointer;">
+            <button id="wm-snapshot-btn" style="margin-top:0.5rem; padding:0.25rem 0.5rem; background-color:var(--accent-color); color:white; border:none; border-radius:0.25rem; font-size:0.7rem; width:100%; cursor:pointer;">
               📸 Snapshot PNG
             </button>
           </div>

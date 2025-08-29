@@ -127,46 +127,26 @@ document.addEventListener('DOMContentLoaded', () => {
         `,
         tests: `
             <div class="sidebar-header">
-                <h3><i class="bi bi-clipboard-check me-2"></i>Test Control</h3>
+                <h3><i class="bi bi-clipboard-check me-2"></i>Tests</h3>
                 <button class="btn-close-sidebar" onclick="hideSidebar()">&times;</button>
             </div>
-            
             <div class="sidebar-section">
-                <h4><i class="bi bi-play-circle me-2"></i>Test Suite</h4>
+                <h4 class="mb-2" style="font-size:0.9rem;"><i class="bi bi-palette me-2"></i>Colormap</h4>
                 <div class="control-group">
-                    <label>Test Control</label>
-                    <button class="btn-sidebar btn-success"><i class="bi bi-play-fill me-1"></i>Run All Tests</button>
-                    <button class="btn-sidebar"><i class="bi bi-pause-fill me-1"></i>Pause</button>
-                    <button class="btn-sidebar btn-outline-danger"><i class="bi bi-stop-fill me-1"></i>Stop</button>
-                </div>
-                <div class="control-group">
-                    <label>Quick Tests</label>
-                    <button class="btn-sidebar"><i class="bi bi-graph-up me-1"></i>Frequency Sweep</button>
-                    <button class="btn-sidebar"><i class="bi bi-activity me-1"></i>THD Analysis</button>
-                </div>
-            </div>
-
-            <div class="sidebar-section">
-                <h4><i class="bi bi-signal me-2"></i>Signal Status</h4>
-                <div class="control-group">
-                    <label>Input/Output Levels</label>
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="status-dot bg-success"></div>
-                        <small>Input: -12dB</small>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="status-dot bg-warning"></div>
-                        <small>Output: -6dB</small>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="status-dot bg-info"></div>
-                        <small>SNR: 96dB</small>
-                    </div>
+                    <label for="colormapSelect" class="form-label" style="font-size:0.8rem;">7‑Band Level Meter</label>
+                    <select id="colormapSelect" class="form-select form-select-sm">
+                        <option value="band">7band-colormap QUALIA·NSS</option>
+                        <option value="turbo-google">Google’s Turbo</option>
+                    </select>
+                    <div id="colormapPreview" class="colormap-preview" aria-label="Colormap preview" style="margin-top:8px;"></div>
+                    <div class="form-text">Affects tone slider gradient and colors.</div>
                 </div>
             </div>
         `,
         'spectrogram': `
-            <div class="accordion scroll-fade-container" id="sidebarAccordion">
+            <div id="sidebar-canvas">
+                <div id="sidebar-content">
+                    <div class="accordion" id="sidebarAccordion">
                 <!-- 1. Experiment Setup -->
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingOne">
@@ -334,6 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                             <div class="form-text">Align displayed dBFS to calibrated mic level</div>
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>

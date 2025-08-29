@@ -3,13 +3,16 @@
  * Part of the Qualia-NSS modular CSS architecture
  */
 
+
 /* CSS Variables for Theming */
 :root {
     --bg-color: #121212;
     --text-color: #e0e0e0;
     --panel-bg-color: #1e1e1e;
+    --panel-bg-color-rgb: 30, 30, 30;
     --panel-border-color: #333;
     --accent-color: #0088ff; /* Electric blue */
+    --accent-color-rgb: 0, 136, 255;
     --accent-hover-color: #3399ff;
     --muted-text-color: #888;
     --neutral-text-color: #aaa;
@@ -19,6 +22,7 @@ body.light-theme {
     --bg-color: #f4f4f9;
     --text-color: #333333;
     --panel-bg-color: #ffffff;
+    --panel-bg-color-rgb: 255, 255, 255;
     --panel-border-color: #dddddd;
     --accent-color: #0088ff; /* Electric blue */
     --accent-hover-color: #3399ff;
@@ -27,7 +31,6 @@ body.light-theme {
 }
 
 /* Import Google Fonts for Qualia-NSS branding */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* General Styles */
 body {

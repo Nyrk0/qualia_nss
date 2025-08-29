@@ -712,13 +712,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateToneUI(freq) {
         // Update label text
-        if (toneFreqLabel) toneFreqLabel.textContent = `${Math.round(freq)} Hz`;
-        // Update slider accent color to reflect band color
+        const labelText = `${Math.round(freq)} Hz`;
+        // If using Web Component, let it own the color and label
+        const tc = document.getElementById('toneControl');
+        if (tc) {
+            try { tc.frequency = freq; } catch(_) {}
+            try { tc.label = labelText; } catch(_) {}
+            return;
+        }
+        if (toneFreqLabel) toneFreqLabel.textContent = labelText;
+        // Legacy path: Update slider accent color to reflect band color and tint the icon
+        const color = bandColorForFreq(freq);
         if (toneSlider) {
-            const color = bandColorForFreq(freq);
             toneSlider.style.setProperty('--tone-color', color);
         }
+        if (toneToggle) {
+            toneToggle.style.color = color; // inline SVG uses currentColor
+            renderToneIcon();
+        }
     }
+
+    function renderToneIcon() {
+        if (!toneToggle) return;
+        // Simple speaker icons (on/off) following currentColor
+        const onIcon = `
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <path d="M3 10v4h3l4 4V6L6 10H3z"></path>
+            <path d="M16.5 12a2.5 2.5 0 0 0-1.5-2.3v4.6c.9-.4 1.5-1.3 1.5-2.3z"></path>
+            <path d="M19 12c0 2.5-1.5 4.6-3.5 5.5v-11C17.5 6.4 19 9.5 19 12z"></path>
+          </svg>`;
+        const offIcon = `
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <path d="M3 10v4h3l4 4V6L6 10H3z"></path>
+          </svg>`;
+        toneToggle.innerHTML = toneOn ? onIcon : offIcon;
+        toneToggle.classList.toggle('active', !!toneOn);
+        toneToggle.setAttribute('aria-pressed', toneOn ? 'true' : 'false');
+      }
 
     function startTone() {
         if (toneOn) return;
@@ -740,7 +770,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Smooth ramp to target gain
         toneGain.gain.linearRampToValueAtTime(TONE_TARGET_GAIN, now + TONE_RAMP_UP_MS / 1000);
         toneOn = true;
-        if (toneToggle) toneToggle.textContent = '🔊';
+        renderToneIcon();
     }
 
     function stopTone() {
@@ -766,36 +796,56 @@ document.addEventListener('DOMContentLoaded', () => {
             toneGain = null;
         }, (TONE_RAMP_DOWN_MS + 10));
         toneOn = false;
-        if (toneToggle) toneToggle.textContent = '🔈';
+        renderToneIcon();
     }
 
-    if (toneSlider) {
-        // Initialize to EXACT 1000 Hz and set slider position accordingly
+    // Prefer Web Component if present; otherwise use legacy slider path
+    const toneControl = document.getElementById('toneControl');
+    if (toneControl) {
+        // Inject color mapping and initialize
+        try { toneControl.colorForFrequency = (hz) => bandColorForFreq(hz); } catch(_) {}
+        if (!toneFreqHz) toneFreqHz = 1000;
+        try { toneControl.frequency = toneFreqHz; } catch(_) {}
+        try { toneControl.label = `${Math.round(toneFreqHz)} Hz`; } catch(_) {}
+        try { toneControl.active = !!toneOn; } catch(_) {}
+
+        // Component-driven frequency changes
+        toneControl.addEventListener('frequencychange', (e) => {
+            let f = e.detail && typeof e.detail.frequency === 'number' ? e.detail.frequency : toneFreqHz;
+            const snapped = snapFrequency(f);
+            if (snapped !== f) {
+                f = snapped;
+                try { toneControl.frequency = f; } catch(_) {}
+            }
+            toneFreqHz = f;
+            if (toneOn && toneOsc) {
+                try { toneOsc.frequency.setTargetAtTime(toneFreqHz, ensureAudioContext().currentTime, 0.01); } catch(e) {}
+            }
+        });
+
+        // Component toggle -> start/stop tone
+        toneControl.addEventListener('toggle', (e) => {
+            const active = !!(e.detail && e.detail.active);
+            if (active && !toneOn) startTone();
+            else if (!active && toneOn) stopTone();
+        });
+    } else if (toneSlider) {
+        // Legacy slider path
         toneFreqHz = 1000;
         toneSlider.value = String(freqToSlider(toneFreqHz));
         updateToneUI(toneFreqHz);
+        if (toneToggle) renderToneIcon();
         toneSlider.addEventListener('input', () => {
             let f = sliderToFreq(toneSlider.value);
             const snapped = snapFrequency(f);
             if (snapped !== f) {
-                // update slider to exact snapped position to make it sticky
                 toneSlider.value = String(freqToSlider(snapped));
                 f = snapped;
             }
             toneFreqHz = f;
-            updateToneUI(toneFreqHz);
+            if (toneFreqLabel) toneFreqLabel.textContent = `${Math.round(f)} Hz`;
             if (toneOn && toneOsc) {
-                toneOsc.frequency.setTargetAtTime(toneFreqHz, audioContext ? audioContext.currentTime : 0, 0.01);
-            }
-        });
-    }
-
-    if (toneToggle) {
-        toneToggle.addEventListener('click', () => {
-            if (toneOn) {
-                stopTone();
-            } else {
-                startTone();
+                try { toneOsc.frequency.setTargetAtTime(toneFreqHz, ensureAudioContext().currentTime, 0.01); } catch(e) {}
             }
         });
     }
