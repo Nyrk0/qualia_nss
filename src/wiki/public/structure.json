@@ -4,25 +4,171 @@
     "path": "README"
   },
   {
-    "title": "API Documentation",
-    "path": "API_README"
+    "title": "Project Overview",
+    "path": "project/overview"
   },
   {
-    "title": "Architecture",
-    "path": "architecture",
+    "title": "Technology Stack & Dependencies",
+    "path": "technology-stack/dependencies"
+  },
+  {
+    "title": "Modular Architecture",
+    "path": "modular-architecture",
     "children": [
       {
-        "title": "Overview",
-        "path": "architecture/overview"
+        "title": "JavaScript Module Architecture",
+        "path": "modular-architecture/javascript-modules"
+      },
+      {
+        "title": "Routing and Navigation System",
+        "path": "modular-architecture/routing-navigation"
+      },
+      {
+        "title": "CSS Module Architecture",
+        "path": "modular-architecture/css-modules"
       }
     ]
   },
   {
-    "title": "Manual",
-    "path": "manual",
+    "title": "Audio Analysis Modules",
+    "path": "audio-analysis-modules",
     "children": [
       {
-        "title": "Development",
+        "title": "Spectrogram Module",
+        "path": "audio-analysis-modules/spectrogram"
+      },
+      {
+        "title": "7-Band Level Meter Module",
+        "path": "audio-analysis-modules/7band-level-meter"
+      },
+      {
+        "title": "Spectrum Analyzer Module",
+        "path": "audio-analysis-modules/spectrum-analyzer"
+      },
+      {
+        "title": "Comb Filtering Detection Module",
+        "path": "audio-analysis-modules/comb-filtering"
+      },
+      {
+        "title": "SPL Curve Analysis Module",
+        "path": "audio-analysis-modules/spl-analysis"
+      }
+    ]
+  },
+  {
+    "title": "UI Components",
+    "path": "ui-components",
+    "children": [
+      {
+        "title": "Tone Control Component",
+        "path": "ui-components/tone-control"
+      },
+      {
+        "title": "Theme System",
+        "path": "ui-components/theme-system"
+      },
+      {
+        "title": "Navigation Controls",
+        "path": "ui-components/navigation-controls"
+      },
+      {
+        "title": "Sidebar Management",
+        "path": "ui-components/sidebar-management"
+      }
+    ]
+  },
+  {
+    "title": "Audio Processing Pipeline",
+    "path": "audio-processing",
+    "children": [
+      {
+        "title": "Web Audio API Integration",
+        "path": "audio-processing/web-audio-api"
+      },
+      {
+        "title": "FFT Analysis",
+        "path": "audio-processing/fft-analysis"
+      },
+      {
+        "title": "DSP Controls",
+        "path": "audio-processing/dsp-controls"
+      },
+      {
+        "title": "Audio Source Management",
+        "path": "audio-processing/audio-sources"
+      }
+    ]
+  },
+  {
+    "title": "Development Guidelines",
+    "path": "development/guidelines"
+  },
+  {
+    "title": "Deployment & Production",
+    "path": "deployment/production"
+  },
+  {
+    "title": "API Reference",
+    "path": "api-reference",
+    "children": [
+      {
+        "title": "JavaScript API Reference",
+        "path": "api-reference/javascript-api",
+        "children": [
+          {
+            "title": "Module Loader API",
+            "path": "api-reference/javascript-api/module-loader"
+          },
+          {
+            "title": "Router Manager API",
+            "path": "api-reference/javascript-api/router-manager"
+          },
+          {
+            "title": "Navigation API",
+            "path": "api-reference/javascript-api/navigation"
+          },
+          {
+            "title": "App Core API",
+            "path": "api-reference/javascript-api/app-core"
+          },
+          {
+            "title": "Sidebar Manager API",
+            "path": "api-reference/javascript-api/sidebar-manager"
+          },
+          {
+            "title": "UI Utilities API",
+            "path": "api-reference/javascript-api/ui-utilities"
+          }
+        ]
+      },
+      {
+        "title": "CSS Custom Properties API",
+        "path": "api-reference/css-api"
+      },
+      {
+        "title": "Module Interface Contracts",
+        "path": "api-reference/module-contracts"
+      }
+    ]
+  },
+  {
+    "title": "Troubleshooting & FAQ",
+    "path": "troubleshooting/faq"
+  },
+  {
+    "title": "Legacy Documentation",
+    "path": "legacy",
+    "children": [
+      {
+        "title": "API Documentation",
+        "path": "API_README"
+      },
+      {
+        "title": "Architecture Overview",
+        "path": "architecture/overview"
+      },
+      {
+        "title": "Development Guide",
         "path": "manual/development"
       },
       {
