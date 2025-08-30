@@ -35,7 +35,14 @@ class WikiModule {
             
             // Load initial content
             const initialPath = this.getPathFromURL();
-            await this.navigateToPage(initialPath || 'README');
+            let targetPath = initialPath || 'README';
+            
+            // Handle special 'home' path
+            if (targetPath === 'home') {
+                targetPath = 'README';
+            }
+            
+            await this.navigateToPage(targetPath);
             
             console.log('Wiki module initialized successfully');
         } catch (error) {
@@ -227,6 +234,11 @@ class WikiModule {
     
     async navigateToPage(path) {
         try {
+            // Handle special paths
+            if (path === 'home') {
+                path = 'README';
+            }
+            
             this.currentPath = path;
             
             // Update active states
@@ -429,8 +441,8 @@ class WikiModule {
     }
     
     getPathFromURL() {
-        const path = window.location.pathname;
-        const wikiMatch = path.match(/\/wiki\/(.+)/);
+        const hash = window.location.hash;
+        const wikiMatch = hash.match(/#\/wiki\/(.+)/);
         return wikiMatch ? wikiMatch[1] : '';
     }
 }
