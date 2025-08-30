@@ -24,7 +24,27 @@ header {
 .nav-left, .nav-center, .nav-right {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+/* Style for the Wiki link in the nav-right */
+.nav-right .nav-link {
+    padding: 0.4rem 0.75rem;
+    margin: 0;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.nav-right .nav-link:hover {
+    background-color: var(--hover-bg);
+    text-decoration: none;
+}
+
+.nav-right .nav-link.active {
+    color: var(--accent-color) !important;
+    background-color: var(--active-bg);
 }
 
 .logo {

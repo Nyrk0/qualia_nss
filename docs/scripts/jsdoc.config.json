@@ -1,0 +1,44 @@
+{
+  "tags": {
+    "allowUnknownTags": true
+  },
+  "source": {
+    "include": ["../../src"],
+    "includePattern": "\\.(jsx|js|ts|tsx)$",
+    "excludePattern": "(node_modules/|docs/|test/|tests/|.github/)"
+  },
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "opts": {
+    "destination": "./wiki/api",
+    "recurse": true,
+    "readme": "../wiki/API_README.md",
+    "template": "node_modules/docdash",
+    "tutorials": "../tutorials"
+  },
+  "templates": {
+    "cleverLinks": true,
+    "monospaceLinks": true,
+    "default": {
+      "outputSourceFiles": true,
+      "includeDate": false,
+      "useLongnameInNav": true
+    },
+    "docdash": {
+      "static": true,
+      "sort": true,
+      "search": true,
+      "collapse": false,
+      "typedefs": true,
+      "removeQuotes": "none",
+      "menu": {
+        "Project Website": {
+          "href": "https://github.com/Nyrk0/qualia_nss",
+          "target": "_blank",
+          "class": "menu-item"
+        }
+      }
+    }
+  }
+}

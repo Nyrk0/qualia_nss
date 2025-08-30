@@ -1,0 +1,34 @@
+[
+  {
+    "title": "Home",
+    "path": "README"
+  },
+  {
+    "title": "API Documentation",
+    "path": "API_README"
+  },
+  {
+    "title": "Architecture",
+    "path": "architecture",
+    "children": [
+      {
+        "title": "Overview",
+        "path": "architecture/overview"
+      }
+    ]
+  },
+  {
+    "title": "Manual",
+    "path": "manual",
+    "children": [
+      {
+        "title": "Development",
+        "path": "manual/development"
+      },
+      {
+        "title": "Getting Started",
+        "path": "manual/getting-started"
+      }
+    ]
+  }
+]

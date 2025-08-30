@@ -73,14 +73,75 @@ document.addEventListener('DOMContentLoaded', () => {
         <button class="btn-primary">Calculate Response</button>
     </div>
 </div>`,
-        tests: `<div class="module-content">
+        '7band-levelmeter': `<div class="module-content">
     <div id="tests-root" class="tests-root"></div>
 </div>`,
-        'spectrogram': `<div id="canvas-container" style="flex-grow: 1; position: relative; height: 100%;"><canvas id="spectrogram"></canvas><button id="start-button" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; padding: 15px 25px; font-size: 1.2em; cursor: pointer;">Start Microphone</button><div id="x-axis-label" class="axis-label" style="display: none;">Frequency</div><div id="y-axis-label" class="axis-label" style="display: none;">Amplitude</div><div id="z-axis-label" class="axis-label" style="display: none;">Time</div><div id="legend-title" style="position: absolute; bottom: 72px; right: 20px; color: #ddd; font-size: 0.8em;">MusicLab Colormap</div><div id="color-map-legend" style="position: absolute; bottom: 20px; right: 20px; width: 150px; height: 20px; background: linear-gradient(to right, #2a5bff, #00b5ff, #00ff9b, #80ff00, #ffcc00, #ff6600, #ff0000); border: 1px solid #555;"></div><div id="legend-text" style="position: absolute; bottom: 45px; right: 20px; color: white; font-size: 0.8em; display: flex; justify-content: space-between; width: 150px;"><span>Min</span><span>Max</span></div></div>`
+        'wiki': `<div class="module-content">
+    <div id="wiki-root" class="wiki-root"></div>
+</div>`,
+        'spectrogram': `<!-- Load tone-control component first -->
+<script src="lib/components/tone-control/tone-control.js"></script>
+
+<div class="spectrogram-container" style="display: flex; flex-direction: column; height: 100%; width: 100%;">
+    <!-- Top: Tone Control -->
+    <div class="tone-control-container" style="padding: 12px 20px; background: rgba(30, 30, 30, 0.8); border-bottom: 1px solid var(--panel-border-color, #333); flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 0.9rem; color: var(--text-color, #ddd); min-width: 80px;">Test Tone:</span>
+            <tone-control id="spectrogramToneControl" aria-label="Spectrogram test tone frequency control" style="flex: 1;"></tone-control>
+        </div>
+    </div>
+    
+    <!-- Main: Canvas Container -->
+    <div id="canvas-container" style="flex: 1; position: relative; min-height: 400px; width: 100%;">
+        <canvas id="spectrogram" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+        <button id="start-button" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; padding: 15px 25px; font-size: 1.2em; cursor: pointer; background: rgba(0, 136, 255, 0.9); color: white; border: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);">Start Microphone</button>
+        
+        <!-- Axis labels -->
+        <div id="x-axis-label" class="axis-label" style="display: none;">Frequency</div>
+        <div id="y-axis-label" class="axis-label" style="display: none;">Amplitude</div>
+        <div id="z-axis-label" class="axis-label" style="display: none;">Time</div>
+        
+        <!-- MusicLab legend -->
+        <div id="legend-title" style="position: absolute; bottom: 72px; right: 20px; color: #ddd; font-size: 0.8em;">MusicLab Colormap</div>
+        <div id="color-map-legend" style="position: absolute; bottom: 20px; right: 20px; width: 150px; height: 20px; background: linear-gradient(to right, #2a5bff, #00b5ff, #00ff9b, #80ff00, #ffcc00, #ff6600, #ff0000); border: 1px solid #555;"></div>
+        <div id="legend-text" style="position: absolute; bottom: 45px; right: 20px; color: white; font-size: 0.8em; display: flex; justify-content: space-between; width: 150px;">
+            <span>Min</span><span>Max</span>
+        </div>
+    </div>
+</div>`,
+        wiki: `<div class="module-content">
+    <!-- Wiki module content will be dynamically generated -->
+    <div id="wiki-root"></div>
+</div>`
     };
 
     // Make module templates globally available
     window.moduleHTML = moduleHTML;
+
+    // --- SPECTROGRAM SCRIPT LOADING HELPER ---
+    const loadSpectrogramScript = () => {
+        const script = document.createElement('script');
+        script.src = 'src/spectrogram/spectrogram.js';
+        script.onload = () => {
+            if (window.initializeSpectrogram) {
+                window.initializeSpectrogram();
+                currentModule = { name: 'spectrogram', instance: null };
+                window.currentModule = currentModule;
+            } else {
+                console.log('initializeSpectrogram function not found');
+            }
+            // Remember last opened module
+            try { localStorage.setItem('lastModule', 'spectrogram'); } catch(_) {}
+            // Reflect active nav
+            if (window.setNavActiveForModule) {
+                window.setNavActiveForModule('spectrogram');
+            }
+        };
+        script.onerror = () => {
+            console.log('Spectrogram script not found');
+        };
+        document.head.appendChild(script);
+    };
 
     // --- MODULE LOADING LOGIC ---
     let currentModule = null;
@@ -91,6 +152,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Redirect legacy module name to new module
             if (moduleName === 'speakers') {
                 moduleName = 'speakers-spl';
+            }
+            // Redirect legacy name for level meter
+            if (moduleName === 'tests') {
+                moduleName = '7band-levelmeter';
             }
             
             // Destroy current module if exists
@@ -120,59 +185,113 @@ document.addEventListener('DOMContentLoaded', () => {
                 sidebar.className = '';
                 
                 // Update sidebar content for this module
+                console.log('Loading sidebar for module:', moduleName);
+                console.log('Available sidebars:', window.sidebarHTML ? Object.keys(window.sidebarHTML) : 'sidebarHTML not available');
                 if (window.sidebarHTML && window.sidebarHTML[moduleName]) {
+                    console.log('Found sidebar HTML for:', moduleName);
                     sidebar.innerHTML = window.sidebarHTML[moduleName];
-                    // Add scroll-fade-container class to main sidebar (for fixed fade positioning)
-                    sidebar.classList.add('scroll-fade-container');
-                    // Initialize scroll-fade effect monitoring the canvas but applying to sidebar
-                    if (window.initializeScrollFade) {
-                        window.initializeScrollFadeFixed('#sidebar-canvas', '#sidebar');
+                    
+                    // Only initialize scroll-fade for modules that have the sidebar-canvas structure
+                    const hasSidebarCanvas = sidebar.querySelector('#sidebar-canvas');
+                    if (hasSidebarCanvas) {
+                        // Add scroll-fade-container class to main sidebar (for fixed fade positioning)
+                        sidebar.classList.add('scroll-fade-container');
+                        // Initialize scroll-fade effect monitoring the canvas but applying to sidebar
+                        if (window.initializeScrollFade) {
+                            window.initializeScrollFadeFixed('#sidebar-canvas', '#sidebar');
+                        }
                     }
                 } else {
+                    console.log('No sidebar HTML found for:', moduleName);
                     sidebar.innerHTML = ''; // Clear sidebar for modules without one
                 }
             }
 
             // Update main content
             const mainContent = document.getElementById('main-content');
-            if (mainContent && moduleHTML[moduleName]) {
+            if (mainContent) {
                 // Remove full-width class if it exists
                 mainContent.classList.remove('full-width');
-                mainContent.innerHTML = moduleHTML[moduleName];
                 
-                // Load and initialize module JavaScript
-                // Special case for spectrogram, which doesn't follow the convention
-                const scriptSrc = (moduleName === 'spectrogram')
-                    ? 'src/spectrogram/spectrogram.js'
-                    : `src/${moduleName}/index.js`;
+                // Special case for spectrogram - hybrid loading strategy
+                if (moduleName === 'spectrogram') {
+                    const loadingStrategy = window.router ? window.router.getLoadingStrategy() : 'inline';
+                    console.log('Spectrogram loading strategy:', loadingStrategy);
+                    
+                    if (loadingStrategy === 'fetch') {
+                        // HTTP context - use fragment loading
+                        const fragmentUrl = window.router.createFetchUrl('spectrogram/index.html', 'module');
+                        
+                        fetch(fragmentUrl)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                                }
+                                return response.text();
+                            })
+                            .then(html => {
+                                // Process HTML to fix script paths using router
+                                const processedHtml = window.router.processHtmlPaths(html, 'module');
+                                mainContent.innerHTML = processedHtml;
+                                loadSpectrogramScript();
+                            })
+                            .catch(error => {
+                                console.error('Failed to load spectrogram HTML fragment:', error);
+                                console.error('Attempted URL:', fragmentUrl);
+                                console.log('Falling back to inline template...');
+                                // Fallback to inline template on fetch failure
+                                mainContent.innerHTML = moduleHTML[moduleName];
+                                loadSpectrogramScript();
+                            });
+                    } else {
+                        // File context - use inline template
+                        console.log('Using inline template for file:// context');
+                        mainContent.innerHTML = moduleHTML[moduleName];
+                        loadSpectrogramScript();
+                    }
+                    return; // Exit early for spectrogram
+                } else if (moduleHTML[moduleName]) {
+                    mainContent.innerHTML = moduleHTML[moduleName];
+                } else {
+                    console.log(`No HTML template found for ${moduleName}`);
+                    mainContent.innerHTML = `<div class="alert alert-warning">Module ${moduleName} template not found</div>`;
+                    return;
+                }
+                
+                // Load and initialize module JavaScript (non-spectrogram modules)
+                const scriptSrc = (function(){
+                    if (moduleName === '7band-levelmeter') return 'src/7band-levelmeter/7band-level-meter.js';
+                    return `src/${moduleName}/index.js`;
+                })();
 
                 const script = document.createElement('script');
                 script.src = scriptSrc;
                 script.onload = () => {
-                    if (moduleName === 'spectrogram') {
-                        // Special handling for spectrogram module
-                        if (window.initializeSpectrogram) {
-                            window.initializeSpectrogram();
-                            currentModule = { name: moduleName, instance: null };
-                            window.currentModule = currentModule;
-                        } else {
-                            console.log('initializeSpectrogram function not found');
-                        }
+                    // For conventional modules, instantiate their class
+                    const toPascal = (name) => name
+                        .split('-')
+                        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+                        .join('');
+                    const expectedClassName = `${toPascal(moduleName)}Module`;
+                    console.log('Looking for module class:', expectedClassName);
+                    let ModuleClass = window[expectedClassName];
+                    console.log('Found class:', ModuleClass);
+                    
+                    // Backward compatibility for legacy export name
+                    if (!ModuleClass && moduleName === '7band-levelmeter') {
+                        console.log('Trying fallback classes for 7band-levelmeter');
+                        console.log('window.TestsModule:', window.TestsModule);
+                        console.log('window.SevenBandLevelmeterModule:', window.SevenBandLevelmeterModule);
+                        ModuleClass = window.TestsModule || window.SevenBandLevelmeterModule;
+                        console.log('Fallback class found:', ModuleClass);
+                    }
+                    if (ModuleClass) {
+                        const instance = new ModuleClass();
+                        currentModule = { name: moduleName, instance };
+                        window.currentModule = currentModule;
+                        instance.init();
                     } else {
-                        // For conventional modules, instantiate their class
-                        const toPascal = (name) => name
-                            .split('-')
-                            .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-                            .join('');
-                        const ModuleClass = window[`${toPascal(moduleName)}Module`];
-                        if (ModuleClass) {
-                            const instance = new ModuleClass();
-                            currentModule = { name: moduleName, instance };
-                            window.currentModule = currentModule;
-                            instance.init();
-                        } else {
-                            console.log(`Module class not found for ${moduleName}`);
-                        }
+                        console.log(`Module class not found for ${moduleName}`);
                     }
                     // Remember last opened module
                     try { localStorage.setItem('lastModule', moduleName); } catch(_) {}

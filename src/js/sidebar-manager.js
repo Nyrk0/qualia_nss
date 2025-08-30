@@ -7,6 +7,61 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- SIDEBAR HTML TEMPLATES ---
     const sidebarHTML = {
+        'wiki': `
+            <div class="sidebar-header">
+                <h3><i class="bi bi-book me-2"></i>Wiki</h3>
+                <button class="btn-close-sidebar" onclick="hideSidebar()">&times;</button>
+            </div>
+            <div id="wiki-sidebar-content" class="p-3">
+                <div class="wiki-search mb-3">
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-sm" placeholder="Search wiki...">
+                        <button class="btn btn-outline-secondary btn-sm" type="button">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="wiki-navigation">
+                    <div class="list-group list-group-flush">
+                        <a href="#/wiki/home" class="list-group-item list-group-item-action">
+                            <i class="bi bi-house-door me-2"></i>Home
+                        </a>
+                        <a href="#/wiki/quick-start" class="list-group-item list-group-item-action">
+                            <i class="bi bi-lightning me-2"></i>Quick Start
+                        </a>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#wikiUserGuide">
+                                <span><i class="bi bi-book me-2"></i>User Guide</span>
+                                <i class="bi bi-chevron-down"></i>
+                            </div>
+                            <div class="collapse mt-2" id="wikiUserGuide">
+                                <div class="list-group list-group-flush">
+                                    <a href="#/wiki/user-guide/getting-started" class="list-group-item list-group-item-action ps-4">Getting Started</a>
+                                    <a href="#/wiki/user-guide/features" class="list-group-item list-group-item-action ps-4">Features</a>
+                                    <a href="#/wiki/user-guide/troubleshooting" class="list-group-item list-group-item-action ps-4">Troubleshooting</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#wikiApiDocs">
+                                <span><i class="bi bi-code-square me-2"></i>API Reference</span>
+                                <i class="bi bi-chevron-down"></i>
+                            </div>
+                            <div class="collapse mt-2" id="wikiApiDocs">
+                                <div class="list-group list-group-flush">
+                                    <a href="#/wiki/api/overview" class="list-group-item list-group-item-action ps-4">Overview</a>
+                                    <a href="#/wiki/api/endpoints" class="list-group-item list-group-item-action ps-4">Endpoints</a>
+                                    <a href="#/wiki/api/examples" class="list-group-item list-group-item-action ps-4">Examples</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="wiki-footer mt-3 pt-3 border-top">
+                    <small class="text-muted">Last updated: ${new Date().toLocaleDateString()}</small>
+                </div>
+            </div>
+        `,
         'speakers-spl': `
             <div class="sidebar-section">
                 <div class="control-group" style="display:flex; flex-direction:column; gap:.5rem;">
@@ -125,9 +180,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `,
-        tests: `
+        '7band-levelmeter': `
             <div class="sidebar-header">
-                <h3><i class="bi bi-clipboard-check me-2"></i>Tests</h3>
+                <h3><i class="bi bi-clipboard-check me-2"></i>7bandmeter</h3>
                 <button class="btn-close-sidebar" onclick="hideSidebar()">&times;</button>
             </div>
             <div class="sidebar-section">

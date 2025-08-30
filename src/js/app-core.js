@@ -9,8 +9,18 @@ window.setActiveNav = window.setActiveNav || function(){ /* no-op until initiali
 window.loadSpeakersSpl = window.loadSpeakersSpl || function(){ document.addEventListener('DOMContentLoaded', () => window.loadSpeakersSpl()); };
 window.loadFilters = window.loadFilters || function(){ document.addEventListener('DOMContentLoaded', () => window.loadFilters()); };
 window.loadCabinets = window.loadCabinets || function(){ document.addEventListener('DOMContentLoaded', () => window.loadCabinets()); };
-window.loadTests = window.loadTests || function(){ document.addEventListener('DOMContentLoaded', () => window.loadTests()); };
+window.load7bandLevelmeter = window.load7bandLevelmeter || function(){ document.addEventListener('DOMContentLoaded', () => window.load7bandLevelmeter()); };
+// Back-compat alias
+window.loadTests = window.loadTests || function(){ document.addEventListener('DOMContentLoaded', () => window.load7bandLevelmeter()); };
 window.loadSpectrogram = window.loadSpectrogram || function(){ document.addEventListener('DOMContentLoaded', () => window.loadSpectrogram()); };
+window.loadWiki = window.loadWiki || function(){ 
+    console.log('Wiki stub called - waiting for navigation.js to load');
+    if (window.loadModule && window.moduleHTML && window.moduleHTML.wiki) {
+        window.loadModule('wiki');
+    } else {
+        setTimeout(() => window.loadWiki(), 100);
+    }
+};
 
 // Main application initialization
 document.addEventListener('DOMContentLoaded', () => {

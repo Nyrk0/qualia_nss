@@ -15,9 +15,12 @@
     <link rel="stylesheet" href="src/styles/responsive.css">
     <link rel="stylesheet" href="src/styles/modules/module-content.css">
     <link rel="stylesheet" href="src/styles/modules/speakers-spl.css">
+    <link rel="stylesheet" href="src/styles/modules/wiki.css">
     <!-- Global dependencies for modules -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <script src="lib/upload-service.js"></script>
+    <!-- Tone control component -->
+    <script src="lib/components/tone-control/tone-control.js"></script>
     <!-- Debug tool -->
     <script src="dev/st00-wireframe/windowmeter-module.js"></script>
 </head>
@@ -47,9 +50,9 @@
                             <i class="bi bi-box me-2"></i>
                             <span>Cabinets</span>
                         </a>
-                        <a class="nav-link d-flex align-items-center" href="#" onclick="loadTests(); setActiveNav(this); return false;">
+                        <a class="nav-link d-flex align-items-center" href="#" onclick="load7bandLevelmeter(); setActiveNav(this); return false;">
                             <i class="bi bi-clipboard-check me-2"></i>
-                            <span>Tests</span>
+                            <span>7bandmeter</span>
                         </a>
                         <a class="nav-link d-flex align-items-center" href="#" onclick="loadSpectrogram(); setActiveNav(this); return false;">
                             <i class="bi bi-reception-4 me-2"></i>
@@ -59,6 +62,10 @@
                 </nav>
             </div>
             <div class="nav-right">
+                <a class="nav-link d-flex align-items-center me-3" href="#" onclick="loadWiki(); setActiveNav(this); return false;">
+                    <i class="bi bi-book me-1"></i>
+                    <span>Wiki</span>
+                </a>
                 <button id="theme-toggle" class="theme-toggle-btn" title="Toggle theme">
                     <i class="bi bi-lightbulb"></i>
                 </button>
@@ -82,6 +89,7 @@
     <script src="src/js/app-core.js"></script>
     <script src="src/js/ui-utils.js"></script>
     <script src="src/js/sidebar-manager.js"></script>
+    <script src="src/js/router-manager.js"></script>
     <script src="src/js/module-loader.js"></script>
     <script src="src/js/navigation.js"></script>
 </body>

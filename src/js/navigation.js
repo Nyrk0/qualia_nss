@@ -31,8 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 'speakers-spl': '.navbar-nav .nav-link:nth-child(1)',
                 'filters': '.navbar-nav .nav-link:nth-child(2)',
                 'cabinets': '.navbar-nav .nav-link:nth-child(3)',
-                'tests': '.navbar-nav .nav-link:nth-child(4)',
-                'spectrogram': '.navbar-nav .nav-link:nth-child(5)'
+                '7band-levelmeter': '.navbar-nav .nav-link:nth-child(4)',
+                'spectrogram': '.navbar-nav .nav-link:nth-child(5)',
+                'wiki': '.nav-right .nav-link[onclick*="loadWiki"]'
             };
             const sel = map[moduleName];
             if (!sel) return;
@@ -87,8 +88,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.loadSpeakersSpl = () => window.loadModule('speakers-spl');
     window.loadFilters = () => window.loadModule('filters');
     window.loadCabinets = () => window.loadModule('cabinets');
-    window.loadTests = () => window.loadModule('tests');
+    window.load7bandLevelmeter = () => window.loadModule('7band-levelmeter');
+    // Back-compat alias
+    window.loadTests = () => window.loadModule('7band-levelmeter');
     window.loadSpectrogram = () => window.loadModule('spectrogram');
+    window.loadWiki = () => window.loadModule('wiki');
 
     // Auto-restore last opened module if available
     try {

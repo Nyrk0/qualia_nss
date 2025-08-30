@@ -9,6 +9,12 @@
     --accent-hover-color: #3399ff;
     --muted-text-color: #888;
     --neutral-text-color: #aaa;
+    /* Bootstrap variable mapping to theme */
+    --bs-body-bg: var(--bg-color);
+    --bs-body-color: var(--text-color);
+    --bs-secondary-color: var(--muted-text-color);
+    --bs-border-color: var(--panel-border-color);
+    --bs-link-color: var(--accent-color);
 }
 
 body.light-theme {
@@ -20,6 +26,12 @@ body.light-theme {
     --accent-hover-color: #3399ff;
     --muted-text-color: #666;
     --neutral-text-color: #777;
+    /* Bootstrap variable mapping to theme */
+    --bs-body-bg: var(--bg-color);
+    --bs-body-color: var(--text-color);
+    --bs-secondary-color: var(--muted-text-color);
+    --bs-border-color: var(--panel-border-color);
+    --bs-link-color: var(--accent-color);
 }
 
 /* Import Google Fonts for Qualia-NSS branding */

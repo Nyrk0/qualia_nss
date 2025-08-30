@@ -1,8 +1,5 @@
-// Import the fixed tone-control component
-import { ToneControl } from '../modules/tone-control.js';
-
 (function(){
-  class TestsModule {
+  class SevenBandLevelmeterModule {
     constructor(){
       this.root = null;
       this._handlers = [];
@@ -174,6 +171,11 @@ import { ToneControl } from '../modules/tone-control.js';
       const onBeforeUnload = ()=>{ this.destroy(); };
       window.addEventListener('beforeunload', onBeforeUnload);
       this._disposers.push(()=> window.removeEventListener('beforeunload', onBeforeUnload));
+      
+      // Ensure colormap preview is updated after sidebar loads
+      setTimeout(() => {
+        this._updateColormapPreview();
+      }, 500);
     }
 
     destroy(){
@@ -192,15 +194,17 @@ import { ToneControl } from '../modules/tone-control.js';
     _ensureStyles(){
       if (document.getElementById('tests-styles')) return;
       const link = document.createElement('link');
-      link.id = 'tests-styles'; link.rel='stylesheet'; link.href='src/tests/styles.css';
+      link.id = 'tests-styles'; link.rel='stylesheet'; link.href='src/7band-levelmeter/styles.css';
       document.head.appendChild(link);
     }
 
     _inlineFragment(){
       // The module template already inserted a root. We return the inner fragment for the meter UI.
-      // We reuse the same markup as src/tests/index.html
-      return fetch('src/tests/index.html').then(r=>r.text()).catch(()=>{
-        return `<div class="container">
+      // We reuse the same markup as src/7band-levelmeter/index.html
+      console.log('Attempting to fetch HTML fragment...');
+      return fetch('src/7band-levelmeter/index.html').then(r=>r.text()).catch((error)=>{
+        console.log('Fetch failed, using inline HTML fallback:', error.message);
+        return Promise.resolve(`<div class="container">
   <h1>7‑Band Level Meter</h1>
   <div class="bands-section">
     <div class="controls controls-row">
@@ -222,7 +226,10 @@ import { ToneControl } from '../modules/tone-control.js';
       <tone-control id="toneControl" value="0.566" aria-label="Sine frequency control"></tone-control>
     </div>
   </div>
-</div>`;
+</div>`);
+      }).then((html) => {
+        console.log('HTML fragment resolved, length:', html.length);
+        return html;
       });
     }
 
@@ -393,9 +400,14 @@ import { ToneControl } from '../modules/tone-control.js';
     }
     _updateColormapPreview(){
       const preview = document.getElementById('colormapPreview');
-      if (!preview) return;
+      if (!preview) {
+        // Colormap preview element not found, retry shortly
+        setTimeout(() => this._updateColormapPreview(), 300);
+        return;
+      }
       const stops = this._buildGradientStops(96); // very smooth preview
       preview.style.backgroundImage = `linear-gradient(to right, ${stops.join(', ')})`;
+      console.log('Colormap preview updated:', preview.style.backgroundImage.slice(0, 100) + '...');
     }
     _buildGradientStops(count=32){
       // Build a visually consistent preview across the full 20 Hz–20 kHz span
@@ -511,45 +523,21 @@ import { ToneControl } from '../modules/tone-control.js';
       return arr;
     }
     _updateSliderGradient(){
-      if (!this.els.toneSlider) return;
-      const stops = this._generateOneThirdOctaveStops();
-      const gradient = `linear-gradient(to right, ${stops.join(', ')})`;
-      // Apply via CSS var consumed by track pseudos to avoid UA repaint flashes
-      const el = this.els.toneSlider;
-      el.style.setProperty('--tone-gradient', gradient);
-      // Ensure the track's solid fallback matches the rightmost color
-      const endColor = this._colorForFreq(20000);
-      el.style.setProperty('--tone-end', endColor);
-      // Fallback background for engines ignoring the var on track
-      el.style.background = gradient;
-      el.style.willChange = 'background-image';
+      // Component handles its own gradient updates - no longer needed
+      return;
     }
     _bandColorForFreq(freq){ return this._colorForFreq(freq); }
     _updateToneUI(freq){
-      if (this.els.toneFreqLabel) this.els.toneFreqLabel.textContent = `${Math.round(freq)} Hz`;
-      if (this.els.toneSlider){
-        const color=this._colorForFreq(freq);
-        this.els.toneSlider.style.setProperty('--tone-color', color);
-        if (this.els.toneToggle){
-          this.els.toneToggle.style.color = color;
-          this._renderToneIcon();
-        }
+      if (this.els.toneControl){
+        // Update frequency and let the component handle color updates via colorForFrequency
+        this.els.toneControl.frequency = freq;
       }
     }
     _renderToneIcon(){
-      if (!this.els.toneToggle) return;
-      // Inline SVG that follows currentColor so it can be tinted
-      const onIcon = `
-        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-          <path fill="currentColor" d="M3 10v4h4l5 4V6L7 10H3z"/>
-          <path fill="currentColor" d="M16.5 8.5a1 1 0 0 1 1.4 1.4 3.5 3.5 0 0 0 0 4.9 1 1 0 1 1-1.4 1.4 5.5 5.5 0 0 1 0-7.7z"/>
-          <path fill="currentColor" d="M19 6a1 1 0 0 1 1.4 1.4 7.5 7.5 0 0 0 0 10.6A1 1 0 1 1 19 19 9.5 9.5 0 0 1 19 6z"/>
-        </svg>`;
-      const offIcon = `
-        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-          <path fill="currentColor" d="M3 10v4h4l5 4V6L7 10H3z"/>
-        </svg>`;
-      this.els.toneToggle.innerHTML = this.toneOn ? onIcon : offIcon;
+      // Component handles its own icon rendering
+      if (this.els.toneControl) {
+        this.els.toneControl.active = this.toneOn;
+      }
     }
     _startTone(){ if (this.toneOn) return; const ctx=this._ensureAudio(); if (ctx.state==='suspended'){ try{ ctx.resume(); }catch(_){} } const osc=ctx.createOscillator(); const gain=ctx.createGain(); osc.type='sine'; osc.frequency.value=this.toneFreqHz; const now=ctx.currentTime; gain.gain.cancelScheduledValues(now); gain.gain.setValueAtTime(0, now); osc.connect(gain); gain.connect(ctx.destination); osc.start(); gain.gain.linearRampToValueAtTime(0.03, now + 0.06); this.toneOn=true; this.toneOsc=osc; this.toneGain=gain; this._renderToneIcon(); }
     _stopTone(force){ if (!this.toneOn && !force) return; const ctx=this._ensureAudio(); const now=ctx.currentTime; if (this.toneGain){ try{ this.toneGain.gain.cancelScheduledValues(now); const current=this.toneGain.gain.value; this.toneGain.gain.setValueAtTime(current, now); this.toneGain.gain.linearRampToValueAtTime(0, now + 0.08); }catch(_){} } setTimeout(()=>{ try{ if (this.toneOsc) this.toneOsc.stop(); }catch(_){} try{ if (this.toneOsc) this.toneOsc.disconnect(); }catch(_){} try{ if (this.toneGain) this.toneGain.disconnect(); }catch(_){} this.toneOsc=null; this.toneGain=null; }, 100); this.toneOn=false; this._renderToneIcon(); }
@@ -560,5 +548,6 @@ import { ToneControl } from '../modules/tone-control.js';
     _snapFrequency(freq){ const TONE_MIN=20, TONE_MAX=20000; const targets=new Set([20,25,31.5,40,50,63,80]); for (let v=100; v<=10000; v+=100) targets.add(v); for (let v=11000; v<=20000; v+=1000) targets.add(v); let best=freq, bestDelta=Infinity; targets.forEach(t=>{ const tol=Math.max(0.5, 0.005*t); const d=Math.abs(freq-t); if (d<tol && d<bestDelta){ best=t; bestDelta=d; } }); return Math.max(TONE_MIN, Math.min(TONE_MAX, best)); }
   }
 
-  window.TestsModule = TestsModule;
+  window.SevenBandLevelmeterModule = SevenBandLevelmeterModule;
+  console.log('SevenBandLevelmeterModule exported to window:', window.SevenBandLevelmeterModule);
 })();

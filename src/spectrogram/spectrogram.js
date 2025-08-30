@@ -1091,6 +1091,72 @@ function initializeSpectrogram() {
     resizeCanvas(spectrogramAnalyserView.gl);
     spectrogramPlayer = new Player();
 
+    // --- Tone Control Integration ---
+    const toneControl = document.getElementById('spectrogramToneControl');
+    let toneOscillator = null;
+    let toneGainNode = null;
+    
+    if (toneControl) {
+        // Tone control uses its own independent colormap (Qualia 7band default)
+        // Spectrogram module colormap is separate and controlled by user selection
+        // The tone control colormap is built into the component itself
+        
+        // Handle frequency changes
+        toneControl.addEventListener('frequencychange', (e) => {
+            const freq = e.detail.frequency;
+            if (toneOscillator && spectrogramPlayer.context) {
+                toneOscillator.frequency.setTargetAtTime(freq, spectrogramPlayer.context.currentTime, 0.01);
+            }
+            console.log(`Tone frequency: ${Math.round(freq)} Hz`);
+        });
+        
+        // Handle tone on/off toggle
+        toneControl.addEventListener('toggle', (e) => {
+            if (e.detail.active) {
+                startTone();
+            } else {
+                stopTone();
+            }
+        });
+        
+        const startTone = () => {
+            if (!spectrogramPlayer.context || toneOscillator) return;
+            try {
+                toneOscillator = spectrogramPlayer.context.createOscillator();
+                toneGainNode = spectrogramPlayer.context.createGain();
+                
+                toneOscillator.type = 'sine';
+                toneOscillator.frequency.value = toneControl.frequency;
+                toneGainNode.gain.value = 0.1; // Low volume
+                
+                toneOscillator.connect(toneGainNode);
+                toneGainNode.connect(spectrogramPlayer.context.destination);
+                
+                toneOscillator.start();
+                console.log('Test tone started at', Math.round(toneControl.frequency), 'Hz');
+            } catch (error) {
+                console.error('Failed to start tone:', error);
+                toneOscillator = null;
+                toneGainNode = null;
+            }
+        };
+        
+        const stopTone = () => {
+            if (toneOscillator) {
+                try {
+                    toneOscillator.stop();
+                    toneOscillator.disconnect();
+                    toneGainNode.disconnect();
+                } catch (error) {
+                    console.error('Error stopping tone:', error);
+                }
+                toneOscillator = null;
+                toneGainNode = null;
+                console.log('Test tone stopped');
+            }
+        };
+    }
+
     // --- Control Listeners (using sidebar elements) ---
     const xRot = document.getElementById('rotX');
     const yRot = document.getElementById('rotY');
@@ -1266,6 +1332,26 @@ function initializeSpectrogram() {
         console.log(`Clicked at 3D coordinates: X=${intersectX.toFixed(2)}, Y=0, Z=${intersectZ.toFixed(2)}`);
     });
 
+    // Cleanup function for when module is destroyed
+    const cleanup = () => {
+        if (toneOscillator) {
+            try {
+                toneOscillator.stop();
+                toneOscillator.disconnect();
+                toneGainNode.disconnect();
+            } catch (error) {
+                console.error('Error cleaning up tone:', error);
+            }
+            toneOscillator = null;
+            toneGainNode = null;
+        }
+    };
+    
+    // Register cleanup for module destruction
+    if (window.currentModule) {
+        window.currentModule.cleanup = cleanup;
+    }
+    
     console.log('Spectrogram module initialized successfully');
 }
 

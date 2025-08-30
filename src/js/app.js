@@ -6,6 +6,7 @@ window.loadFilters = window.loadFilters || function(){ document.addEventListener
 window.loadCabinets = window.loadCabinets || function(){ document.addEventListener('DOMContentLoaded', () => window.loadCabinets()); };
 window.loadTests = window.loadTests || function(){ document.addEventListener('DOMContentLoaded', () => window.loadTests()); };
 window.loadSpectrogram = window.loadSpectrogram || function(){ document.addEventListener('DOMContentLoaded', () => window.loadSpectrogram()); };
+window.loadWiki = window.loadWiki || function(){ document.addEventListener('DOMContentLoaded', () => window.loadWiki()); };
 
 document.addEventListener('DOMContentLoaded', () => {
     const themeToggleButton = document.getElementById('theme-toggle');
@@ -113,6 +114,27 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentModule = null;
 
     const moduleHTML = {
+        'wiki': `
+            <div class="wiki-container">
+                <div class="wiki-content">
+                    <div id="wiki-loading" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading Wiki Content</p>
+                    </div>
+                    <div id="wiki-content" class="wiki-content-inner d-none">
+                        <!-- Wiki content will be loaded here -->
+                    </div>
+                    <div id="wiki-error" class="alert alert-danger d-none" role="alert">
+                        Failed to load wiki content. Please try again later.
+                    </div>
+                </div>
+                <div class="wiki-sidebar">
+                    <!-- Sidebar content will be loaded from sidebarHTML -->
+                </div>
+            </div>
+        `,
         'speakers-spl': `<div class="module-content">
     <div id="speakers-spl-root" class="spl-viewer"></div>
 </div>`,
@@ -533,6 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.loadCabinets = () => loadModule('cabinets');
     window.loadTests = () => loadModule('tests');
     window.loadSpectrogram = () => loadModule('spectrogram');
+    window.loadWiki = () => loadModule('wiki');
 
     console.log('App shell initialized.');
     console.log('You can test the sidebar with showSidebar() and hideSidebar() in the console.');
