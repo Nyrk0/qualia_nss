@@ -6,31 +6,31 @@
 -->
 
 <!-- Load tone-control component -->
-<script src="../../lib/components/tone-control/tone-control.js"></script>
+<script src="/src/components/tone-control/tone-control.js"></script>
 
-<div class="spectrogram-container" style="display: flex; flex-direction: column; height: 100%; width: 100%;">
+<div class="spectrogram-container">
     <!-- Top: Tone Control -->
-    <div class="tone-control-container" style="padding: 12px 20px; background: rgba(30, 30, 30, 0.8); border-bottom: 1px solid var(--panel-border-color, #333); flex-shrink: 0;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="font-size: 0.9rem; color: var(--text-color, #ddd); min-width: 80px;">Test Tone:</span>
-            <tone-control id="spectrogramToneControl" value="0.566" aria-label="Spectrogram test tone frequency control" style="flex: 1; max-width: 600px;"></tone-control>
+    <div class="tone-control-container">
+        <div class="d-flex">
+            <span class="tone-label">Test Tone:</span>
+            <tone-control id="spectrogramToneControl" value="0.566" aria-label="Spectrogram test tone frequency control"></tone-control>
         </div>
     </div>
     
     <!-- Main: Canvas Container -->
-    <div id="canvas-container" style="flex: 1; position: relative; min-height: 400px; width: 100%;">
-        <canvas id="spectrogram" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
-        <button id="start-button" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; padding: 15px 25px; font-size: 1.2em; cursor: pointer; background: rgba(0, 136, 255, 0.9); color: white; border: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);">Start Microphone</button>
+    <div id="canvas-container">
+        <canvas id="spectrogram"></canvas>
+        <button id="start-button">Start Microphone</button>
         
         <!-- Axis labels -->
-        <div id="x-axis-label" class="axis-label" style="display: none;">Frequency</div>
-        <div id="y-axis-label" class="axis-label" style="display: none;">Amplitude</div>
-        <div id="z-axis-label" class="axis-label" style="display: none;">Time</div>
+        <div id="x-axis-label" class="axis-label">Frequency</div>
+        <div id="y-axis-label" class="axis-label">Amplitude</div>
+        <div id="z-axis-label" class="axis-label">Time</div>
         
         <!-- MusicLab legend -->
-        <div id="legend-title" style="position: absolute; bottom: 72px; right: 20px; color: #ddd; font-size: 0.8em;">MusicLab Colormap</div>
-        <div id="color-map-legend" style="position: absolute; bottom: 20px; right: 20px; width: 150px; height: 20px; background: linear-gradient(to right, #2a5bff, #00b5ff, #00ff9b, #80ff00, #ffcc00, #ff6600, #ff0000); border: 1px solid #555;"></div>
-        <div id="legend-text" style="position: absolute; bottom: 45px; right: 20px; color: white; font-size: 0.8em; display: flex; justify-content: space-between; width: 150px;">
+        <div id="legend-title">MusicLab Colormap</div>
+        <div id="color-map-legend"></div>
+        <div id="legend-text">
             <span>Min</span><span>Max</span>
         </div>
     </div>

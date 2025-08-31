@@ -1,452 +1,303 @@
-// Wiki Module - Vanilla JavaScript Implementation
+/**
+ * WikiModule - Dynamic documentation system for Qualia-NSS
+ * Implements the "Live Fetch" approach from implementation-plan.md
+ * @author Qualia-NSS Development Team
+ * @version 2.0.0
+ */
 class WikiModule {
     constructor() {
-        console.log('WikiModule constructor called');
-        this.currentPath = '';
-        this.wikiStructure = [];
-        this.searchResults = [];
-        this.isSearching = false;
-        
-        // DOM elements
-        this.container = null;
-        this.sidebar = null;
-        this.mainContent = null;
-        this.breadcrumbs = null;
-        this.contentArea = null;
-        
-        // Bind methods
-        this.handleNavigation = this.handleNavigation.bind(this);
-        this.handleSearch = this.handleSearch.bind(this);
-        this.renderContent = this.renderContent.bind(this);
+        this.tocContainer = null;
+        this.contentContainer = null;
+        this.wikiBasePath = 'src/wiki/content';
+        this.currentPath = null;
     }
-    
+
     async init() {
-        console.log('Initializing Wiki module...');
+        console.log('📚 Initializing Wiki Module...');
         
+        // Get containers after DOM is ready
+        this.tocContainer = document.getElementById('wiki-toc-container');
+        this.contentContainer = document.getElementById('wiki-content-container');
+        
+        if (!this.tocContainer || !this.contentContainer) {
+            console.error('❌ Wiki module containers not found in DOM');
+            return;
+        }
+
         try {
-            // Load wiki structure
-            await this.loadWikiStructure();
-            
-            // Create the main wiki container
-            this.createWikiHTML();
-            
-            // Set up event listeners
-            this.setupEventListeners();
-            
-            // Load initial content
-            const initialPath = this.getPathFromURL();
-            let targetPath = initialPath || 'README';
-            
-            // Handle special 'home' path
-            if (targetPath === 'home') {
-                targetPath = 'README';
-            }
-            
-            await this.navigateToPage(targetPath);
-            
-            console.log('Wiki module initialized successfully');
+            await this.buildTOC();
+            await this.loadInitialPage();
+            console.log('✅ Wiki Module initialized successfully');
         } catch (error) {
-            console.error('Error initializing wiki module:', error);
+            console.error('❌ Failed to initialize Wiki Module:', error);
             this.showError('Failed to initialize wiki module');
         }
     }
-    
-    destroy() {
-        console.log('Destroying Wiki module...');
-        
-        // Clear references
-        this.container = null;
-        this.sidebar = null;
-        this.mainContent = null;
-        this.breadcrumbs = null;
-        this.contentArea = null;
-        
-        console.log('Wiki module destroyed');
-    }
-    
-    createWikiHTML() {
-        const mainContent = document.getElementById('main-content');
-        if (!mainContent) {
-            throw new Error('Main content container not found');
+
+    async buildTOC() {
+        try {
+            console.log('🔍 Building Wiki Table of Contents...');
+            
+            // Fetch directory structure using proper file system approach
+            const wikiStructure = await this.scanWikiDirectory();
+            
+            const userGuideHTML = this.createAccordionSection(
+                'userGuide', 
+                '👤 User Guide', 
+                wikiStructure.userGuide
+            );
+            
+            const devDocsHTML = this.createAccordionSection(
+                'devDocs', 
+                '🛠️ Developer Documentation', 
+                wikiStructure.devDocs
+            );
+            
+            const homeHTML = this.createAccordionSection(
+                'general', 
+                '🏠 General', 
+                wikiStructure.general
+            );
+
+            this.tocContainer.innerHTML = `
+                <div class="accordion" id="sidebarAccordion">
+                    ${homeHTML}
+                    ${userGuideHTML}
+                    ${devDocsHTML}
+                </div>
+            `;
+
+            this.addEventListeners();
+            console.log('✅ Wiki TOC built successfully');
+        } catch (error) {
+            console.error('❌ Failed to build Wiki TOC:', error);
+            this.showError('Error loading documentation index');
         }
-        
-        mainContent.innerHTML = `
-            <div class="wiki-container">
-                <aside class="wiki-sidebar" id="wiki-sidebar">
-                    <div class="wiki-sidebar-header">
-                        <h2>📚 Wiki</h2>
-                        <div class="wiki-search">
-                            <input type="text" id="wiki-search-input" placeholder="Search wiki..." class="wiki-search-input">
-                            <button type="button" id="wiki-search-btn" class="wiki-search-btn">🔍</button>
+    }
+
+    createAccordionSection(id, title, files) {
+        if (!files || files.length === 0) {
+            return `
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${id}" aria-expanded="false">
+                            ${title} <span class="badge">0</span>
+                        </button>
+                    </h2>
+                    <div id="collapse-${id}" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <p class="text-muted">No documents available</p>
                         </div>
                     </div>
-                    <nav class="wiki-nav" id="wiki-nav">
-                        <div class="loading">Loading wiki structure...</div>
-                    </nav>
-                </aside>
-                
-                <main class="wiki-main" id="wiki-main">
-                    <div class="wiki-breadcrumbs" id="wiki-breadcrumbs"></div>
-                    <div class="wiki-content" id="wiki-content">
-                        <div class="loading">Loading page...</div>
-                    </div>
-                </main>
-            </div>
-        `;
-        
-        // Store references
-        this.container = mainContent.querySelector('.wiki-container');
-        this.sidebar = document.getElementById('wiki-sidebar');
-        this.mainContent = document.getElementById('wiki-main');
-        this.breadcrumbs = document.getElementById('wiki-breadcrumbs');
-        this.contentArea = document.getElementById('wiki-content');
-    }
-    
-    async loadWikiStructure() {
-        try {
-            // First try to load from structure.json
-            const response = await fetch('/src/wiki/public/structure.json');
-            if (response.ok) {
-                this.wikiStructure = await response.json();
-            } else {
-                // Fallback to default structure
-                this.wikiStructure = this.getDefaultStructure();
-            }
-            
-            this.renderSidebar();
-        } catch (error) {
-            console.error('Error loading wiki structure:', error);
-            this.wikiStructure = this.getDefaultStructure();
-            this.renderSidebar();
-        }
-    }
-    
-    getDefaultStructure() {
-        return [
-            { title: 'Home', path: 'README' },
-            { title: 'API Documentation', path: 'API_README' },
-            { 
-                title: 'Architecture', 
-                path: 'architecture',
-                children: [
-                    { title: 'Overview', path: 'architecture/overview' },
-                ]
-            },
-            { 
-                title: 'Manual', 
-                path: 'manual',
-                children: [
-                    { title: 'Development', path: 'manual/development' },
-                    { title: 'Getting Started', path: 'manual/getting-started' },
-                ]
-            }
-        ];
-    }
-    
-    renderSidebar() {
-        const navContainer = document.getElementById('wiki-nav');
-        if (!navContainer) return;
-        
-        let html = '<ul class="wiki-nav-list">';
-        
-        for (const item of this.wikiStructure) {
-            html += this.renderNavItem(item);
-        }
-        
-        html += '</ul>';
-        navContainer.innerHTML = html;
-    }
-    
-    renderNavItem(item) {
-        const hasChildren = item.children && item.children.length > 0;
-        const isActive = this.currentPath === item.path;
-        
-        let html = `<li class="wiki-nav-item ${hasChildren ? 'has-children' : ''}">`;
-        
-        if (hasChildren) {
-            html += `
-                <div class="wiki-nav-toggle" data-path="${item.path}">
-                    <span class="wiki-nav-toggle-icon">▶</span>
-                    <span class="wiki-nav-title">${item.title}</span>
                 </div>
             `;
         }
         
-        html += `
-            <a href="#" class="wiki-nav-link ${isActive ? 'active' : ''}" data-path="${item.path}">
-                ${hasChildren ? '' : item.title}
-            </a>
+        const links = files.map(file => {
+            const fileName = this.formatFileName(file.name || file);
+            const relativePath = file.path || file;
+            return `
+                <div class="form-check">
+                    <a href="#" class="wiki-link" data-path="${relativePath}" data-name="${fileName}">
+                        📄 ${fileName}
+                    </a>
+                </div>
+            `;
+        }).join('');
+
+        const isExpanded = id === 'general' ? 'true' : 'false';
+        const collapseClass = id === 'general' ? 'show' : '';
+        const buttonClass = id === 'general' ? '' : 'collapsed';
+
+        return `
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading-${id}">
+                    <button class="accordion-button ${buttonClass}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${id}" aria-expanded="${isExpanded}" aria-controls="collapse-${id}">
+                        ${title}
+                    </button>
+                </h2>
+                <div id="collapse-${id}" class="accordion-collapse collapse ${collapseClass}" aria-labelledby="heading-${id}" data-bs-parent="#sidebarAccordion">
+                    <div class="accordion-body">
+                        ${links}
+                    </div>
+                </div>
+            </div>
         `;
-        
-        if (hasChildren) {
-            html += '<ul class="wiki-nav-submenu">';
-            for (const child of item.children) {
-                html += this.renderNavItem(child);
-            }
-            html += '</ul>';
-        }
-        
-        html += '</li>';
-        return html;
     }
-    
-    setupEventListeners() {
-        // Navigation clicks
-        this.container.addEventListener('click', (e) => {
-            if (e.target.matches('.wiki-nav-link')) {
+
+    addEventListeners() {
+        this.tocContainer.addEventListener('click', e => {
+            if (e.target.classList.contains('wiki-link')) {
                 e.preventDefault();
                 const path = e.target.dataset.path;
-                this.navigateToPage(path);
-            }
-            
-            if (e.target.matches('.wiki-nav-toggle, .wiki-nav-toggle *')) {
-                const toggle = e.target.closest('.wiki-nav-toggle');
-                const submenu = toggle.nextElementSibling?.nextElementSibling;
-                if (submenu?.classList.contains('wiki-nav-submenu')) {
-                    const icon = toggle.querySelector('.wiki-nav-toggle-icon');
-                    if (submenu.style.display === 'none' || !submenu.style.display) {
-                        submenu.style.display = 'block';
-                        icon.textContent = '▼';
-                    } else {
-                        submenu.style.display = 'none';
-                        icon.textContent = '▶';
-                    }
-                }
+                this.loadContent(path);
+
+                // Update active state
+                this.tocContainer.querySelectorAll('.wiki-link').forEach(link => link.classList.remove('active'));
+                e.target.classList.add('active');
             }
         });
-        
-        // Search functionality
-        const searchBtn = document.getElementById('wiki-search-btn');
-        const searchInput = document.getElementById('wiki-search-input');
-        
-        if (searchBtn) {
-            searchBtn.addEventListener('click', this.handleSearch);
-        }
-        
-        if (searchInput) {
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    this.handleSearch();
-                }
-            });
-        }
     }
-    
-    async navigateToPage(path) {
+
+    async loadContent(path, fileName = null) {
         try {
-            // Handle special paths
-            if (path === 'home') {
-                path = 'README';
+            console.log(`📖 Loading wiki content: ${path}`);
+            this.showLoading();
+            
+            // Use fetch API for file loading (works in HTTP context)
+            const response = await fetch(`/${path}`);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
+            const fileContent = await response.text();
             this.currentPath = path;
             
-            // Update active states
-            this.updateActiveStates();
-            
-            // Update breadcrumbs
-            this.updateBreadcrumbs(path);
-            
-            // Load and display content
-            const content = await this.loadPageContent(path);
-            this.renderContent(content);
-            
-        } catch (error) {
-            console.error('Error navigating to page:', error);
-            this.showError(`Failed to load page: ${path}`);
-        }
-    }
-    
-    async loadPageContent(path) {
-        try {
-            const normalizedPath = path ? path.replace(/^\/+|\/+$/g, '') : 'README';
-            const response = await fetch(`/src/wiki/public/${normalizedPath}.md`);
-            
-            if (!response.ok) {
-                if (response.status === 404) {
-                    return `# Page Not Found\n\nThe requested page "${path}" does not exist.\n\n[Return to Home](#README)`;
-                }
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            return await response.text();
-        } catch (error) {
-            console.error('Error loading wiki page:', error);
-            return `# Error Loading Page\n\nThere was an error loading the requested page.\n\n\`\`\`\n${error.message}\n\`\`\`\n\n[Return to Home](#README)`;
-        }
-    }
-    
-    renderContent(markdownContent) {
-        if (!this.contentArea) return;
-        
-        // Simple markdown-to-HTML conversion
-        let html = this.convertMarkdownToHTML(markdownContent);
-        this.contentArea.innerHTML = html;
-        
-        // Make internal links work with navigation
-        this.setupInternalLinks();
-    }
-    
-    convertMarkdownToHTML(markdown) {
-        let html = markdown;
-        
-        // Headers
-        html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-        html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-        html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-        
-        // Code blocks
-        html = html.replace(/```([^`]*)```/gs, '<pre><code>$1</code></pre>');
-        html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-        
-        // Links
-        html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
-        
-        // Bold and italic
-        html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-        html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-        
-        // Line breaks and paragraphs
-        html = html.split('\n\n').map(paragraph => {
-            paragraph = paragraph.trim();
-            if (paragraph && !paragraph.startsWith('<h') && !paragraph.startsWith('<pre') && !paragraph.startsWith('<ul') && !paragraph.startsWith('<ol')) {
-                return `<p>${paragraph.replace(/\n/g, '<br>')}</p>`;
-            }
-            return paragraph.replace(/\n/g, '<br>');
-        }).join('\n\n');
-        
-        return html;
-    }
-    
-    setupInternalLinks() {
-        const links = this.contentArea.querySelectorAll('a[href^="#"]');
-        links.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const path = link.getAttribute('href').substring(1);
-                this.navigateToPage(path);
-            });
-        });
-    }
-    
-    updateActiveStates() {
-        // Remove all active states
-        const activeLinks = this.sidebar.querySelectorAll('.wiki-nav-link.active');
-        activeLinks.forEach(link => link.classList.remove('active'));
-        
-        // Add active state to current page
-        const currentLink = this.sidebar.querySelector(`[data-path="${this.currentPath}"]`);
-        if (currentLink) {
-            currentLink.classList.add('active');
-        }
-    }
-    
-    updateBreadcrumbs(path) {
-        if (!this.breadcrumbs) return;
-        
-        const crumbs = this.generateBreadcrumbs(path);
-        let html = '<nav class="breadcrumb">';
-        
-        crumbs.forEach((crumb, index) => {
-            if (index === crumbs.length - 1) {
-                html += `<span class="breadcrumb-current">${crumb.title}</span>`;
-            } else {
-                html += `<a href="#" class="breadcrumb-link" data-path="${crumb.path}">${crumb.title}</a> / `;
-            }
-        });
-        
-        html += '</nav>';
-        this.breadcrumbs.innerHTML = html;
-        
-        // Add click handlers for breadcrumb links
-        this.breadcrumbs.querySelectorAll('.breadcrumb-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.navigateToPage(link.dataset.path);
-            });
-        });
-    }
-    
-    generateBreadcrumbs(path) {
-        const crumbs = [{ title: 'Home', path: 'README' }];
-        
-        if (path && path !== 'README') {
-            const parts = path.split('/');
-            let currentPath = '';
-            
-            for (const part of parts) {
-                currentPath += (currentPath ? '/' : '') + part;
-                const item = this.findItemByPath(currentPath, this.wikiStructure);
-                crumbs.push({
-                    title: item?.title || part,
-                    path: currentPath
+            // Render markdown to HTML
+            let htmlContent;
+            if (window.marked) {
+                // Configure marked for better rendering
+                window.marked.setOptions({
+                    breaks: true,
+                    gfm: true,
+                    sanitize: false
                 });
+                htmlContent = window.marked.parse(fileContent);
+            } else {
+                console.warn('⚠️ marked.js not available, using plain text fallback');
+                htmlContent = `
+                    <div class="markdown-fallback">
+                        <h3>📄 ${fileName || 'Document'}</h3>
+                        <pre class="markdown-source">${this.escapeHtml(fileContent)}</pre>
+                        <p class="text-muted">Note: Markdown rendering library not available.</p>
+                    </div>
+                `;
             }
+            
+            // Add navigation breadcrumbs
+            const breadcrumb = this.createBreadcrumb(path, fileName);
+            
+            this.contentContainer.innerHTML = `
+                ${breadcrumb}
+                <div class="wiki-content">
+                    ${htmlContent}
+                </div>
+            `;
+            
+            // Enhance rendered content
+            this.enhanceContent();
+            
+            console.log(`✅ Wiki content loaded: ${path}`);
+        } catch (error) {
+            console.error(`❌ Failed to load content for ${path}:`, error);
+            this.showError(`Failed to load document: ${error.message}`);
         }
+    }
+
+    async loadInitialPage() {
+        console.log('🏠 Loading initial wiki page...');
+        // Load the Home.md file by default
+        const homePath = 'src/wiki/content/Home.md';
+        await this.loadContent(homePath, 'Welcome');
+    }
+
+    // New helper methods
+    
+    async scanWikiDirectory() {
+        // Return the current documentation structure
+        // This would ideally scan the directory dynamically in a full implementation
+        return {
+            general: [
+                { name: 'Welcome to Qualia-NSS', path: 'src/wiki/content/Home.md' }
+            ],
+            userGuide: [
+                { name: 'Getting Started', path: 'src/wiki/content/User-Guide/01-Getting-Started.md' },
+                { name: 'Understanding Filters', path: 'src/wiki/content/User-Guide/02-Understanding-Filters.md' }
+            ],
+            devDocs: [
+                { name: 'Architecture Overview', path: 'src/wiki/content/Developer-Docs/01-Architecture-Overview.md' }
+            ]
+        };
+    }
+    
+    formatFileName(fileName) {
+        return fileName
+            .replace(/\.md$/, '')           // Remove .md extension
+            .replace(/^\d+-/, '')          // Remove number prefix (e.g., "01-")
+            .replace(/[-_]/g, ' ')         // Replace dashes/underscores with spaces
+            .replace(/\b\w/g, l => l.toUpperCase()); // Capitalize words
+    }
+    
+    createBreadcrumb(path, fileName) {
+        const pathParts = path.split('/');
+        const section = pathParts.includes('User-Guide') ? 'User Guide' : 
+                       pathParts.includes('Developer-Docs') ? 'Developer Documentation' : 
+                       'General';
         
-        return crumbs;
+        return `
+            <nav class="wiki-breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">📚 Wiki</li>
+                    <li class="breadcrumb-item">${section}</li>
+                    <li class="breadcrumb-item active">${fileName || 'Document'}</li>
+                </ol>
+            </nav>
+        `;
     }
     
-    findItemByPath(path, structure) {
-        for (const item of structure) {
-            if (item.path === path) {
-                return item;
-            }
-            if (item.children) {
-                const found = this.findItemByPath(path, item.children);
-                if (found) return found;
-            }
-        }
-        return null;
-    }
-    
-    handleNavigation(e) {
-        e.preventDefault();
-        const path = e.target.dataset.path;
-        this.navigateToPage(path);
-    }
-    
-    async handleSearch() {
-        const searchInput = document.getElementById('wiki-search-input');
-        const query = searchInput?.value.trim();
-        
-        if (!query) return;
-        
-        console.log('Searching wiki for:', query);
-        this.showSearchResults(query, []);
-    }
-    
-    showSearchResults(query, results) {
-        this.contentArea.innerHTML = `
-            <div class="wiki-search-results">
-                <h2>Search Results for "${query}"</h2>
-                ${results.length > 0 ? 
-                    '<ul>' + results.map(result => `<li><a href="#" data-path="${result.path}">${result.title}</a></li>`).join('') + '</ul>' :
-                    '<p>Search functionality coming soon!</p>'
-                }
+    showLoading() {
+        this.contentContainer.innerHTML = `
+            <div class="wiki-loading">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading documentation...</p>
             </div>
         `;
     }
     
     showError(message) {
-        if (this.contentArea) {
-            this.contentArea.innerHTML = `
-                <div class="wiki-error">
-                    <h2>Error</h2>
-                    <p>${message}</p>
-                    <button onclick="location.reload()" class="btn btn-primary">Reload Page</button>
-                </div>
-            `;
-        }
+        this.contentContainer.innerHTML = `
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">📚 Wiki Error</h4>
+                <p>${message}</p>
+                <hr>
+                <p class="mb-0">Please check the console for more details or contact support.</p>
+            </div>
+        `;
     }
     
-    getPathFromURL() {
-        const hash = window.location.hash;
-        const wikiMatch = hash.match(/#\/wiki\/(.+)/);
-        return wikiMatch ? wikiMatch[1] : '';
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    enhanceContent() {
+        // Add syntax highlighting, link processing, etc.
+        const content = this.contentContainer.querySelector('.wiki-content');
+        if (!content) return;
+        
+        // Add classes to elements for better styling
+        content.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(heading => {
+            heading.classList.add('wiki-heading');
+        });
+        
+        content.querySelectorAll('code').forEach(code => {
+            code.classList.add('wiki-code');
+        });
+        
+        content.querySelectorAll('pre').forEach(pre => {
+            pre.classList.add('wiki-code-block');
+        });
+    }
+    
+    destroy() {
+        console.log('🗑️ Wiki module destroyed');
+        this.currentPath = null;
+        this.tocContainer = null;
+        this.contentContainer = null;
     }
 }
 
-// Global exposure for module system
 window.WikiModule = WikiModule;
-console.log('WikiModule class defined and exposed globally');

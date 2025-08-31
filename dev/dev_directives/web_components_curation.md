@@ -1,12 +1,12 @@
 # Web Components Curation Directive
 
 ## Overview
-Maintain centralized, curated web components in `/lib/components/` as the single source of truth for all reusable UI components across the Qualia-NSS project.
+Maintain centralized, curated web components in `/src/components/` as the single source of truth for all reusable UI components across the Qualia-NSS project.
 
 ## Directory Structure
 
 ```
-/lib/components/
+/src/components/
 ├── tone-control/
 │   ├── tone-control.js          # ✅ Source component (vanilla JS)
 │   ├── README.md               # Usage documentation  
@@ -48,14 +48,14 @@ class ComponentName extends HTMLElement {
 ## Curation Workflow
 
 ### **Adding New Components**
-1. Create component in `/lib/components/[name]/`
+1. Create component in `/src/components/[name]/`
 2. Follow naming convention: `[name]-[type].js` (e.g., `tone-control.js`)
 3. Add documentation in `README.md`
 4. Test across multiple modules
 5. Update this directive with component details
 
 ### **Updating Existing Components** 
-1. **Always edit `/lib/components/` version first** (source of truth)
+1. **Always edit `/src/components/` version first** (source of truth)
 2. Test changes thoroughly
 3. Copy to any temporary `/modules/` versions if needed
 4. Remove temporary copies after integration
@@ -63,16 +63,16 @@ class ComponentName extends HTMLElement {
 ### **Integration Pattern**
 ```html
 <!-- In module HTML files -->
-<script src="../../lib/components/tone-control/tone-control.js"></script>
+<script src="../../src/components/tone-control/tone-control.js"></script>
 
 <!-- In main index.html (for global availability) -->
-<script src="lib/components/tone-control/tone-control.js"></script>
+<script src="src/components/tone-control/tone-control.js"></script>
 ```
 
 ## Current Components Inventory
 
 ### **tone-control** ✅ **CURATED**
-- **Location**: `/lib/components/tone-control/tone-control.js`
+- **Location**: `/src/components/tone-control/tone-control.js`
 - **Status**: Production ready with all fixes applied
 - **Features**: 
   - ✅ Fixed slider background artifacts
@@ -86,7 +86,7 @@ class ComponentName extends HTMLElement {
 ## Development Rules
 
 ### **DO**
-- Edit components in `/lib/components/` only
+- Edit components in `/src/components/` only
 - Test across all consuming modules before committing
 - Document all public APIs and events
 - Use semantic versioning comments for major changes

@@ -25,7 +25,19 @@ header {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-left: auto;
+}
+
+.nav-left {
+    margin-right: auto; /* Push center and right to the right */
+}
+
+.nav-center {
+    flex: 1; /* Take up available space */
+    justify-content: center; /* Center the navigation items */
+}
+
+.nav-right {
+    /* Will naturally align to the right */
 }
 
 /* Style for the Wiki link in the nav-right */
@@ -43,7 +55,7 @@ header {
 }
 
 .nav-right .nav-link.active {
-    color: var(--accent-color) !important;
+    color: var(--primary-color) !important;
     background-color: var(--active-bg);
 }
 
@@ -81,7 +93,7 @@ header {
 }
 
 .logo.active {
-    border-color: var(--accent-color);
+    border-color: var(--primary-color);
 }
 
 .nav-item {
@@ -93,12 +105,11 @@ header {
     position: relative;
     letter-spacing: -0.01em;
     transition: all 0.2s ease;
-    font-family: 'Inter', sans-serif;
 }
 
 .nav-item:hover {
     color: var(--text-color);
-    background-color: rgba(106, 169, 255, 0.1);
+    background-color: var(--primary-color-translucent);
     transform: translateY(-1px);
 }
 
@@ -139,7 +150,7 @@ body:not(.light-theme) .theme-toggle-btn i {
 }
 
 body.light-theme .theme-toggle-btn i {
-    color: var(--accent-color);
+    color: var(--primary-color);
 }
 
 /* Bootstrap Navbar Theme Integration */
@@ -168,7 +179,7 @@ body.light-theme .theme-toggle-btn i {
     color: var(--neutral-text-color) !important;
     background: none !important;
     background-color: transparent !important;
-    border-color: var(--accent-color) !important;
+    border-color: var(--primary-color) !important;
 }
 
 .nav-center .navbar-nav .nav-link.disabled {

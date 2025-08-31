@@ -7,7 +7,7 @@ class RouterManager {
     constructor() {
         this.baseUrl = this.detectBaseUrl();
         this.moduleBasePath = 'src/';
-        this.componentBasePath = 'lib/components/';
+        this.componentBasePath = 'src/components/';
         this.wikiBasePath = 'src/wiki/public/';
         this.isFileProtocol = window.location.protocol === 'file:';
         this.currentRoute = null;
@@ -130,7 +130,7 @@ class RouterManager {
             /src=['"](\.\.\/)*([^'"]+)['"]/g,
             (match, dots, path) => {
                 // Determine if it's a component path
-                if (path.includes('lib/components/')) {
+                if (path.includes('src/components/')) {
                     // Extract just the component part
                     const componentPath = path.replace(/.*lib\/components\//, '');
                     const resolvedPath = this.resolveComponentPath(componentPath);

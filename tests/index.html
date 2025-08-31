@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qualia-NSS Tests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-suite {
+            background: white;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 3px;
+        }
+        .test-pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .summary {
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Qualia-NSS Test Suite</h1>
+    <div id="test-results"></div>
+    
+    <!-- Load the test framework -->
+    <script src="test-framework.js"></script>
+    
+    <!-- Load modules to test -->
+    <script src="/src/components/tone-control/tone-control.js"></script>
+    
+    <!-- Load test suites -->
+    <script src="tone-control.test.js"></script>
+    <script src="module-loader.test.js"></script>
+    <script src="ui-utils.test.js"></script>
+    
+    <script>
+        // Run all tests when page loads
+        window.addEventListener('load', () => {
+            TestRunner.runAll();
+        });
+    </script>
+</body>
+</html>

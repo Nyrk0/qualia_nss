@@ -1,11 +1,18 @@
 /**
- * Navigation - Handles navigation state and welcome page
+ * @fileoverview Navigation module - handles navigation state and welcome page display
  * Part of the Qualia-NSS modular architecture
+ * @author Qualia-NSS Development Team
+ * @version 1.0.0
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- ACTIVE STATE MANAGEMENT ---
+    /**
+     * Sets the active navigation element by removing 'active' class from all nav items
+     * and adding it to the specified element
+     * @param {Element} activeElement - The DOM element to mark as active
+     */
     window.setActiveNav = (activeElement) => {
         // Remove active from all nav items
         document.querySelectorAll('.nav-link, .logo').forEach(item => {
@@ -24,7 +31,10 @@ document.addEventListener('DOMContentLoaded', () => {
         window.setActiveNav(logo);
     }
 
-    // Helper: set navbar active based on module name
+    /**
+     * Helper function to set navbar active state based on module name
+     * @param {string} moduleName - Name of the module ('speakers-spl', 'filters', etc.)
+     */
     const setNavActiveForModule = (moduleName) => {
         try {
             const map = {
@@ -32,8 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'filters': '.navbar-nav .nav-link:nth-child(2)',
                 'cabinets': '.navbar-nav .nav-link:nth-child(3)',
                 '7band-levelmeter': '.navbar-nav .nav-link:nth-child(4)',
-                'spectrogram': '.navbar-nav .nav-link:nth-child(5)',
-                'wiki': '.nav-right .nav-link[onclick*="loadWiki"]'
+                'spectrogram': '.navbar-nav .nav-link:nth-child(5)'
             };
             const sel = map[moduleName];
             if (!sel) return;
@@ -46,6 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
     window.setNavActiveForModule = setNavActiveForModule;
 
     // --- WELCOME PAGE FUNCTION ---
+    /**
+     * Shows the welcome/home page and destroys any active module
+     * Sets up home page layout with full-width content
+     */
     window.showWelcome = () => {
         // Destroy current module if exists
         if (window.currentModule && window.currentModule.instance) {
@@ -79,25 +92,40 @@ document.addEventListener('DOMContentLoaded', () => {
         // Set logo as active when showing welcome
         const logo = document.querySelector('.logo');
         window.setActiveNav(logo);
+        // Set localStorage to remember home page
+        try { localStorage.setItem('lastModule', '__HOME__'); } catch(_) {}
     };
 
     // --- MODULE NAVIGATION FUNCTIONS ---
-    // Load Speakers module (redirects internally to speakers-spl)
+    /**
+     * Navigation wrapper functions that delegate to loadModule
+     * These provide clean entry points for each module
+     */
+    
+    /** Load Speakers module (redirects internally to speakers-spl) */
     window.loadSpeakers = () => window.loadModule('speakers-spl');
 
+    /** Load Speakers SPL module */
     window.loadSpeakersSpl = () => window.loadModule('speakers-spl');
+    /** Load Filters module */
     window.loadFilters = () => window.loadModule('filters');
+    /** Load Cabinets module */
     window.loadCabinets = () => window.loadModule('cabinets');
+    /** Load 7-band level meter module */
     window.load7bandLevelmeter = () => window.loadModule('7band-levelmeter');
-    // Back-compat alias
+    /** Back-compat alias for loadTests */
     window.loadTests = () => window.loadModule('7band-levelmeter');
+    /** Load Spectrogram module */
     window.loadSpectrogram = () => window.loadModule('spectrogram');
+    /** Load Wiki module */
     window.loadWiki = () => window.loadModule('wiki');
 
     // Auto-restore last opened module if available
     try {
         const last = localStorage.getItem('lastModule');
-        if (last && window.moduleHTML && (last in window.moduleHTML)) {
+        if (last === '__HOME__') {
+            window.showWelcome();
+        } else if (last && window.moduleHTML && (last in window.moduleHTML)) {
             window.loadModule(last);
             // Ensure navbar reflects restored module immediately
             setTimeout(() => setNavActiveForModule(last), 0);

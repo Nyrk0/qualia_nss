@@ -1,9 +1,27 @@
 /**
  * Module Loader - Handles dynamic module loading and templates
  * Part of the Qualia-NSS modular architecture
+ * Enhanced with Phase 2: Component System Modernization
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    
+    // --- COMPONENT REGISTRY INTEGRATION ---
+    let componentRegistry = null;
+    try {
+        // Try to load component registry with ES6 import
+        if (window.Config?.features?.es6Modules) {
+            const { getComponentRegistry } = await import('/src/core/component-registry.js');
+            componentRegistry = getComponentRegistry();
+        }
+    } catch (error) {
+        console.warn('ES6 component registry not available, using fallback:', error);
+    }
+    
+    // Fallback to global if ES6 failed
+    if (!componentRegistry && window.getComponentRegistry) {
+        componentRegistry = window.getComponentRegistry();
+    }
     
     // --- MODULE HTML TEMPLATES ---
     const moduleHTML = {
@@ -76,13 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         '7band-levelmeter': `<div class="module-content">
     <div id="tests-root" class="tests-root"></div>
 </div>`,
-        'wiki': `<div class="module-content">
-    <div id="wiki-root" class="wiki-root"></div>
-</div>`,
-        'spectrogram': `<!-- Load tone-control component first -->
-<script src="lib/components/tone-control/tone-control.js"></script>
-
-<div class="spectrogram-container" style="display: flex; flex-direction: column; height: 100%; width: 100%;">
+        'spectrogram': `<div class="spectrogram-container" style="display: flex; flex-direction: column; height: 100%; width: 100%;">
     <!-- Top: Tone Control -->
     <div class="tone-control-container" style="padding: 12px 20px; background: rgba(30, 30, 30, 0.8); border-bottom: 1px solid var(--panel-border-color, #333); flex-shrink: 0;">
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -109,17 +121,38 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
     </div>
 </div>`,
-        wiki: `<div class="module-content">
-    <!-- Wiki module content will be dynamically generated -->
-    <div id="wiki-root"></div>
-</div>`
+        'wiki': `<div class="module-content" id="wiki-content-container"></div>`
     };
 
     // Make module templates globally available
     window.moduleHTML = moduleHTML;
 
+
     // --- SPECTROGRAM SCRIPT LOADING HELPER ---
-    const loadSpectrogramScript = () => {
+    const loadSpectrogramScript = async () => {
+        // Load tone-control component first using component registry
+        try {
+            if (componentRegistry) {
+                console.log('Loading tone-control component via registry...');
+                await componentRegistry.load('tone-control');
+                console.log('✓ tone-control component loaded via registry');
+            } else {
+                console.warn('Component registry not available, falling back to direct script loading');
+                // Fallback to direct script loading
+                await new Promise((resolve, reject) => {
+                    const toneScript = document.createElement('script');
+                    toneScript.src = '/src/components/tone-control/tone-control.js';
+                    toneScript.onload = resolve;
+                    toneScript.onerror = reject;
+                    document.head.appendChild(toneScript);
+                });
+                console.log('✓ tone-control component loaded via fallback');
+            }
+        } catch (error) {
+            console.warn('Failed to load tone-control component:', error);
+        }
+        
+        // Now load spectrogram script
         const script = document.createElement('script');
         script.src = 'src/spectrogram/spectrogram.js';
         script.onload = () => {
@@ -147,6 +180,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentModule = null;
     window.currentModule = currentModule;
 
+    /**
+     * Loads and initializes a module, destroying any currently active module
+     * @param {string} moduleName - Name of the module to load (e.g. 'spectrogram', '7band-levelmeter')
+     * @throws {Error} When module template or class is not found
+     */
     const loadModule = (moduleName) => {
         try {
             // Redirect legacy module name to new module
@@ -215,12 +253,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Special case for spectrogram - hybrid loading strategy
                 if (moduleName === 'spectrogram') {
-                    const loadingStrategy = window.router ? window.router.getLoadingStrategy() : 'inline';
+                    const loadingStrategy = window.location.protocol !== 'file:' ? 'fetch' : 'inline';
                     console.log('Spectrogram loading strategy:', loadingStrategy);
                     
                     if (loadingStrategy === 'fetch') {
                         // HTTP context - use fragment loading
-                        const fragmentUrl = window.router.createFetchUrl('spectrogram/index.html', 'module');
+                        const fragmentUrl = '/src/spectrogram/index.html';
                         
                         fetch(fragmentUrl)
                             .then(response => {
@@ -230,9 +268,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 return response.text();
                             })
                             .then(html => {
-                                // Process HTML to fix script paths using router
-                                const processedHtml = window.router.processHtmlPaths(html, 'module');
-                                mainContent.innerHTML = processedHtml;
+                                // With root-relative paths, no processing needed
+                                mainContent.innerHTML = html;
                                 loadSpectrogramScript();
                             })
                             .catch(error => {
@@ -315,7 +352,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Make loadModule globally available
+    /**
+     * Global module loading function
+     * @global
+     * @function loadModule
+     * @param {string} moduleName - Module to load
+     */
     window.loadModule = loadModule;
 
     console.log('Module loader initialized.');

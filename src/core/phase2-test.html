@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 2: Component System ES6 Test Suite</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .test-item {
+            padding: 15px;
+            background: #333;
+            border-radius: 6px;
+            border-left: 4px solid #666;
+        }
+        .test-item.success {
+            border-left-color: #4caf50;
+        }
+        .test-item.error {
+            border-left-color: #f44336;
+        }
+        .test-item.warning {
+            border-left-color: #ff9800;
+        }
+        .test-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .test-result {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            background: #1a1a1a;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 8px 0;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #0088ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #0066cc;
+        }
+        .component-demo {
+            padding: 20px;
+            background: #3a3a3a;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .log-output {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🚀 Phase 2: Component System ES6 Test Suite</h1>
+        <p>Testing ES6 component loading, registry functionality, and hybrid compatibility</p>
+        
+        <div class="test-section">
+            <h2>📋 Test Controls</h2>
+            <button onclick="runAllTests()">Run All Tests</button>
+            <button onclick="testComponentRegistry()">Test Component Registry</button>
+            <button onclick="testToneControlES6()">Test ToneControl ES6</button>
+            <button onclick="testHybridCompatibility()">Test Hybrid Compatibility</button>
+            <button onclick="clearLog()">Clear Log</button>
+            <div id="log" class="log-output">
+                Console log will appear here...
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔧 Component Registry Tests</h2>
+            <div class="test-grid" id="registryTests">
+                <!-- Registry test results will be populated here -->
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎛️ ToneControl Component Tests</h2>
+            <div class="test-grid" id="toneControlTests">
+                <!-- ToneControl test results will be populated here -->
+            </div>
+            
+            <div class="component-demo">
+                <h3>Live ToneControl Demo</h3>
+                <p>Testing component instantiation and functionality:</p>
+                <div id="toneControlDemo">
+                    <!-- ToneControl component will be inserted here -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔄 Hybrid Compatibility Tests</h2>
+            <div class="test-grid" id="hybridTests">
+                <!-- Hybrid compatibility test results will be populated here -->
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Test Results Summary</h2>
+            <div id="testSummary">
+                <div class="test-result">No tests run yet. Click "Run All Tests" to begin.</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Global test state
+        window.testResults = {
+            registry: {},
+            toneControl: {},
+            hybrid: {},
+            totalTests: 0,
+            passedTests: 0,
+            failedTests: 0
+        };
+        
+        // Logger that outputs to both console and on-page log
+        function log(message, type = 'info') {
+            console.log(message);
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ff6666' : type === 'success' ? '#66ff66' : type === 'warning' ? '#ffaa66' : '#ffffff';
+            logDiv.innerHTML += `<span style="color: ${color}">[${timestamp}] ${message}</span>\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        window.log = log;
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = 'Console cleared...\n';
+        }
+        window.clearLog = clearLog;
+        
+        // Test Component Registry functionality
+        async function testComponentRegistry() {
+            log('🔧 Testing Component Registry...', 'info');
+            const testContainer = document.getElementById('registryTests');
+            testContainer.innerHTML = '';
+            
+            const tests = [
+                {
+                    name: 'Registry Import',
+                    test: async () => {
+                        try {
+                            const { ComponentRegistry, getComponentRegistry } = await import('/src/core/component-registry.js');
+                            return { 
+                                success: true, 
+                                result: `ComponentRegistry class: ${!!ComponentRegistry}, getComponentRegistry: ${!!getComponentRegistry}` 
+                            };
+                        } catch (error) {
+                            return { success: false, result: error.message };
+                        }
+                    }
+                },
+                {
+                    name: 'Registry Singleton',
+                    test: async () => {
+                        try {
+                            const { getComponentRegistry } = await import('/src/core/component-registry.js');
+                            const registry1 = getComponentRegistry();
+                            const registry2 = getComponentRegistry();
+                            return { 
+                                success: registry1 === registry2, 
+                                result: `Singleton check: ${registry1 === registry2}` 
+                            };
+                        } catch (error) {
+                            return { success: false, result: error.message };
+                        }
+                    }
+                },
+                {
+                    name: 'Component Registration',
+                    test: async () => {
+                        try {
+                            const { getComponentRegistry } = await import('/src/core/component-registry.js');
+                            const registry = getComponentRegistry();
+                            const status = registry.getStatus();
+                            return { 
+                                success: status.total > 0, 
+                                result: `Registered components: ${status.components.join(', ')}` 
+                            };
+                        } catch (error) {
+                            return { success: false, result: error.message };
+                        }
+                    }
+                },
+                {
+                    name: 'ToneControl Loading',
+                    test: async () => {
+                        try {
+                            const { getComponentRegistry } = await import('/src/core/component-registry.js');
+                            const registry = getComponentRegistry();
+                            const result = await registry.load('tone-control');
+                            return { 
+                                success: !!result && !!result.ToneControl, 
+                                result: `ToneControl loaded: ${!!result?.ToneControl}` 
+                            };
+                        } catch (error) {
+                            return { success: false, result: error.message };
+                        }
+                    }
+                }
+            ];
+            
+            for (const test of tests) {
+                const testItem = document.createElement('div');
+                testItem.className = 'test-item';
+                testItem.innerHTML = `
+                    <div class="test-title">${test.name}</div>
+                    <div class="test-result">Running test...</div>
+                `;
+                testContainer.appendChild(testItem);
+                
+                try {
+                    const result = await test.test();
+                    testItem.className = `test-item ${result.success ? 'success' : 'error'}`;
+                    testItem.querySelector('.test-result').textContent = result.result;
+                    window.testResults.registry[test.name] = result;
+                    window.testResults.totalTests++;
+                    if (result.success) window.testResults.passedTests++;
+                    else window.testResults.failedTests++;
+                    log(`✓ Registry test "${test.name}": ${result.success ? 'PASSED' : 'FAILED'}`, result.success ? 'success' : 'error');
+                } catch (error) {
+                    testItem.className = 'test-item error';
+                    testItem.querySelector('.test-result').textContent = error.message;
+                    log(`✗ Registry test "${test.name}": ERROR - ${error.message}`, 'error');
+                    window.testResults.failedTests++;
+                    window.testResults.totalTests++;
+                }
+            }
+        }
+        
+        // Test ToneControl component ES6 functionality
+        async function testToneControlES6() {
+            log('🎛️ Testing ToneControl ES6 Component...', 'info');
+            const testContainer = document.getElementById('toneControlTests');
+            testContainer.innerHTML = '';
+            
+            const tests = [
+                {
+                    name: 'Direct ES6 Import',
+                    test: async () => {
+                        try {
+                            const exports = await import('/src/components/tone-control/tone-control.js');
+                            return { 
+                                success: !!exports.ToneControl, 
+                                result: `ToneControl class: ${!!exports.ToneControl}, Helper functions: ${!!exports.sliderToFreq}` 
+                            };
+                        } catch (error) {
+                            return { success: false, result: error.message };
+                        }
+                    }
+                },
+                {
+                    name: 'Global Compatibility',
+                    test: async () => {
+                        try {
+                            await import('/src/components/tone-control/tone-control.js');
+                            const globalAvailable = !!window.ToneControl && !!window.sliderToFreq;
+                            return { 
+                                success: globalAvailable, 
+                                result: `Global ToneControl: ${!!window.ToneControl}, Global helpers: ${!!window.sliderToFreq}` 
+                            };
+                        } catch (error) {
+                            return { success: false, result: error.message };
+                        }
+                    }
+                },
+                {
+                    name: 'Component Instantiation',
+                    test: async () => {
+                        try {
+                            // Clear any existing demo
+                            const demoContainer = document.getElementById('toneControlDemo');
+                            demoContainer.innerHTML = '<tone-control id="testToneControl" aria-label="Test tone control"></tone-control>';
+                            
+                            // Wait for component to be defined
+                            await customElements.whenDefined('tone-control');
+                            
+                            const component = document.getElementById('testToneControl');
+                            const isConnected = component && component.shadowRoot;
+                            return { 
+                                success: !!isConnected, 
+                                result: `Component connected: ${!!isConnected}, Shadow root: ${!!component?.shadowRoot}` 
+                            };
+                        } catch (error) {
+                            return { success: false, result: error.message };
+                        }
+                    }
+                },
+                {
+                    name: 'Component Properties',
+                    test: async () => {
+                        try {
+                            const component = document.getElementById('testToneControl');
+                            if (!component) return { success: false, result: 'Component not found' };
+                            
+                            // Test property setting
+                            component.frequency = 2000;
+                            component.colormap = 'googleturbo';
+                            
+                            const freqMatch = Math.abs(component.frequency - 2000) < 0.1;
+                            const colormapMatch = component.colormap === 'googleturbo';
+                            
+                            return { 
+                                success: freqMatch && colormapMatch, 
+                                result: `Frequency: ${component.frequency}Hz (${freqMatch}), Colormap: ${component.colormap} (${colormapMatch})` 
+                            };
+                        } catch (error) {
+                            return { success: false, result: error.message };
+                        }
+                    }
+                }
+            ];
+            
+            for (const test of tests) {
+                const testItem = document.createElement('div');
+                testItem.className = 'test-item';
+                testItem.innerHTML = `
+                    <div class="test-title">${test.name}</div>
+                    <div class="test-result">Running test...</div>
+                `;
+                testContainer.appendChild(testItem);
+                
+                try {
+                    const result = await test.test();
+                    testItem.className = `test-item ${result.success ? 'success' : 'error'}`;
+                    testItem.querySelector('.test-result').textContent = result.result;
+                    window.testResults.toneControl[test.name] = result;
+                    window.testResults.totalTests++;
+                    if (result.success) window.testResults.passedTests++;
+                    else window.testResults.failedTests++;
+                    log(`✓ ToneControl test "${test.name}": ${result.success ? 'PASSED' : 'FAILED'}`, result.success ? 'success' : 'error');
+                } catch (error) {
+                    testItem.className = 'test-item error';
+                    testItem.querySelector('.test-result').textContent = error.message;
+                    log(`✗ ToneControl test "${test.name}": ERROR - ${error.message}`, 'error');
+                    window.testResults.failedTests++;
+                    window.testResults.totalTests++;
+                }
+            }
+        }
+        
+        // Test hybrid compatibility (ES6 + Global)
+        async function testHybridCompatibility() {
+            log('🔄 Testing Hybrid Compatibility...', 'info');
+            const testContainer = document.getElementById('hybridTests');
+            testContainer.innerHTML = '';
+            
+            const tests = [
+                {
+                    name: 'Phase 1 Integration',
+                    test: async () => {
+                        try {
+                            const config = await import('/src/core/config.js');
+                            const mobileDetection = await import('/src/utils/mobile-detection.js');
+                            const themeManager = await import('/src/core/theme-manager.js');
+                            
+                            return { 
+                                success: !!config.Config && !!mobileDetection.MobileDetection && !!themeManager.ThemeManager, 
+                                result: `Phase 1 modules loaded: Config, MobileDetection, ThemeManager` 
+                            };
+                        } catch (error) {
+                            return { success: false, result: error.message };
+                        }
+                    }
+                },
+                {
+                    name: 'Global Fallback',
+                    test: async () => {
+                        try {
+                            // Test that global fallbacks are available
+                            const globalRegistry = !!window.ComponentRegistry && !!window.getComponentRegistry;
+                            const globalToneControl = !!window.ToneControl;
+                            
+                            return { 
+                                success: globalRegistry && globalToneControl, 
+                                result: `Global registry: ${globalRegistry}, Global ToneControl: ${globalToneControl}` 
+                            };
+                        } catch (error) {
+                            return { success: false, result: error.message };
+                        }
+                    }
+                },
+                {
+                    name: 'Module Loading Integration',
+                    test: async () => {
+                        try {
+                            // Test that module loader can access component registry
+                            const hasGlobalModuleLoader = !!window.loadModule;
+                            const hasModuleHTML = !!window.moduleHTML;
+                            const spectrogramTemplate = window.moduleHTML?.['spectrogram'];
+                            const hasNoScriptTag = spectrogramTemplate && !spectrogramTemplate.includes('<script');
+                            
+                            return { 
+                                success: hasGlobalModuleLoader && hasModuleHTML && hasNoScriptTag, 
+                                result: `Module loader: ${hasGlobalModuleLoader}, Templates: ${hasModuleHTML}, Clean spectrogram template: ${hasNoScriptTag}` 
+                            };
+                        } catch (error) {
+                            return { success: false, result: error.message };
+                        }
+                    }
+                }
+            ];
+            
+            for (const test of tests) {
+                const testItem = document.createElement('div');
+                testItem.className = 'test-item';
+                testItem.innerHTML = `
+                    <div class="test-title">${test.name}</div>
+                    <div class="test-result">Running test...</div>
+                `;
+                testContainer.appendChild(testItem);
+                
+                try {
+                    const result = await test.test();
+                    testItem.className = `test-item ${result.success ? 'success' : 'error'}`;
+                    testItem.querySelector('.test-result').textContent = result.result;
+                    window.testResults.hybrid[test.name] = result;
+                    window.testResults.totalTests++;
+                    if (result.success) window.testResults.passedTests++;
+                    else window.testResults.failedTests++;
+                    log(`✓ Hybrid test "${test.name}": ${result.success ? 'PASSED' : 'FAILED'}`, result.success ? 'success' : 'error');
+                } catch (error) {
+                    testItem.className = 'test-item error';
+                    testItem.querySelector('.test-result').textContent = error.message;
+                    log(`✗ Hybrid test "${test.name}": ERROR - ${error.message}`, 'error');
+                    window.testResults.failedTests++;
+                    window.testResults.totalTests++;
+                }
+            }
+        }
+        
+        // Update test summary
+        function updateTestSummary() {
+            const summaryDiv = document.getElementById('testSummary');
+            const { totalTests, passedTests, failedTests } = window.testResults;
+            const successRate = totalTests > 0 ? ((passedTests / totalTests) * 100).toFixed(1) : 0;
+            
+            summaryDiv.innerHTML = `
+                <div class="test-result">
+📊 Test Summary:
+- Total Tests: ${totalTests}
+- Passed: ${passedTests}
+- Failed: ${failedTests}
+- Success Rate: ${successRate}%
+
+${successRate >= 80 ? '✅ Phase 2 Component System is working well!' : '⚠️ Some tests failed - check the results above'}
+                </div>
+            `;
+        }
+        
+        // Run all tests
+        async function runAllTests() {
+            log('🚀 Starting Phase 2 Component System Test Suite...', 'info');
+            
+            // Reset test results
+            window.testResults = {
+                registry: {},
+                toneControl: {},
+                hybrid: {},
+                totalTests: 0,
+                passedTests: 0,
+                failedTests: 0
+            };
+            
+            await testComponentRegistry();
+            await testToneControlES6();
+            await testHybridCompatibility();
+            
+            updateTestSummary();
+            log(`🏁 Test suite completed: ${window.testResults.passedTests}/${window.testResults.totalTests} tests passed`, 'success');
+        }
+        
+        // Make functions globally available
+        window.testComponentRegistry = testComponentRegistry;
+        window.testToneControlES6 = testToneControlES6;
+        window.testHybridCompatibility = testHybridCompatibility;
+        window.runAllTests = runAllTests;
+        
+        // Initialize
+        log('Phase 2 Component System Test Suite loaded. Click "Run All Tests" to begin.', 'info');
+    </script>
+</body>
+</html>

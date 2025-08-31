@@ -11,9 +11,8 @@
     --panel-bg-color: #1e1e1e;
     --panel-bg-color-rgb: 30, 30, 30;
     --panel-border-color: #333;
-    --accent-color: #0088ff; /* Electric blue */
-    --accent-color-rgb: 0, 136, 255;
-    --accent-hover-color: #3399ff;
+    --primary-color: #28a745;      /* Green from qoder.com example, aligns with clover */
+    --primary-color-hover: #218838; /* A darker shade for hover states */
     --muted-text-color: #888;
     --neutral-text-color: #aaa;
 }
@@ -24,8 +23,8 @@ body.light-theme {
     --panel-bg-color: #ffffff;
     --panel-bg-color-rgb: 255, 255, 255;
     --panel-border-color: #dddddd;
-    --accent-color: #0088ff; /* Electric blue */
-    --accent-hover-color: #3399ff;
+    --primary-color: #28a745;
+    --primary-color-hover: #218838;
     --muted-text-color: #666;
     --neutral-text-color: #777;
 }
@@ -46,21 +45,27 @@ body {
     font-size: 0.85rem;
 }
 
-/* Typography - Reduced sizes */
-h1 { font-size: 1.5rem; margin: 0.5rem 0; }
-h2 { font-size: 1.25rem; margin: 0.45rem 0; }
-h3 { font-size: 1.1rem; margin: 0.4rem 0; }
-h4 { font-size: 1rem; margin: 0.35rem 0; }
-h5 { font-size: 0.9rem; margin: 0.3rem 0; }
-h6 { font-size: 0.8rem; margin: 0.25rem 0; }
+/* Typography */
+h1, .h1 { font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 600; }
+
+h2, .h2 { font-size: 1.2rem; margin-bottom: 0.6rem; font-weight: 600; }
+
+h3, .h3 { font-size: 1.0rem; margin-bottom: 0.5rem; font-weight: 600; }
+
+h4, .h4 { font-size: 0.9rem; margin-bottom: 0.4rem; font-weight: 600; }
+
+h5, .h5 { font-size: 0.8rem; margin-bottom: 0.3rem; font-weight: 500; }
+
+h6, .h6 { font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500; }
+
 p { font-size: 0.85rem; margin: 0.4rem 0; line-height: 1.4; }
 
 a {
-    color: var(--accent-color);
+    color: var(--primary-color);
     text-decoration: none;
 }
 a:hover {
-    color: var(--accent-hover-color);
+    color: var(--primary-color-hover);
 }
 
 /* Footer */

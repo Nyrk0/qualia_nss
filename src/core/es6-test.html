@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ES6 Modules Phase 1 Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #1e1e1e; color: #e0e0e0; }
+        .test-section { margin: 20px 0; padding: 20px; background: #2a2a2a; border-radius: 8px; }
+        .success { color: #32cd32; }
+        .error { color: #ff6b6b; }
+        button { padding: 8px 16px; margin: 8px; background: #0088ff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #3399ff; }
+        .output { background: #1a1a1a; padding: 12px; border-radius: 4px; margin: 8px 0; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🚀 ES6 Modules Phase 1 Test</h1>
+    <p>Testing hybrid ES6 module + global compatibility approach</p>
+
+    <div class="test-section">
+        <h2>Mobile Detection Test</h2>
+        <button onclick="testMobileDetection()">Test Mobile Detection</button>
+        <div id="mobileOutput" class="output"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Theme Manager Test</h2>
+        <button onclick="testThemeManager()">Initialize Theme Manager</button>
+        <button onclick="toggleTheme()">Toggle Theme</button>
+        <div id="themeOutput" class="output"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Configuration Test</h2>
+        <button onclick="testConfig()">Test Configuration</button>
+        <div id="configOutput" class="output"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Global Access Test</h2>
+        <button onclick="testGlobalAccess()">Test Global Compatibility</button>
+        <div id="globalOutput" class="output"></div>
+    </div>
+
+    <!-- ES6 Module Loading -->
+    <script type="module">
+        import { MobileDetection } from '../utils/mobile-detection.js';
+        import { ThemeManager } from './theme-manager.js';
+        import { Config, ConfigManager } from './config.js';
+
+        // Make modules available for testing
+        window.testModules = { MobileDetection, ThemeManager, Config, ConfigManager };
+
+        console.log('✅ ES6 modules loaded successfully');
+    </script>
+
+    <script>
+        // Test functions using both ES6 imports and global access
+
+        function testMobileDetection() {
+            const output = document.getElementById('mobileOutput');
+            try {
+                // Test ES6 import
+                const device = window.testModules.MobileDetection.getDeviceType();
+                const viewport = window.testModules.MobileDetection.getViewport();
+                const features = window.testModules.MobileDetection.getFeatureSupport();
+
+                // Test global access
+                const globalDevice = window.MobileDetection ? window.MobileDetection.getDeviceType() : null;
+
+                output.innerHTML = `
+                    <div class="success">✅ Mobile Detection Working</div>
+                    <strong>Device Type:</strong> ${device.type}<br>
+                    <strong>Mobile:</strong> ${device.mobile}<br>
+                    <strong>Touch:</strong> ${device.touch}<br>
+                    <strong>Viewport:</strong> ${viewport.width}x${viewport.height}<br>
+                    <strong>Web Audio Support:</strong> ${features.webAudio}<br>
+                    <strong>Global Access:</strong> ${globalDevice ? '✅ Available' : '❌ Not Available'}
+                `;
+            } catch (error) {
+                output.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        let themeManager = null;
+
+        async function testThemeManager() {
+            const output = document.getElementById('themeOutput');
+            try {
+                themeManager = await window.testModules.ThemeManager.init();
+                const currentTheme = themeManager.getCurrentTheme();
+                const themes = themeManager.getAvailableThemes();
+
+                // Test global access
+                const globalManager = window.ThemeManager ? window.ThemeManager.getInstance() : null;
+
+                output.innerHTML = `
+                    <div class="success">✅ Theme Manager Initialized</div>
+                    <strong>Current Theme:</strong> ${currentTheme}<br>
+                    <strong>Available Themes:</strong> ${themes.map(t => t.displayName).join(', ')}<br>
+                    <strong>Global Access:</strong> ${globalManager ? '✅ Available' : '❌ Not Available'}
+                `;
+            } catch (error) {
+                output.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        function toggleTheme() {
+            const output = document.getElementById('themeOutput');
+            if (themeManager) {
+                const newTheme = themeManager.toggleTheme();
+                output.innerHTML += `<br><strong>Theme switched to:</strong> ${newTheme}`;
+            } else {
+                output.innerHTML = `<div class="error">❌ Theme Manager not initialized</div>`;
+            }
+        }
+
+        function testConfig() {
+            const output = document.getElementById('configOutput');
+            try {
+                const configManager = window.testModules.ConfigManager.getInstance();
+                
+                // Test getting config values
+                const audioConfig = configManager.get('audio.sampleRate');
+                const appName = configManager.get('app.name');
+                const bands = configManager.get('audio.frequencies.bands');
+
+                // Test global access
+                const globalConfig = window.Config ? window.Config.app.name : null;
+
+                output.innerHTML = `
+                    <div class="success">✅ Configuration Working</div>
+                    <strong>App Name:</strong> ${appName}<br>
+                    <strong>Audio Sample Rate:</strong> ${audioConfig} Hz<br>
+                    <strong>Frequency Bands:</strong> ${Object.keys(bands).length} bands<br>
+                    <strong>Global Config:</strong> ${globalConfig || 'Not Available'}
+                `;
+            } catch (error) {
+                output.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        function testGlobalAccess() {
+            const output = document.getElementById('globalOutput');
+            const results = [];
+
+            // Test all global access
+            if (window.MobileDetection) {
+                results.push('✅ MobileDetection globally available');
+            } else {
+                results.push('❌ MobileDetection not global');
+            }
+
+            if (window.ThemeManager) {
+                results.push('✅ ThemeManager globally available');
+            } else {
+                results.push('❌ ThemeManager not global');
+            }
+
+            if (window.Config) {
+                results.push('✅ Config globally available');
+            } else {
+                results.push('❌ Config not global');
+            }
+
+            if (window.ConfigManager) {
+                results.push('✅ ConfigManager globally available');
+            } else {
+                results.push('❌ ConfigManager not global');
+            }
+
+            output.innerHTML = `
+                <div><strong>Global Compatibility Test:</strong></div>
+                ${results.map(r => `<div>${r}</div>`).join('')}
+            `;
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testMobileDetection();
+                testThemeManager();
+                testConfig();
+                testGlobalAccess();
+            }, 100);
+        });
+    </script>
+</body>
+</html>

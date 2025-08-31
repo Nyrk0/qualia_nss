@@ -15,7 +15,7 @@
 
 #sidebar {
     flex: 0 0 280px;
-    background-color: var(--panel-bg-color); /* match panel background */
+    background-color: var(--panel-bg-color);
     border-right: 1px solid var(--panel-border-color);
     padding: 0;
     overflow: hidden; /* Prevent sidebar itself from scrolling */
@@ -23,6 +23,8 @@
     display: flex;
     flex-direction: column;
     position: relative;
+    font-size: 0.8rem; /* Base font size for all sidebar content */
+    color: var(--sidebar-text-color);
 }
 
 #sidebar-canvas {
@@ -44,77 +46,81 @@
 /* Theme-consistent accordion styling */
 #sidebar .accordion {
     background-color: var(--panel-bg-color);
+    --bs-accordion-border-width: 0;
+    --bs-accordion-border-radius: 0;
 }
 
 #sidebar .accordion-item {
-    background-color: var(--panel-bg-color);
-    border: 1px solid var(--panel-border-color);
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid var(--panel-border-color);
+}
+
+#sidebar .accordion-item:last-child {
+    border-bottom: none;
 }
 
 #sidebar .accordion-button {
     background-color: var(--panel-bg-color);
-    color: var(--text-color);
+    color: var(--sidebar-text-color);
     border: none;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem; /* Slightly larger for headers */
+    font-weight: 500;
 }
 
 #sidebar .accordion-button:not(.collapsed) {
     background-color: var(--panel-bg-color);
-    color: var(--text-color);
+    color: var(--sidebar-text-color);
     box-shadow: none;
 }
 
 #sidebar .accordion-button:focus {
-    box-shadow: 0 0 0 0.25rem rgba(var(--accent-color-rgb), 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(var(--primary-color), 0.25);
 }
 
 #sidebar .accordion-body {
     background-color: var(--panel-bg-color);
-    color: var(--text-color);
+    color: var(--sidebar-text-color);
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
 }
 
 /* Theme-consistent form controls in sidebar */
-#sidebar .form-control {
-    background-color: var(--panel-bg-color);
-    border: 1px solid var(--panel-border-color);
-    color: var(--text-color);
-}
-
-#sidebar .form-control:focus {
-    background-color: var(--panel-bg-color);
-    border-color: var(--accent-color);
-    color: var(--text-color);
-    box-shadow: 0 0 0 0.25rem rgba(var(--accent-color-rgb), 0.25);
-}
-
+#sidebar .form-control,
 #sidebar .form-select {
-    background-color: var(--panel-bg-color);
-    border: 1px solid var(--panel-border-color);
-    color: var(--text-color);
+    background-color: var(--bg-color); /* Use main bg for inputs for contrast */
+    border: 1px solid var(--border-color);
+    color: var(--sidebar-text-color);
+}
+
+#sidebar .form-control:focus,
+#sidebar .form-select:focus {
+    background-color: var(--bg-color);
+    border-color: var(--primary-color);
+    color: var(--text-color); /* Use brighter text color on focus */
+    box-shadow: 0 0 0 0.2rem hsla(var(--primary-color), 0.25);
 }
 
 #sidebar .form-check-input:checked {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
 }
-
 
 /* Sidebar label and helper text colors - theme consistent */
 #sidebar label,
 #sidebar .form-label,
 #sidebar .form-check-label {
-    color: var(--text-color);
+    color: var(--sidebar-text-color);
+    font-size: 0.75rem;
 }
 
 #sidebar .form-text,
 #sidebar .input-group-text,
 #sidebar small,
 #sidebar .text-muted {
-    color: var(--muted-text-color) !important;
-}
-
-/* Ensure muted text remains readable on dark backgrounds */
-#sidebar .text-muted {
-    opacity: 1 !important;
+    color: var(--sidebar-text-color) !important;
+    opacity: 0.8;
 }
 
 #sidebar .input-group-text {
@@ -122,27 +128,13 @@
     border: 1px solid var(--panel-border-color);
 }
 
-/* Strong override for tick labels under sliders inside accordion bodies */
-#sidebar .accordion-body small,
-#sidebar .accordion-body .text-muted,
-#sidebar .accordion-body .d-flex small,
-#sidebar .accordion-body .d-flex .text-muted {
-    color: var(--muted-text-color) !important;
-    opacity: 1 !important;
-}
+#sidebar::-webkit-scrollbar { display: none; }
 
-
-#sidebar::-webkit-scrollbar { /* Chrome/Safari */
-    width: 0;
-    height: 0;
-}
-/* No hover reveal: keep hidden at all times */
-
-/* Sidebar navigation styling */
+/* Sidebar navigation styling (for future use, e.g., TOC) */
 #sidebar .nav-item,
 #sidebar button,
 #sidebar .btn {
-    color: var(--neutral-text-color) !important;
+    color: var(--sidebar-text-color) !important;
     border: 1px solid transparent;
     transition: all 0.2s ease;
 }
@@ -151,37 +143,40 @@
 #sidebar button:hover,
 #sidebar .btn:hover {
     color: var(--text-color) !important;
+    background-color: var(--primary-color-translucent) !important;
 }
 
+/* Active items get brighter text and a subtle green border */
 #sidebar .nav-item.active,
 #sidebar button.active,
 #sidebar .btn.active {
-    color: var(--accent-color) !important;
-    border-color: var(--accent-color);
+    color: var(--text-color) !important;
+    border-color: var(--primary-color);
+    background-color: var(--primary-color-translucent) !important;
     font-weight: 600;
 }
 
-/* Sidebar Header */
+/* Sidebar Header (for modules that have one) */
 .sidebar-header {
-    background-color: var(--accent-color);
-    color: white;
-    padding: 0.75rem 1rem;
+    background-color: transparent;
+    padding: 0.5rem 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--panel-border-color);
+    border-bottom: 1px solid var(--border-color);
 }
 
-.sidebar-header h3 {
+.sidebar-header h2 {
     margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--sidebar-text-color);
 }
 
 .btn-close-sidebar {
     background: none;
     border: none;
-    color: white;
+    color: var(--sidebar-text-color);
     font-size: 1.5rem;
     cursor: pointer;
     padding: 0;
@@ -195,7 +190,7 @@
 }
 
 .btn-close-sidebar:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: var(--primary-color-translucent);
 }
 
 /* Sidebar Sections */
@@ -208,30 +203,40 @@
     border-bottom: none;
 }
 
-.sidebar-section h4 {
-    font-size: 0.9rem;
-    font-weight: 600;
+.sidebar-section h2,
+.sidebar-section h3 {
+    font-weight: 500;
     margin-bottom: 0.75rem;
-    color: var(--text-color);
+    color: var(--sidebar-text-color);
     display: flex;
     align-items: center;
 }
 
-.sidebar-section h4 i {
-    color: var(--accent-color);
+.sidebar-section h2 {
+    font-size: 0.9rem;
+}
+
+.sidebar-section h3 {
+    font-size: 0.85rem;
+}
+
+.sidebar-section h2 i,
+.sidebar-section h3 i {
+    margin-right: 0.5rem;
+    color: var(--sidebar-text-color);
 }
 
 #main-content {
     flex: 1 1 auto;
-    min-height: 0; /* avoid forcing parent to overflow */
-    max-height: 100%; /* prevent growing beyond parent */
-    display: flex; /* allow module root to fill height */
+    min-height: 0;
+    max-height: 100%;
+    display: flex;
     flex-direction: column;
     padding: 1rem;
-    overflow: hidden; /* ensure no overflow from main content */
+    overflow: hidden;
 }
 
-/* Removed large screen override - consistent behavior across all screen sizes */
+/* Main content text color is handled by the `body` style in core.css */
 
 /* Home page specific styles */
 .home-page #main-content.full-width {

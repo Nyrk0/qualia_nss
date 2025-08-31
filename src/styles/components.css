@@ -28,7 +28,7 @@
     width: 100%;
     padding: 0.4rem 0.6rem;
     margin-bottom: 0.3rem;
-    background: var(--panel-bg-color);
+    background: transparent;
     border: 1px solid var(--panel-border-color);
     color: var(--neutral-text-color);
     font-size: 0.8rem;
@@ -41,14 +41,14 @@
 }
 
 .btn-sidebar:hover {
-    border-color: #666;
-    background-color: rgba(106, 169, 255, 0.05);
+    border-color: var(--primary-color);
+    background-color: var(--primary-color-translucent);
 }
 
 .btn-sidebar.btn-primary {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
-    color: white;
+    background-color: transparent;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
 }
 
 .btn-sidebar.btn-success {
@@ -73,8 +73,8 @@
 }
 
 .btn-primary {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
     color: white;
     padding: 0.5rem 1rem;
     border-radius: 4px;
@@ -83,7 +83,7 @@
 }
 
 .btn-primary:hover {
-    background-color: var(--accent-hover-color);
+    background-color: var(--primary-color-hover);
 }
 
 .btn-secondary {
@@ -116,7 +116,7 @@
 }
 
 .workflow-item:hover {
-    background-color: rgba(106, 169, 255, 0.1);
+    background-color: var(--primary-color-translucent);
 }
 
 .workflow-item.completed .check-icon {
@@ -126,7 +126,7 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background-color: var(--accent-color);
+    background-color: var(--primary-color);
     color: white;
     font-size: 12px;
     font-weight: bold;
@@ -143,14 +143,14 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background-color: var(--accent-color);
+    background-color: var(--primary-color);
     color: white;
     font-size: 12px;
     font-weight: bold;
 }
 
 .workflow-item.current .item-text {
-    color: var(--accent-color);
+    color: var(--primary-color);
     font-weight: 600;
 }
 
@@ -167,7 +167,7 @@
     transform: translateY(-50%);
     width: 1.5rem;
     height: 1px;
-    background-color: var(--accent-color);
+    background-color: var(--primary-color);
     opacity: 0.3;
 }
 
@@ -185,7 +185,7 @@
 
 .fft-bar {
     flex: 1;
-    background: linear-gradient(to top, var(--accent-color), var(--accent-hover-color));
+    background: linear-gradient(to top, var(--primary-color), var(--primary-color-hover));
     min-height: 2px;
     border-radius: 1px 1px 0 0;
     animation: fft-pulse 2s ease-in-out infinite;
@@ -228,9 +228,46 @@
     display: block;
 }
 
-.filters-controls input[type="range"],
-.tests-controls input[type="range"] {
-    width: 100%;
+/* Themed Range Sliders */
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%; /* Ensure all sliders use full width */
+}
+
+/* Track */
+input[type=range]::-webkit-slider-runnable-track {
+  background: var(--slider-track-color);
+  height: 4px;
+  border-radius: 2px;
+}
+input[type=range]::-moz-range-track {
+  background: var(--slider-track-color);
+  height: 4px;
+  border-radius: 2px;
+}
+
+/* Thumb */
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -6px; /* Position thumb correctly */
+  background-color: var(--primary-color);
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--panel-bg-color);
+}
+
+input[type=range]::-moz-range-thumb {
+  border: none; /* Remove default border */
+  background-color: var(--primary-color);
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--panel-bg-color);
 }
 
 .filters-controls select,

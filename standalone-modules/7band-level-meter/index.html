@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7-Band Level Meter</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>7‑Band Level Meter</h1>
+        
+        <!-- 7-Band SPL Meter (only) -->
+        <div class="bands-section">
+            <div class="controls controls-row">
+                <select id="deviceSelect" aria-label="Input device">
+                    <option value="">Select microphone...</option>
+                </select>
+                <button id="refreshDevices">Refresh</button>
+                <button id="startBtn">Start Microphone</button>
+                <button id="retryBtn" style="display:none;">Retry</button>
+                <label for="calOffset" class="cal-label" style="margin-left:8px;white-space:nowrap;">Cal (dBFS):</label>
+                <input id="calOffset" type="number" step="0.1" value="0" aria-label="Calibration offset in dBFS" style="width:48px;">
+                <button id="calReset" title="Reset calibration to 0 dB">Reset</button>
+                <button id="whiteNoiseBtn">Start White Noise</button>
+                <button id="stopNoiseBtn" style="display:none;">Stop Noise</button>
+            </div>
+            <div id="errorBox" class="error-box" role="alert" style="display:none"></div>
+            <div id="bandsContainer" class="bands-container"></div>
+            <!-- Generator controls: wide slider under bands 1–7, Hz + toggle under Total -->
+            <div class="generator-grid" aria-label="Sine tone generator controls">
+                <tone-control id="toneControl"></tone-control>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Inline Tone Control Component - Standalone Version -->
+    <script>
+        /**
+         * Tone Control Web Component - Standalone Inline Version
+         * Self-contained for use in standalone modules
+         */
+
+        const TONE_TEMPLATE = document.createElement('template');
+        TONE_TEMPLATE.innerHTML = `
+          <style>
+            :host { 
+              display: block; 
+              font-family: inherit; 
+              color: var(--tone-color, #9aa6b2);
+              width: 100%;
+            }
+            
+            .container { 
+              display: grid; 
+              grid-template-columns: 1fr auto; 
+              gap: 8px; 
+              align-items: center; 
+              width: 100%;
+              box-sizing: border-box;
+            }
+            
+            .slider-container { 
+              position: relative;
+              width: 100%;
+              padding: 0;
+              margin: 0;
+            }
+            
+            .info-container { 
+              display: flex; 
+              gap: 8px; 
+              align-items: center; 
+              white-space: nowrap;
+            }
+
+            input[type="range"] { 
+              width: 100%; 
+              height: 14px;
+              -webkit-appearance: none; 
+              appearance: none; 
+              background: transparent;
+              outline: none;
+              margin: 0;
+              padding: 0;
+              cursor: pointer;
+            }
+            
+            input[type="range"]::-webkit-slider-runnable-track {
+              height: 6px; 
+              background: #26303b;
+              border-radius: 3px;
+              border: none;
+              outline: none;
+            }
+            
+            input[type="range"]::-webkit-slider-thumb {
+              -webkit-appearance: none; 
+              width: 14px; 
+              height: 14px; 
+              margin-top: -4px; 
+              border-radius: 50%; 
+              background: currentColor; 
+              border: 0; 
+              box-shadow: none;
+              cursor: pointer;
+            }
+            
+            input[type="range"]::-moz-range-track {
+              height: 6px; 
+              background: #26303b;
+              border-radius: 3px;
+              border: none;
+              outline: none;
+            }
+            
+            input[type="range"]::-moz-range-thumb { 
+              width: 14px; 
+              height: 14px; 
+              border-radius: 50%; 
+              background: currentColor; 
+              border: 0; 
+              box-shadow: none;
+              cursor: pointer;
+            }
+
+            .btn { 
+              padding: 6px 8px; 
+              line-height: 1; 
+              background: #2a2a2a; 
+              color: currentColor; 
+              border: 1px solid #3a3a3a; 
+              border-radius: 6px; 
+              cursor: pointer;
+            }
+            
+            .btn.icon svg { 
+              display: block; 
+              width: 16px; 
+              height: 16px; 
+              fill: currentColor; 
+              stroke: none; 
+            }
+            
+            .btn.icon.active { 
+              box-shadow: 0 0 0 2px rgba(255,255,255,0.08) inset; 
+              background: #2a3440; 
+            }
+
+            .label { 
+              font-variant-numeric: tabular-nums; 
+              opacity: 0.9; 
+              font-size: 12px;
+              min-width: 60px;
+              text-align: right;
+              color: inherit;
+            }
+            
+            input[type="range"] {
+              color: var(--frequency-color, currentColor);
+            }
+          </style>
+          
+          <div class="container">
+            <div class="slider-container">
+              <input id="slider" type="range" min="0" max="1" step="0.001" value="0.566" aria-label="Sine frequency (Hz)">
+            </div>
+            <div class="info-container">
+              <span id="label" class="label">1000 Hz</span>
+              <button id="toggle" class="btn icon" title="Toggle tone" aria-label="Toggle tone" aria-pressed="false"></button>
+            </div>
+          </div>
+        `;
+
+        function clampValue(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+        function formatHz(hz) { return `${Math.round(hz)} Hz`; }
+
+        // Frequency mapping constants
+        const FREQ_MIN = 20;
+        const FREQ_MAX = 20000;
+        const LOG_FREQ_MIN = Math.log10(FREQ_MIN);
+        const LOG_FREQ_MAX = Math.log10(FREQ_MAX);
+
+        function sliderValueToFreq(val) {
+          const v = typeof val === 'number' ? val : parseFloat(val || '0');
+          const logF = LOG_FREQ_MIN + (LOG_FREQ_MAX - LOG_FREQ_MIN) * clampValue(v, 0, 1);
+          return Math.pow(10, logF);
+        }
+
+        function freqToSliderValue(hz) {
+          const h = clampValue(hz, FREQ_MIN, FREQ_MAX);
+          const t = (Math.log10(h) - LOG_FREQ_MIN) / (LOG_FREQ_MAX - LOG_FREQ_MIN);
+          return clampValue(t, 0, 1);
+        }
+
+        // 7-band colormap for frequency visualization
+        const BAND_COLORMAP = [
+          { f1: 20,   f2: 60,    color: '#8b0000' },
+          { f1: 60,   f2: 250,   color: '#dc143c' },
+          { f1: 250,  f2: 500,   color: '#ff6347' },
+          { f1: 500,  f2: 2000,  color: '#ff8c00' },
+          { f1: 2000, f2: 4000,  color: '#32cd32' },
+          { f1: 4000, f2: 6000,  color: '#1e90ff' },
+          { f1: 6000, f2: 20000, color: '#9370db' }
+        ];
+
+        function getFrequencyColor(freq) {
+          const band = BAND_COLORMAP.find(b => freq >= b.f1 && freq <= b.f2);
+          return band ? band.color : '#9aa6b2';
+        }
+
+        class StandaloneToneControl extends HTMLElement {
+          static get observedAttributes() { return ['value', 'active']; }
+
+          constructor() {
+            super();
+            this._frequency = 1000;
+            this._active = false;
+
+            this.attachShadow({ mode: 'open' });
+            this.shadowRoot.appendChild(TONE_TEMPLATE.content.cloneNode(true));
+
+            this.$slider = this.shadowRoot.getElementById('slider');
+            this.$toggle = this.shadowRoot.getElementById('toggle');
+            this.$label = this.shadowRoot.getElementById('label');
+
+            this._updateLabel();
+            this._updateColor();
+            this._renderIcon();
+          }
+
+          connectedCallback() {
+            this.$slider.addEventListener('input', this._onSlider.bind(this));
+            this.$toggle.addEventListener('click', this._onToggle.bind(this));
+
+            if (!this.hasAttribute('value')) {
+              this._frequency = 1000;
+            }
+            this.$slider.value = String(freqToSliderValue(this._frequency));
+            this._updateLabel();
+            this._updateColor();
+          }
+
+          disconnectedCallback() {
+            this.$slider.removeEventListener('input', this._onSlider);
+            this.$toggle.removeEventListener('click', this._onToggle);
+          }
+
+          get frequency() { return this._frequency; }
+          set frequency(hz) {
+            const f = clampValue(Number(hz) || 1000, FREQ_MIN, FREQ_MAX);
+            if (f === this._frequency) return;
+            this._frequency = f;
+            if (this.$slider) this.$slider.value = String(freqToSliderValue(f));
+            this._updateLabel();
+            this._updateColor();
+            this._emit('frequencychange', { frequency: this._frequency });
+          }
+
+          get active() { return this._active; }
+          set active(on) {
+            const v = !!on;
+            if (v === this._active) return;
+            this._active = v;
+            this._renderIcon();
+            this._emit('toggle', { active: this._active });
+            if (this._active) this.setAttribute('active', ''); else this.removeAttribute('active');
+          }
+
+          _onSlider(e) {
+            const v = parseFloat(e.target.value);
+            const hz = sliderValueToFreq(v);
+            this._frequency = hz;
+            this._updateLabel();
+            this._updateColor();
+            this._emit('frequencychange', { frequency: hz });
+          }
+
+          _onToggle() {
+            this.active = !this._active;
+          }
+
+          _updateLabel() {
+            if (!this.$label) return;
+            this.$label.textContent = formatHz(this._frequency);
+          }
+
+          _updateColor() {
+            const color = getFrequencyColor(this._frequency);
+            if (this.$slider) {
+              this.$slider.style.setProperty('--frequency-color', color);
+              this.$slider.style.color = color;
+            }
+            if (this.$toggle) {
+              this.$toggle.style.color = color;
+            }
+          }
+
+          _renderIcon() {
+            if (!this.$toggle) return;
+            const onIcon = `
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 10v4h3l4 4V6L6 10H3z"></path>
+                <path d="M16.5 12a2.5 2.5 0 0 0-1.5-2.3v4.6c.9-.4 1.5-1.3 1.5-2.3z"></path>
+                <path d="M19 12c0 2.5-1.5 4.6-3.5 5.5v-11C17.5 6.4 19 9.5 19 12z"></path>
+              </svg>`;
+            const offIcon = `
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 10v4h3l4 4V6L6 10H3z"></path>
+              </svg>`;
+            this.$toggle.innerHTML = this._active ? onIcon : offIcon;
+            this.$toggle.classList.toggle('active', !!this._active);
+            this.$toggle.setAttribute('aria-pressed', this._active ? 'true' : 'false');
+          }
+
+          _emit(type, detail) { 
+            this.dispatchEvent(new CustomEvent(type, { bubbles: true, composed: true, detail })); 
+          }
+        }
+
+        // Register the standalone component
+        customElements.define('tone-control', StandaloneToneControl);
+    </script>
+    
+    <script src="script.js"></script>
+</body>
+</html>
