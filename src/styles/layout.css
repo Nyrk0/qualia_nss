@@ -233,7 +233,8 @@
     display: flex;
     flex-direction: column;
     padding: 1rem;
-    overflow: hidden;
+    overflow-y: auto; /* Allow vertical scrolling when content exceeds height */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 /* Main content text color is handled by the `body` style in core.css */

@@ -47,6 +47,9 @@
     padding: 0;
     background-color: var(--bg-color);
     min-height: 400px;
+    flex: 1 1 auto; /* Take up available space in flex container */
+    overflow-y: auto; /* Allow scrolling when content exceeds container height */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 /* Wiki Breadcrumb - Using theme variables only */

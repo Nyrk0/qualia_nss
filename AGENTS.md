@@ -48,18 +48,23 @@ npx http-server -p 8080
 
 ## 🏗️ Architecture Overview
 
-### Modular Single Page Application
-**Entry Point**: `index.html` - Unified application shell with modular loading
+### Modular SPA Architecture
+- **Entry Point**: `index.html` - Unified shell with dynamic module loading
+- **Pattern**: Vanilla JavaScript ES6 modules with global compatibility
+- **Loading**: Sequential JavaScript, CSS with dependency management
 
-**Core JavaScript Load Order** (CRITICAL - must load in sequence):
+<details>
+<summary><strong>📜 Core File Load Order (Click to expand)</strong></summary>
+
+**JavaScript Load Order** (CRITICAL - must load in sequence):
 1. `src/js/app-core.js` - Theme management and global stubs
-2. `src/js/ui-utils.js` - UI utilities and scroll effects
+2. `src/js/ui-utils.js` - UI utilities and scroll effects  
 3. `src/js/sidebar-manager.js` - Module sidebar templates
 4. `src/js/module-loader.js` - Dynamic module loading
 5. `src/js/navigation.js` - Navigation state and routing
 
-**Core CSS Dependencies** (core.css first, others flexible):
-1. `src/styles/core.css` - CSS variables and theme system (REQUIRED FIRST)
+**CSS Load Order** (core.css first, others flexible):
+1. `src/styles/core.css` - CSS variables and theme system ⚡ REQUIRED FIRST
 2. `src/styles/layout.css` - Main content and sidebar layouts
 3. `src/styles/navigation.css` - Header and navbar styling
 4. `src/styles/components.css` - UI components and forms
@@ -67,13 +72,19 @@ npx http-server -p 8080
 6. `src/styles/responsive.css` - Mobile and PWA optimizations
 7. `src/styles/modules/*.css` - Module-specific styles
 
-### Module Integration Pattern
+</details>
+
+<details>
+<summary><strong>🔧 Module Integration Checklist (Click to expand)</strong></summary>
+
 **Adding New Modules Requires**:
-1. HTML template in `moduleHTML` object (`module-loader.js:9`)
-2. Sidebar template in `sidebarHTML` object (`sidebar-manager.js:9`) 
-3. Navigation mapping in `setNavActiveForModule` (`navigation.js:28`)
-4. Module class: `ModuleName + "Module"` with `init()` and `destroy()` methods
-5. Global exposure: `window.ModuleNameModule = ModuleNameModule`
+1. HTML template → `moduleHTML` object (`module-loader.js:9`)
+2. Sidebar template → `sidebarHTML` object (`sidebar-manager.js:9`) 
+3. Navigation mapping → `setNavActiveForModule` (`navigation.js:28`)
+4. Module class → `ModuleName + "Module"` with `init()` and `destroy()` methods
+5. Global exposure → `window.ModuleNameModule = ModuleNameModule`
+
+</details>
 
 ---
 
@@ -141,26 +152,39 @@ element.style.display = 'none';
 
 ## 📁 Project Structure
 
-### Active Modules
+<details>
+<summary><strong>🎵 Active Modules (Click to expand)</strong></summary>
+
 ```
 src/spectrogram/          # 3D WebGL spectrogram (✅ Integrated)
-src/7band-levelmeter/     # Psychoacoustic level meter
+src/7band-levelmeter/     # Psychoacoustic level meter  
 src/wiki/                 # Documentation system (Git submodule)
 ```
 
-### Core System
+</details>
+
+<details>
+<summary><strong>⚙️ Core System (Click to expand)</strong></summary>
+
 ```
 src/js/                   # Core JavaScript (load order critical)
 src/styles/               # CSS modules (core.css first)
 src/components/           # Reusable web components
 ```
 
-### Development Resources
+</details>
+
+<details>
+<summary><strong>📚 Development Resources (Click to expand)</strong></summary>
+
 ```
-dev/dev_directives/       # Development rules and guidelines
+dev/core/                 # Primary development rules
+dev/specialized/          # Domain-specific guidelines  
 docs/                     # Documentation and guides
 assets/data/              # Sample audio files and test data
 ```
+
+</details>
 
 ---
 
