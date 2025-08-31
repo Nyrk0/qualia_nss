@@ -191,38 +191,50 @@ class WikiModule {
         
         // Generate basic TOC first, then enhance with headings asynchronously
         const links = files.map(file => {
-            const fileName = this.formatFileName(file.name || file);
-            const relativePath = file.path || file;
-            return `
-                <div class="form-check">
-                    <a href="#" class="wiki-link" data-path="${relativePath}" data-name="${fileName}">
-                        📄 ${fileName}
-                    </a>
-                </div>
-            `;
+            try {
+                const fileName = this.formatFileName(file.name || file) || 'Untitled';
+                const relativePath = (file.path || file || '').toString();
+                return `
+                    <div class="form-check">
+                        <a href="#" class="wiki-link" data-path="${relativePath}" data-name="${fileName}">
+                            📄 ${fileName}
+                        </a>
+                    </div>
+                `;
+            } catch (error) {
+                console.warn('Error processing file for TOC:', file, error);
+                return '<div class="form-check"><span class="text-muted">Error loading file</span></div>';
+            }
         }).join('');
         
         // Schedule hierarchical enhancement for after initial render
         setTimeout(() => this.enhanceAccordionWithHeadings(id, files), 500);
 
-        const isExpanded = id === 'general' ? 'true' : 'false';
-        const collapseClass = id === 'general' ? 'show' : '';
-        const buttonClass = id === 'general' ? '' : 'collapsed';
+        try {
+            const isExpanded = id === 'general' ? 'true' : 'false';
+            const collapseClass = id === 'general' ? 'show' : '';
+            const buttonClass = id === 'general' ? '' : 'collapsed';
+            const safeTitle = (title || 'Section').toString();
+            const safeId = (id || 'unknown').toString();
 
-        return `
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="heading-${id}">
-                    <button class="accordion-button ${buttonClass}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${id}" aria-expanded="${isExpanded}" aria-controls="collapse-${id}">
-                        ${title}
-                    </button>
-                </h2>
-                <div id="collapse-${id}" class="accordion-collapse collapse ${collapseClass}" aria-labelledby="heading-${id}" data-bs-parent="#sidebarAccordion">
-                    <div class="accordion-body">
-                        ${links}
+            return `
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading-${safeId}">
+                        <button class="accordion-button ${buttonClass}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${safeId}" aria-expanded="${isExpanded}" aria-controls="collapse-${safeId}">
+                            ${safeTitle}
+                        </button>
+                    </h2>
+                    <div id="collapse-${safeId}" class="accordion-collapse collapse ${collapseClass}" aria-labelledby="heading-${safeId}" data-bs-parent="#sidebarAccordion">
+                        <div class="accordion-body">
+                            ${links}
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+        } catch (error) {
+            console.error('Error creating accordion section:', error);
+            return '<div class="accordion-item"><div class="accordion-body"><p class="text-muted">Error loading section</p></div></div>';
+        }
     }
 
     addEventListeners() {
@@ -295,7 +307,7 @@ class WikiModule {
                 setTimeout(() => {
                     const headingElement = document.getElementById(targetHeading) || 
                                          document.querySelector(`[id="${targetHeading}"]`) ||
-                                         document.querySelector(`h1:contains("${targetHeading}"), h2:contains("${targetHeading}"), h3:contains("${targetHeading}"), h4:contains("${targetHeading}")`);
+                                         Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6')).find(el => el.textContent.includes(targetHeading));
                     
                     if (headingElement) {
                         headingElement.scrollIntoView({ 
