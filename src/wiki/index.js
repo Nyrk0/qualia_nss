@@ -41,19 +41,19 @@ class WikiModule {
             // Fetch directory structure using proper file system approach
             const wikiStructure = await this.scanWikiDirectory();
             
-            const userGuideHTML = await this.createAccordionSection(
+            const userGuideHTML = this.createAccordionSection(
                 'userGuide', 
                 '👤 User Guide', 
                 wikiStructure.userGuide
             );
             
-            const devDocsHTML = await this.createAccordionSection(
+            const devDocsHTML = this.createAccordionSection(
                 'devDocs', 
                 '🛠️ Developer Documentation', 
                 wikiStructure.devDocs
             );
             
-            const homeHTML = await this.createAccordionSection(
+            const homeHTML = this.createAccordionSection(
                 'general', 
                 '🏠 General', 
                 wikiStructure.general
@@ -104,7 +104,74 @@ class WikiModule {
         return headings;
     }
 
-    async createAccordionSection(id, title, files) {
+    // Enhance accordion section with hierarchical headings asynchronously
+    async enhanceAccordionWithHeadings(sectionId, files) {
+        try {
+            console.log(`📋 Enhancing TOC for section: ${sectionId}`);
+            const accordionBody = document.querySelector(`#collapse-${sectionId} .accordion-body`);
+            if (!accordionBody) {
+                console.warn(`Could not find accordion body for ${sectionId}`);
+                return;
+            }
+
+            // Build enhanced content with hierarchical headings
+            let enhancedContent = '';
+            
+            for (const file of files) {
+                const fileName = this.formatFileName(file.name || file);
+                const relativePath = file.path || file;
+                
+                // Add main document link
+                enhancedContent += `
+                    <div class="form-check">
+                        <a href="#" class="wiki-link" data-path="${relativePath}" data-name="${fileName}">
+                            📄 ${fileName}
+                        </a>
+                    </div>
+                `;
+                
+                // Load and parse headings
+                try {
+                    const response = await fetch(`/${file.path || file}`);
+                    if (response.ok) {
+                        const content = await response.text();
+                        const headings = this.extractHeadings(content);
+                        const subHeadings = headings.filter(h => h.level > 1 && h.level <= 4);
+                        
+                        if (subHeadings.length > 0) {
+                            for (const heading of subHeadings) {
+                                const indent = (heading.level - 2) * 20;
+                                const prefix = '└'.repeat(Math.max(1, heading.level - 2)) + ' ';
+                                
+                                enhancedContent += `
+                                    <div class="form-check wiki-heading-item" style="margin-left: ${indent}px;">
+                                        <a href="#" class="wiki-link wiki-heading-link" 
+                                           data-path="${relativePath}" 
+                                           data-heading="${heading.id}" 
+                                           data-name="${heading.text}"
+                                           title="Jump to: ${heading.text}">
+                                            <small>${prefix}${heading.text}</small>
+                                        </a>
+                                    </div>
+                                `;
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.warn(`Failed to load headings for ${file.path || file}:`, error);
+                }
+            }
+            
+            // Update accordion body with enhanced content
+            accordionBody.innerHTML = enhancedContent;
+            console.log(`✅ TOC enhanced for section: ${sectionId}`);
+            
+        } catch (error) {
+            console.error(`❌ Failed to enhance TOC for ${sectionId}:`, error);
+        }
+    }
+
+    createAccordionSection(id, title, files) {
         if (!files || files.length === 0) {
             return `
                 <div class="accordion-item">
@@ -122,58 +189,21 @@ class WikiModule {
             `;
         }
         
-        // Generate hierarchical TOC by loading each file's content
-        let links = '';
-        
-        for (const file of files) {
+        // Generate basic TOC first, then enhance with headings asynchronously
+        const links = files.map(file => {
             const fileName = this.formatFileName(file.name || file);
             const relativePath = file.path || file;
-            
-            // Add main document link
-            links += `
+            return `
                 <div class="form-check">
                     <a href="#" class="wiki-link" data-path="${relativePath}" data-name="${fileName}">
                         📄 ${fileName}
                     </a>
                 </div>
             `;
-            
-            // Load file content to extract headings for detailed TOC (like GitHub wiki)
-            try {
-                const response = await fetch(`/${file.path || file}`);
-                if (response.ok) {
-                    const content = await response.text();
-                    const headings = this.extractHeadings(content);
-                    
-                    // Generate heading links for hierarchical navigation (skip H1 - usually the title)
-                    const subHeadings = headings.filter(h => h.level > 1 && h.level <= 4); // H2, H3, H4
-                    
-                    if (subHeadings.length > 0) {
-                        const subLinks = subHeadings.map(heading => {
-                            const indent = (heading.level - 2) * 20; // Indent based on level
-                            const prefix = '└'.repeat(Math.max(1, heading.level - 2)) + ' ';
-                            
-                            return `
-                                <div class="form-check wiki-heading-item" style="margin-left: ${indent}px; opacity: 0.85;">
-                                    <a href="#" class="wiki-link wiki-heading-link" 
-                                       data-path="${relativePath}" 
-                                       data-heading="${heading.id}" 
-                                       data-name="${heading.text}"
-                                       title="Jump to: ${heading.text}">
-                                        <small>${prefix}${heading.text}</small>
-                                    </a>
-                                </div>
-                            `;
-                        }).join('');
-                        
-                        links += subLinks;
-                    }
-                }
-            } catch (error) {
-                console.warn(`Could not load content for TOC generation: ${file.path || file}`, error);
-                // Continue with just the main document link
-            }
-        }
+        }).join('');
+        
+        // Schedule hierarchical enhancement for after initial render
+        setTimeout(() => this.enhanceAccordionWithHeadings(id, files), 500);
 
         const isExpanded = id === 'general' ? 'true' : 'false';
         const collapseClass = id === 'general' ? 'show' : '';
