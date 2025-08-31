@@ -41,19 +41,19 @@ class WikiModule {
             // Fetch directory structure using proper file system approach
             const wikiStructure = await this.scanWikiDirectory();
             
-            const userGuideHTML = this.createAccordionSection(
+            const userGuideHTML = await this.createAccordionSection(
                 'userGuide', 
                 '👤 User Guide', 
                 wikiStructure.userGuide
             );
             
-            const devDocsHTML = this.createAccordionSection(
+            const devDocsHTML = await this.createAccordionSection(
                 'devDocs', 
                 '🛠️ Developer Documentation', 
                 wikiStructure.devDocs
             );
             
-            const homeHTML = this.createAccordionSection(
+            const homeHTML = await this.createAccordionSection(
                 'general', 
                 '🏠 General', 
                 wikiStructure.general
@@ -75,7 +75,36 @@ class WikiModule {
         }
     }
 
-    createAccordionSection(id, title, files) {
+    // Extract headings from markdown content to build hierarchical TOC
+    extractHeadings(content) {
+        const headings = [];
+        const lines = content.split('\n');
+        
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            const match = line.match(/^(#{1,6})\s+(.+)/);
+            
+            if (match) {
+                const level = match[1].length;
+                const text = match[2].trim();
+                const id = text.toLowerCase()
+                    .replace(/[^\w\s-]/g, '') // Remove special chars
+                    .replace(/\s+/g, '-')     // Replace spaces with hyphens
+                    .replace(/-+/g, '-');     // Collapse multiple hyphens
+                
+                headings.push({
+                    level,
+                    text,
+                    id,
+                    line: i + 1
+                });
+            }
+        }
+        
+        return headings;
+    }
+
+    async createAccordionSection(id, title, files) {
         if (!files || files.length === 0) {
             return `
                 <div class="accordion-item">
@@ -93,17 +122,58 @@ class WikiModule {
             `;
         }
         
-        const links = files.map(file => {
+        // Generate hierarchical TOC by loading each file's content
+        let links = '';
+        
+        for (const file of files) {
             const fileName = this.formatFileName(file.name || file);
             const relativePath = file.path || file;
-            return `
+            
+            // Add main document link
+            links += `
                 <div class="form-check">
                     <a href="#" class="wiki-link" data-path="${relativePath}" data-name="${fileName}">
                         📄 ${fileName}
                     </a>
                 </div>
             `;
-        }).join('');
+            
+            // Load file content to extract headings for detailed TOC (like GitHub wiki)
+            try {
+                const response = await fetch(`/${file.path || file}`);
+                if (response.ok) {
+                    const content = await response.text();
+                    const headings = this.extractHeadings(content);
+                    
+                    // Generate heading links for hierarchical navigation (skip H1 - usually the title)
+                    const subHeadings = headings.filter(h => h.level > 1 && h.level <= 4); // H2, H3, H4
+                    
+                    if (subHeadings.length > 0) {
+                        const subLinks = subHeadings.map(heading => {
+                            const indent = (heading.level - 2) * 20; // Indent based on level
+                            const prefix = '└'.repeat(Math.max(1, heading.level - 2)) + ' ';
+                            
+                            return `
+                                <div class="form-check wiki-heading-item" style="margin-left: ${indent}px; opacity: 0.85;">
+                                    <a href="#" class="wiki-link wiki-heading-link" 
+                                       data-path="${relativePath}" 
+                                       data-heading="${heading.id}" 
+                                       data-name="${heading.text}"
+                                       title="Jump to: ${heading.text}">
+                                        <small>${prefix}${heading.text}</small>
+                                    </a>
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        links += subLinks;
+                    }
+                }
+            } catch (error) {
+                console.warn(`Could not load content for TOC generation: ${file.path || file}`, error);
+                // Continue with just the main document link
+            }
+        }
 
         const isExpanded = id === 'general' ? 'true' : 'false';
         const collapseClass = id === 'general' ? 'show' : '';
@@ -130,7 +200,10 @@ class WikiModule {
             if (e.target.classList.contains('wiki-link')) {
                 e.preventDefault();
                 const path = e.target.dataset.path;
-                this.loadContent(path);
+                const heading = e.target.dataset.heading;
+                
+                // Load content and scroll to heading if specified
+                this.loadContent(path, null, heading);
 
                 // Update active state
                 this.tocContainer.querySelectorAll('.wiki-link').forEach(link => link.classList.remove('active'));
@@ -139,7 +212,7 @@ class WikiModule {
         });
     }
 
-    async loadContent(path, fileName = null) {
+    async loadContent(path, fileName = null, targetHeading = null) {
         try {
             console.log(`📖 Loading wiki content: ${path}`);
             this.showLoading();
@@ -186,6 +259,32 @@ class WikiModule {
             
             // Enhance rendered content
             this.enhanceContent();
+            
+            // Scroll to specific heading if requested (like GitHub wiki)
+            if (targetHeading) {
+                setTimeout(() => {
+                    const headingElement = document.getElementById(targetHeading) || 
+                                         document.querySelector(`[id="${targetHeading}"]`) ||
+                                         document.querySelector(`h1:contains("${targetHeading}"), h2:contains("${targetHeading}"), h3:contains("${targetHeading}"), h4:contains("${targetHeading}")`);
+                    
+                    if (headingElement) {
+                        headingElement.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start',
+                            inline: 'nearest'
+                        });
+                        // Highlight the target heading briefly
+                        headingElement.style.backgroundColor = 'var(--primary-color-translucent, rgba(40, 167, 69, 0.1))';
+                        headingElement.style.transition = 'background-color 0.3s ease';
+                        setTimeout(() => {
+                            headingElement.style.backgroundColor = '';
+                        }, 2000);
+                        console.log(`🎯 Scrolled to heading: ${targetHeading}`);
+                    } else {
+                        console.warn(`⚠️ Heading not found: ${targetHeading}`);
+                    }
+                }, 300); // Wait for content to render
+            }
             
             console.log(`✅ Wiki content loaded: ${path}`);
         } catch (error) {

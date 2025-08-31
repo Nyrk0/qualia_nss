@@ -31,6 +31,52 @@
     font-weight: 500;
 }
 
+/* Hierarchical TOC Styling - Like GitHub Wiki */
+.wiki-heading-item {
+    border-bottom: none !important;
+    margin-bottom: 2px;
+}
+
+.wiki-heading-item .wiki-link {
+    padding: 4px 8px 4px 16px;
+    font-size: 0.75rem;
+    color: var(--muted-text-color);
+    border-left: 2px solid transparent;
+    background: transparent;
+}
+
+.wiki-heading-item .wiki-link:hover {
+    background-color: var(--primary-color-translucent, rgba(40, 167, 69, 0.1));
+    color: var(--primary-color);
+    border-left-color: var(--primary-color);
+}
+
+.wiki-heading-item .wiki-link.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-left-color: var(--primary-color-hover);
+}
+
+/* Different styling for heading links vs document links */
+.wiki-heading-link small {
+    font-size: 0.7rem;
+    opacity: 0.9;
+}
+
+/* Ensure hierarchical indentation is visible */
+.wiki-heading-item[style*="margin-left"] .wiki-link {
+    position: relative;
+}
+
+/* Add subtle background for nested items */
+.wiki-heading-item[style*="margin-left: 20px"] .wiki-link {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.wiki-heading-item[style*="margin-left: 40px"] .wiki-link {
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
 /* Override form-check styling for wiki links */
 #sidebarAccordion .form-check {
     margin: 0;
