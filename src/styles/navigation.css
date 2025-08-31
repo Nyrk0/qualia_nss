@@ -11,6 +11,10 @@ header {
     position: sticky;
     top: 0;
     z-index: 1000;
+    
+    /* Mobile PWA optimizations - iOS safe area compensation */
+    margin-top: calc(-1 * env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
 }
 
 .main-navbar {

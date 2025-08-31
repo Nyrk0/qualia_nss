@@ -224,6 +224,15 @@ element.style.display = 'none';
 - [ ] Tablet (768x1024)
 - [ ] Mobile (375x667, 414x896)
 
+#### Mobile PWA Testing (Required for iOS Chrome)
+- [ ] **iOS Safari**: Add to Home Screen functionality
+- [ ] **iOS Chrome**: Full-screen behavior and safe area handling
+- [ ] **Android Chrome**: PWA install prompt and full-screen mode
+- [ ] **Touch Targets**: All interactive elements ≥44px minimum
+- [ ] **Safe Areas**: Proper handling of notch/camera cutouts
+- [ ] **Viewport Optimization**: Dynamic viewport height (100dvh)
+- [ ] **Momentum Scrolling**: Smooth scrolling on iOS (-webkit-overflow-scrolling: touch)
+
 #### Theme Testing
 - [ ] Dark theme (default) - all components styled correctly
 - [ ] Light theme - all components styled correctly

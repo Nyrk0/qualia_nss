@@ -74,3 +74,100 @@
         margin: 0.5rem;
     }
 }
+
+/* Mobile PWA and iOS Chrome optimization */
+@media (max-width: 768px) {
+    /* Improve touch targets for mobile */
+    .main-navbar {
+        min-height: 48px; /* Minimum touch target size */
+    }
+
+    .theme-toggle-btn {
+        min-width: 44px;
+        min-height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Content wrapper mobile layout with safe areas */
+    #content-wrapper {
+        /* Handle iPhone notch and safe areas */
+        padding-left: max(env(safe-area-inset-left), var(--spacing-sm));
+        padding-right: max(env(safe-area-inset-right), var(--spacing-sm));
+        padding-bottom: max(env(safe-area-inset-bottom), 0);
+    }
+
+    /* Sidebar mobile optimization */
+    #sidebar {
+        /* Enable momentum scrolling on iOS */
+        -webkit-overflow-scrolling: touch;
+        /* Prevent overscroll bounce */
+        overscroll-behavior: contain;
+    }
+
+    /* Main content mobile optimization */
+    #main-content {
+        /* Enable momentum scrolling on iOS */
+        -webkit-overflow-scrolling: touch;
+        /* Prevent overscroll bounce */
+        overscroll-behavior: contain;
+        /* Prevent horizontal scrolling */
+        overflow-x: hidden;
+    }
+
+    /* All interactive elements - improved touch targets */
+    button,
+    .btn,
+    .btn-sidebar,
+    .accordion-button,
+    .nav-link,
+    .wiki-link {
+        min-height: 44px;
+        touch-action: manipulation;
+        /* Prevent text selection on touch */
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    /* Wiki mobile improvements */
+    .wiki-content {
+        padding: var(--spacing-md);
+        /* Improve text selection on mobile */
+        -webkit-user-select: text;
+        user-select: text;
+    }
+
+    /* Form inputs mobile optimization */
+    input,
+    select,
+    textarea {
+        min-height: 44px;
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+}
+
+/* Landscape mobile optimization */
+@media (max-width: 812px) and (orientation: landscape) {
+    header {
+        /* Reduce header height in landscape */
+        min-height: 40px;
+    }
+    
+    .main-navbar {
+        padding: 0.125rem 0.5rem;
+    }
+    
+    /* Optimize for landscape viewing */
+    #content-wrapper {
+        flex-direction: row;
+    }
+    
+    #sidebar {
+        max-width: 240px;
+        max-height: none;
+        border-right: 1px solid var(--panel-border-color);
+        border-bottom: none;
+    }
+}

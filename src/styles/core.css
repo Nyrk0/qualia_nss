@@ -41,8 +41,20 @@ body {
     display: flex;
     flex-direction: column;
     height: 100vh; /* Constrain to viewport height */
+    height: 100dvh; /* Dynamic viewport height for mobile browsers */
     overflow: hidden; /* Prevent body from scrolling */
     font-size: 0.85rem;
+    
+    /* Mobile PWA optimizations */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    
+    /* iOS safe area support */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
 }
 
 /* Typography */

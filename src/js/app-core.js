@@ -25,6 +25,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     const themeToggleButton = document.getElementById('theme-toggle');
     const body = document.body;
     
+    // --- MOBILE PWA OPTIMIZATION ---
+    // Encourage full-screen behavior on mobile browsers
+    if ('serviceWorker' in navigator) {
+        // Register service worker for PWA capabilities (future enhancement)
+        // navigator.serviceWorker.register('/sw.js');
+    }
+    
+    // Handle mobile browser UI optimization
+    const optimizeMobileUI = () => {
+        if (window.MobileDetection?.isIOS() || window.MobileDetection?.isAndroid()) {
+            // Add scroll behavior to minimize browser chrome
+            let lastScrollTop = 0;
+            window.addEventListener('scroll', () => {
+                const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+                if (currentScroll > lastScrollTop && currentScroll > 50) {
+                    // Scrolling down - encourage browser chrome to hide
+                    document.body.style.transform = 'translateY(-1px)';
+                    setTimeout(() => {
+                        document.body.style.transform = '';
+                    }, 100);
+                }
+                lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+            }, { passive: true });
+            
+            // Prevent zoom on double tap
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', (event) => {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+        }
+    };
+
     // --- ES6 MODULE SYSTEM INITIALIZATION (Phase 2) ---
     try {
         // Try to initialize Phase 1 ES6 modules first
@@ -37,9 +73,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.log('- MobileDetection:', MobileDetection);
             console.log('- ThemeManager:', ThemeManager);
             console.log('- ComponentRegistry:', getComponentRegistry());
+            
+            // Initialize mobile optimizations after modules load
+            optimizeMobileUI();
+        } else {
+            // Fallback mobile optimization without ES6 modules
+            optimizeMobileUI();
         }
     } catch (error) {
         console.log('ES6 modules not available, using vanilla JS fallback:', error);
+        optimizeMobileUI();
     }
 
     // --- THEME MANAGEMENT ---
