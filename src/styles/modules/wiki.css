@@ -54,9 +54,20 @@
     -ms-overflow-style: none; /* IE/Edge - hide scrollbar */
 }
 
-/* Hide scrollbar for Chrome/Safari/WebKit browsers */
+/* Hide ALL scrollbars for Chrome/Safari/WebKit browsers */
 #wiki-content-container::-webkit-scrollbar {
-    display: none;
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
+#wiki-content-container::-webkit-scrollbar-track {
+    display: none !important;
+}
+
+#wiki-content-container::-webkit-scrollbar-thumb {
+    display: none !important;
 }
 
 /* Wiki Breadcrumb - Using theme variables only */

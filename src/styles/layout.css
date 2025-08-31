@@ -234,14 +234,36 @@
     flex-direction: column;
     padding: 1rem;
     overflow-y: auto; /* Allow vertical scrolling when content exceeds height */
-    overflow-x: hidden; /* Prevent horizontal scrolling */
-    scrollbar-width: none; /* Firefox - hide scrollbar */
-    -ms-overflow-style: none; /* IE/Edge - hide scrollbar */
+    overflow-x: hidden !important; /* FORCE prevent horizontal scrolling */
+    scrollbar-width: none !important; /* Firefox - hide scrollbar */
+    -ms-overflow-style: none !important; /* IE/Edge - hide scrollbar */
 }
 
-/* Hide scrollbar for Chrome/Safari/WebKit browsers */
+/* Hide ALL scrollbars for Chrome/Safari/WebKit browsers */
 #main-content::-webkit-scrollbar {
-    display: none;
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
+#main-content::-webkit-scrollbar-track {
+    display: none !important;
+}
+
+#main-content::-webkit-scrollbar-thumb {
+    display: none !important;
+}
+
+/* Ensure NO horizontal scrollbars anywhere in main content */
+#main-content *::-webkit-scrollbar:horizontal {
+    display: none !important;
+    height: 0 !important;
+}
+
+#main-content * {
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important; /* IE/Edge */
 }
 
 /* Main content text color is handled by the `body` style in core.css */
