@@ -292,6 +292,22 @@ http://localhost:8080/src/wiki/test-wiki.html
 
 ## 🔒 Critical Development Rules
 
+### **MANDATORY USER APPROVAL BEFORE COMMITS** ⚠️
+
+**CRITICAL REQUIREMENT**: ALL AI assistants MUST obtain explicit user approval before ANY git commit or push operations.
+
+#### Required Approval Process:
+1. **Present Summary**: List all changed files and explain modifications
+2. **Ask Explicitly**: "May I commit and push these changes?"  
+3. **Wait for Confirmation**: Only proceed with clear "yes", "approve", "commit", or "push"
+4. **Handle Rejection**: If user says "no", address concerns before proceeding
+
+#### Never Commit Without Approval:
+- ❌ Do not auto-commit fixes, even critical ones
+- ❌ Do not push changes during "emergency" situations without asking
+- ❌ Do not assume user wants changes committed
+- ✅ Always present changes and wait for explicit approval
+
 ### MANDATORY Compliance Checklist
 - [ ] **No Hardcoded Values**: All CSS must use theme variables
 - [ ] **No Inline Styles**: Zero `style=""` attributes in HTML

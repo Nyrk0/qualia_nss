@@ -332,7 +332,45 @@ When adding new features, update corresponding wiki documentation:
 
 ## 6. Deployment & Maintenance Phase
 
-### 6.1. Pre-Deployment Checklist
+### 6.1. **MANDATORY USER APPROVAL** (AI Assistants)
+
+**CRITICAL REQUIREMENT**: AI assistants MUST obtain explicit user approval before ANY commit or push operations.
+
+#### Pre-Commit Approval Process
+1. **Present Changes Summary**
+   - [ ] List all modified files with brief descriptions
+   - [ ] Explain the purpose and impact of changes
+   - [ ] Highlight any potential risks or breaking changes
+   - [ ] Provide clear commit message preview
+
+2. **Wait for Explicit Approval**
+   - [ ] **STOP** - Do not proceed without user confirmation
+   - [ ] Ask: "May I commit and push these changes?"
+   - [ ] Accept only clear "yes", "approve", "commit", or "push" responses
+   - [ ] If user says "no" or expresses concerns, address them first
+
+3. **Only After Approval**
+   - [ ] Execute `git add .`
+   - [ ] Create descriptive commit message
+   - [ ] Execute `git commit` with approved message
+   - [ ] Execute `git push origin main`
+   - [ ] Confirm successful deployment
+
+#### Approval Required For
+- [ ] **Any code modifications** - even minor fixes
+- [ ] **Configuration changes** - CSS, JS, HTML, JSON files
+- [ ] **New file creation** - documents, scripts, assets
+- [ ] **File deletions or moves** - restructuring operations
+- [ ] **Submodule updates** - wiki content changes
+
+#### Emergency Exception Protocol
+Only in critical system-breaking situations:
+- [ ] Clearly state the emergency nature
+- [ ] Explain immediate risks of not fixing
+- [ ] Still request expedited approval before proceeding
+- [ ] Document emergency decision rationale
+
+### 6.2. Pre-Deployment Checklist
 
 #### File Organization
 - [ ] No orphaned files (unused CSS, JS, HTML)
