@@ -50,6 +50,13 @@
     flex: 1 1 auto; /* Take up available space in flex container */
     overflow-y: auto; /* Allow scrolling when content exceeds container height */
     overflow-x: hidden; /* Prevent horizontal scrolling */
+    scrollbar-width: none; /* Firefox - hide scrollbar */
+    -ms-overflow-style: none; /* IE/Edge - hide scrollbar */
+}
+
+/* Hide scrollbar for Chrome/Safari/WebKit browsers */
+#wiki-content-container::-webkit-scrollbar {
+    display: none;
 }
 
 /* Wiki Breadcrumb - Using theme variables only */
