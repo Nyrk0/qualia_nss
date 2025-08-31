@@ -152,7 +152,15 @@ class WikiModule {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
-            const fileContent = await response.text();
+            let fileContent = await response.text();
+            
+            // IMMEDIATE FIX: Clean up literal \n sequences
+            fileContent = fileContent
+                .replace(/\\n\\n/g, '\n\n')  // Double newlines
+                .replace(/\\n/g, '\n')       // Single newlines  
+                .replace(/\\t/g, '\t')       // Tabs
+                .replace(/\\r/g, '\r');      // Carriage returns
+            
             this.currentPath = path;
             
             // Render markdown to HTML
