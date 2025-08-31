@@ -143,14 +143,19 @@ class WikiModule {
                                 const indent = (heading.level - 2) * 20;
                                 const prefix = '└'.repeat(Math.max(1, heading.level - 2)) + ' ';
                                 
+                                // Escape heading text to prevent template literal syntax errors
+                                const safeHeadingText = (heading.text || '').replace(/[`$\\]/g, '\\$&').replace(/\n/g, ' ').trim();
+                                const safeHeadingId = (heading.id || '').replace(/[`$\\]/g, '\\$&');
+                                const safeRelativePath = (relativePath || '').replace(/[`$\\]/g, '\\$&');
+                                
                                 enhancedContent += `
                                     <div class="form-check wiki-heading-item" style="margin-left: ${indent}px;">
                                         <a href="#" class="wiki-link wiki-heading-link" 
-                                           data-path="${relativePath}" 
-                                           data-heading="${heading.id}" 
-                                           data-name="${heading.text}"
-                                           title="Jump to: ${heading.text}">
-                                            <small>${prefix}${heading.text}</small>
+                                           data-path="${safeRelativePath}" 
+                                           data-heading="${safeHeadingId}" 
+                                           data-name="${safeHeadingText}"
+                                           title="Jump to: ${safeHeadingText}">
+                                            <small>${prefix}${safeHeadingText}</small>
                                         </a>
                                     </div>
                                 `;
@@ -280,10 +285,12 @@ class WikiModule {
                 htmlContent = window.marked.parse(fileContent);
             } else {
                 console.warn('⚠️ marked.js not available, using plain text fallback');
+                const safeFileName = this.escapeHtml(fileName || 'Document');
+                const safeFileContent = this.escapeHtml(fileContent || '').replace(/\n/g, '&#10;');
                 htmlContent = `
                     <div class="markdown-fallback">
-                        <h3>📄 ${fileName || 'Document'}</h3>
-                        <pre class="markdown-source">${this.escapeHtml(fileContent)}</pre>
+                        <h3>📄 ${safeFileName}</h3>
+                        <pre class="markdown-source">${safeFileContent}</pre>
                         <p class="text-muted">Note: Markdown rendering library not available.</p>
                     </div>
                 `;
