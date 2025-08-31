@@ -146,6 +146,52 @@
         min-height: 44px;
         font-size: 16px; /* Prevent zoom on iOS */
     }
+    
+    /* Override Bootstrap button colors on mobile - enforce theme variables */
+    .btn,
+    .btn-primary,
+    .btn-secondary,
+    .btn-success,
+    .btn-danger,
+    .btn-warning,
+    .btn-info,
+    .btn-light,
+    .btn-dark,
+    .btn-outline-primary,
+    .btn-outline-secondary,
+    .btn-outline-success,
+    .btn-outline-danger,
+    .btn-outline-warning,
+    .btn-outline-info,
+    .btn-outline-light,
+    .btn-outline-dark {
+        background-color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        color: white !important;
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    .btn:hover,
+    .btn-primary:hover,
+    .btn:focus,
+    .btn-primary:focus {
+        background-color: var(--primary-color-hover) !important;
+        border-color: var(--primary-color-hover) !important;
+        color: white !important;
+    }
+    
+    .btn-secondary {
+        background-color: var(--panel-border-color) !important;
+        border-color: var(--panel-border-color) !important;
+        color: var(--text-color) !important;
+    }
+    
+    .btn-secondary:hover,
+    .btn-secondary:focus {
+        background-color: #444 !important;
+        border-color: #444 !important;
+        color: var(--text-color) !important;
+    }
 }
 
 /* Landscape mobile optimization */
