@@ -1,0 +1,3 @@
+[submodule "src/wiki/content"]
+	path = src/wiki/content
+	url = https://github.com/Nyrk0/qualia_nss.wiki.git
