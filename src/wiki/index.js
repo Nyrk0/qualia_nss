@@ -35,153 +35,50 @@ class WikiModule {
     }
 
     async buildTOC() {
-        try {
-            console.log('🔍 Building Wiki Table of Contents...');
-            
-            // Fetch directory structure using proper file system approach
-            const wikiStructure = await this.scanWikiDirectory();
-            
-            const userGuideHTML = this.createAccordionSection(
-                'userGuide', 
-                '👤 User Guide', 
-                wikiStructure.userGuide
-            );
-            
-            const devDocsHTML = this.createAccordionSection(
-                'devDocs', 
-                '🛠️ Developer Documentation', 
-                wikiStructure.devDocs
-            );
-            
-            const homeHTML = this.createAccordionSection(
-                'general', 
-                '🏠 General', 
-                wikiStructure.general
-            );
-
-            this.tocContainer.innerHTML = `
-                <div class="accordion" id="sidebarAccordion">
-                    ${homeHTML}
-                    ${userGuideHTML}
-                    ${devDocsHTML}
-                </div>
-            `;
-
-            this.addEventListeners();
-            console.log('✅ Wiki TOC built successfully');
-        } catch (error) {
-            console.error('❌ Failed to build Wiki TOC:', error);
-            this.showError('Error loading documentation index');
-        }
-    }
-
-    // Extract headings from markdown content to build hierarchical TOC
-    extractHeadings(content) {
-        const headings = [];
-        const lines = content.split('\n');
+        console.log('🔍 Building Wiki Table of Contents...');
         
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-            const match = line.match(/^(#{1,6})\s+(.+)/);
-            
-            if (match) {
-                const level = match[1].length;
-                const text = match[2].trim();
-                const id = text.toLowerCase()
-                    .replace(/[^\w\s-]/g, '') // Remove special chars
-                    .replace(/\s+/g, '-')     // Replace spaces with hyphens
-                    .replace(/-+/g, '-');     // Collapse multiple hyphens
-                
-                headings.push({
-                    level,
-                    text,
-                    id,
-                    line: i + 1
-                });
-            }
-        }
+        // Fetch directory structure
+        const wikiStructure = await this.scanWikiDirectory();
         
-        return headings;
+        // Create accordion sections
+        const homeHTML = this.createAccordionSection(
+            'general', 
+            '🏠 General', 
+            wikiStructure.general
+        );
+        
+        const userGuideHTML = this.createAccordionSection(
+            'userGuide', 
+            '👤 User Guide', 
+            wikiStructure.userGuide
+        );
+        
+        const devDocsHTML = this.createAccordionSection(
+            'devDocs', 
+            '🛠️ Developer Documentation', 
+            wikiStructure.devDocs
+        );
+
+        // Build the accordion
+        this.tocContainer.innerHTML = `
+            <div class="accordion" id="sidebarAccordion">
+                ${homeHTML}
+                ${userGuideHTML}
+                ${devDocsHTML}
+            </div>
+        `;
+
+        this.addEventListeners();
+        console.log('✅ Wiki TOC built successfully');
     }
 
-    // Enhance accordion section with hierarchical headings asynchronously
-    async enhanceAccordionWithHeadings(sectionId, files) {
-        try {
-            console.log(`📋 Enhancing TOC for section: ${sectionId}`);
-            const accordionBody = document.querySelector(`#collapse-${sectionId} .accordion-body`);
-            if (!accordionBody) {
-                console.warn(`Could not find accordion body for ${sectionId}`);
-                return;
-            }
-
-            // Build enhanced content with hierarchical headings
-            let enhancedContent = '';
-            
-            for (const file of files) {
-                const fileName = this.formatFileName(file.name || file);
-                const relativePath = file.path || file;
-                
-                // Add main document link
-                enhancedContent += `
-                    <div class="form-check">
-                        <a href="#" class="wiki-link" data-path="${relativePath}" data-name="${fileName}">
-                            📄 ${fileName}
-                        </a>
-                    </div>
-                `;
-                
-                // Load and parse headings
-                try {
-                    const response = await fetch(`/${file.path || file}`);
-                    if (response.ok) {
-                        const content = await response.text();
-                        const headings = this.extractHeadings(content);
-                        const subHeadings = headings.filter(h => h.level > 1 && h.level <= 4);
-                        
-                        if (subHeadings.length > 0) {
-                            for (const heading of subHeadings) {
-                                const indent = (heading.level - 2) * 20;
-                                const prefix = '└'.repeat(Math.max(1, heading.level - 2)) + ' ';
-                                
-                                // Escape heading text to prevent template literal syntax errors
-                                const safeHeadingText = (heading.text || '').replace(/[`$\\]/g, '\\$&').replace(/\n/g, ' ').trim();
-                                const safeHeadingId = (heading.id || '').replace(/[`$\\]/g, '\\$&');
-                                const safeRelativePath = (relativePath || '').replace(/[`$\\]/g, '\\$&');
-                                
-                                enhancedContent += `
-                                    <div class="form-check wiki-heading-item" style="margin-left: ${indent}px;">
-                                        <a href="#" class="wiki-link wiki-heading-link" 
-                                           data-path="${safeRelativePath}" 
-                                           data-heading="${safeHeadingId}" 
-                                           data-name="${safeHeadingText}"
-                                           title="Jump to: ${safeHeadingText}">
-                                            <small>${prefix}${safeHeadingText}</small>
-                                        </a>
-                                    </div>
-                                `;
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.warn(`Failed to load headings for ${file.path || file}:`, error);
-                }
-            }
-            
-            // Update accordion body with enhanced content
-            accordionBody.innerHTML = enhancedContent;
-            console.log(`✅ TOC enhanced for section: ${sectionId}`);
-            
-        } catch (error) {
-            console.error(`❌ Failed to enhance TOC for ${sectionId}:`, error);
-        }
-    }
 
     createAccordionSection(id, title, files) {
         if (!files || files.length === 0) {
             return `
                 <div class="accordion-item">
                     <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${id}" aria-expanded="false">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${id}">
                             ${title} <span class="badge">0</span>
                         </button>
                     </h2>
@@ -194,52 +91,37 @@ class WikiModule {
             `;
         }
         
-        // Generate basic TOC first, then enhance with headings asynchronously
+        // Generate simple document links
         const links = files.map(file => {
-            try {
-                const fileName = this.formatFileName(file.name || file) || 'Untitled';
-                const relativePath = (file.path || file || '').toString();
-                return `
-                    <div class="form-check">
-                        <a href="#" class="wiki-link" data-path="${relativePath}" data-name="${fileName}">
-                            📄 ${fileName}
-                        </a>
-                    </div>
-                `;
-            } catch (error) {
-                console.warn('Error processing file for TOC:', file, error);
-                return '<div class="form-check"><span class="text-muted">Error loading file</span></div>';
-            }
-        }).join('');
-        
-        // Schedule hierarchical enhancement for after initial render
-        setTimeout(() => this.enhanceAccordionWithHeadings(id, files), 500);
-
-        try {
-            const isExpanded = id === 'general' ? 'true' : 'false';
-            const collapseClass = id === 'general' ? 'show' : '';
-            const buttonClass = id === 'general' ? '' : 'collapsed';
-            const safeTitle = (title || 'Section').toString();
-            const safeId = (id || 'unknown').toString();
-
+            const fileName = this.formatFileName(file.name || file);
+            const relativePath = file.path || file;
             return `
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading-${safeId}">
-                        <button class="accordion-button ${buttonClass}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${safeId}" aria-expanded="${isExpanded}" aria-controls="collapse-${safeId}">
-                            ${safeTitle}
-                        </button>
-                    </h2>
-                    <div id="collapse-${safeId}" class="accordion-collapse collapse ${collapseClass}" aria-labelledby="heading-${safeId}" data-bs-parent="#sidebarAccordion">
-                        <div class="accordion-body">
-                            ${links}
-                        </div>
-                    </div>
+                <div class="form-check">
+                    <a href="#" class="wiki-link" data-path="${relativePath}" data-name="${fileName}">
+                        📄 ${fileName}
+                    </a>
                 </div>
             `;
-        } catch (error) {
-            console.error('Error creating accordion section:', error);
-            return '<div class="accordion-item"><div class="accordion-body"><p class="text-muted">Error loading section</p></div></div>';
-        }
+        }).join('');
+
+        const isExpanded = id === 'general' ? 'true' : 'false';
+        const collapseClass = id === 'general' ? 'show' : '';
+        const buttonClass = id === 'general' ? '' : 'collapsed';
+
+        return `
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading-${id}">
+                    <button class="accordion-button ${buttonClass}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${id}" aria-expanded="${isExpanded}">
+                        ${title}
+                    </button>
+                </h2>
+                <div id="collapse-${id}" class="accordion-collapse collapse ${collapseClass}" data-bs-parent="#sidebarAccordion">
+                    <div class="accordion-body">
+                        ${links}
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     addEventListeners() {
@@ -247,10 +129,10 @@ class WikiModule {
             if (e.target.classList.contains('wiki-link')) {
                 e.preventDefault();
                 const path = e.target.dataset.path;
-                const heading = e.target.dataset.heading;
+                const name = e.target.dataset.name;
                 
-                // Load content and scroll to heading if specified
-                this.loadContent(path, null, heading);
+                // Load content
+                this.loadContent(path, name);
 
                 // Update active state
                 this.tocContainer.querySelectorAll('.wiki-link').forEach(link => link.classList.remove('active'));
@@ -259,13 +141,13 @@ class WikiModule {
         });
     }
 
-    async loadContent(path, fileName = null, targetHeading = null) {
+    async loadContent(path, fileName = null) {
         try {
             console.log(`📖 Loading wiki content: ${path}`);
             this.showLoading();
             
-            // Use fetch API for file loading (works in HTTP context)
-            const response = await fetch(`/${path}`);
+            // Use fetch API for file loading (relative path)
+            const response = await fetch(path);
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
@@ -276,7 +158,6 @@ class WikiModule {
             // Render markdown to HTML
             let htmlContent;
             if (window.marked) {
-                // Configure marked for better rendering
                 window.marked.setOptions({
                     breaks: true,
                     gfm: true,
@@ -285,12 +166,10 @@ class WikiModule {
                 htmlContent = window.marked.parse(fileContent);
             } else {
                 console.warn('⚠️ marked.js not available, using plain text fallback');
-                const safeFileName = this.escapeHtml(fileName || 'Document');
-                const safeFileContent = this.escapeHtml(fileContent || '').replace(/\n/g, '&#10;');
                 htmlContent = `
                     <div class="markdown-fallback">
-                        <h3>📄 ${safeFileName}</h3>
-                        <pre class="markdown-source">${safeFileContent}</pre>
+                        <h3>📄 ${this.escapeHtml(fileName || 'Document')}</h3>
+                        <pre class="markdown-source">${this.escapeHtml(fileContent)}</pre>
                         <p class="text-muted">Note: Markdown rendering library not available.</p>
                     </div>
                 `;
@@ -309,31 +188,8 @@ class WikiModule {
             // Enhance rendered content
             this.enhanceContent();
             
-            // Scroll to specific heading if requested (like GitHub wiki)
-            if (targetHeading) {
-                setTimeout(() => {
-                    const headingElement = document.getElementById(targetHeading) || 
-                                         document.querySelector(`[id="${targetHeading}"]`) ||
-                                         Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6')).find(el => el.textContent.includes(targetHeading));
-                    
-                    if (headingElement) {
-                        headingElement.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'start',
-                            inline: 'nearest'
-                        });
-                        // Highlight the target heading briefly
-                        headingElement.style.backgroundColor = 'var(--primary-color-translucent, rgba(40, 167, 69, 0.1))';
-                        headingElement.style.transition = 'background-color 0.3s ease';
-                        setTimeout(() => {
-                            headingElement.style.backgroundColor = '';
-                        }, 2000);
-                        console.log(`🎯 Scrolled to heading: ${targetHeading}`);
-                    } else {
-                        console.warn(`⚠️ Heading not found: ${targetHeading}`);
-                    }
-                }, 300); // Wait for content to render
-            }
+            // ✨ NEW: Generate hierarchical TOC from the rendered HTML content
+            this.generateTOCFromContent();
             
             console.log(`✅ Wiki content loaded: ${path}`);
         } catch (error) {
@@ -437,6 +293,162 @@ class WikiModule {
         
         content.querySelectorAll('pre').forEach(pre => {
             pre.classList.add('wiki-code-block');
+        });
+    }
+
+    /**
+     * Generate hierarchical TOC from rendered HTML content
+     * This is the core DOM-based solution that replaces template literal parsing
+     */
+    generateTOCFromContent() {
+        console.log('🏗️ Generating hierarchical TOC from DOM...');
+        
+        try {
+            // Find the current active document link in the accordion
+            const activeDocLink = this.tocContainer.querySelector('.wiki-link.active');
+            if (!activeDocLink) {
+                console.warn('⚠️ No active document link found for TOC generation');
+                return;
+            }
+
+            // Get the accordion body that contains the active link
+            const accordionBody = activeDocLink.closest('.accordion-body');
+            if (!accordionBody) {
+                console.warn('⚠️ Could not find accordion body for active link');
+                return;
+            }
+
+            // Find all headings in the rendered content (h1-h4 for manageable hierarchy)
+            const content = this.contentContainer.querySelector('.wiki-content');
+            if (!content) {
+                console.warn('⚠️ No wiki content found for TOC generation');
+                return;
+            }
+
+            const headings = content.querySelectorAll('h1, h2, h3, h4');
+            console.log(`📋 Found ${headings.length} headings for TOC`);
+
+            if (headings.length === 0) {
+                console.log('📄 No headings found - keeping simple document link');
+                return;
+            }
+
+            // Clear existing content and rebuild with hierarchical TOC
+            accordionBody.innerHTML = '';
+
+            // Add the main document link back using DOM manipulation
+            const mainDocLink = document.createElement('div');
+            mainDocLink.className = 'form-check';
+            
+            const mainLink = document.createElement('a');
+            mainLink.href = '#';
+            mainLink.className = 'wiki-link active';
+            mainLink.dataset.path = activeDocLink.dataset.path;
+            mainLink.dataset.name = activeDocLink.dataset.name;
+            mainLink.textContent = '📄 ' + activeDocLink.dataset.name;
+            
+            mainDocLink.appendChild(mainLink);
+            accordionBody.appendChild(mainDocLink);
+
+            // Generate unique IDs for headings and create TOC links using DOM
+            headings.forEach((heading, index) => {
+                // Generate unique ID for the heading
+                const headingId = `heading-${index}`;
+                heading.id = headingId;
+
+                // Get heading level (1-4) and text
+                const level = parseInt(heading.tagName.charAt(1));
+                const headingText = heading.textContent.trim();
+                
+                // Calculate indentation based on heading level
+                const indent = (level - 1) * 20; // 20px per level
+                
+                // Create TOC entry using DOM manipulation (no template literals)
+                const tocItem = document.createElement('div');
+                tocItem.className = 'form-check wiki-heading-item';
+                tocItem.style.marginLeft = indent + 'px';
+                
+                const tocLink = document.createElement('a');
+                tocLink.href = '#' + headingId;
+                tocLink.className = 'wiki-link wiki-heading-link toc-level-' + level;
+                tocLink.dataset.heading = headingId;
+                tocLink.title = 'Jump to: ' + headingText;
+                
+                const tocText = document.createElement('small');
+                tocText.textContent = this.getTOCPrefix(level) + headingText;
+                
+                tocLink.appendChild(tocText);
+                tocItem.appendChild(tocLink);
+                accordionBody.appendChild(tocItem);
+            });
+
+            // Add event listeners for heading navigation
+            this.addTOCEventListeners();
+
+            console.log(`✅ Hierarchical TOC generated with ${headings.length} sections`);
+
+        } catch (error) {
+            console.error('❌ Failed to generate TOC from content:', error);
+            // Keep existing simple TOC on error
+        }
+    }
+
+    /**
+     * Get prefix symbol for TOC entries based on heading level
+     */
+    getTOCPrefix(level) {
+        const prefixes = {
+            1: '📋 ',      // Main sections
+            2: '└─ ',      // Subsections  
+            3: '  ├─ ',    // Sub-subsections
+            4: '    └─ '   // Detailed sections
+        };
+        return prefixes[level] || '└─ ';
+    }
+
+    /**
+     * Add event listeners for TOC heading navigation
+     */
+    addTOCEventListeners() {
+        // Remove existing listeners to avoid duplicates
+        const oldLinks = this.tocContainer.querySelectorAll('.wiki-heading-link');
+        oldLinks.forEach(link => {
+            link.replaceWith(link.cloneNode(true)); // Remove all listeners
+        });
+
+        // Add new listeners for heading links
+        const headingLinks = this.tocContainer.querySelectorAll('.wiki-heading-link');
+        headingLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                const targetId = link.getAttribute('href').substring(1); // Remove #
+                const targetHeading = document.getElementById(targetId);
+                
+                if (targetHeading) {
+                    // Smooth scroll to heading
+                    targetHeading.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start',
+                        inline: 'nearest'
+                    });
+
+                    // Visual feedback - highlight briefly
+                    targetHeading.style.backgroundColor = 'var(--primary-color-translucent, rgba(40, 167, 69, 0.1))';
+                    targetHeading.style.transition = 'background-color 0.3s ease';
+                    setTimeout(() => {
+                        targetHeading.style.backgroundColor = '';
+                    }, 1500);
+
+                    // Update active state in TOC
+                    this.tocContainer.querySelectorAll('.wiki-heading-link').forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+
+                    console.log(`🎯 Scrolled to heading: ${targetHeading.textContent.trim()}`);
+                } else {
+                    console.warn(`⚠️ Target heading not found: ${targetId}`);
+                }
+            });
         });
     }
     
