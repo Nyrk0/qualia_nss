@@ -24,6 +24,44 @@ class WikiModule {
         this.initializeMermaid();
     }
 
+    initializeMermaid() {
+        if (!this.mermaidInitialized) {
+            if (typeof mermaid !== 'undefined') {
+                mermaid.initialize({
+                    startOnLoad: true,
+                    theme: 'default',
+                    securityLevel: 'loose',
+                    flowchart: {
+                        useMaxWidth: true,
+                        htmlLabels: true,
+                        curve: 'basis'
+                    }
+                });
+                this.mermaidInitialized = true;
+                console.log('🧜‍♀️ Mermaid initialized for wiki diagrams');
+            } else {
+                console.warn('⚠️ Mermaid.js not loaded, diagrams will not render');
+            }
+        }
+    }
+
+    async fetchGitHubContent(relativePath) {
+        try {
+            const url = `${this.githubConfig.baseUrl}/${this.githubConfig.owner}/${this.githubConfig.repo}/${this.githubConfig.branch}/${relativePath}`;
+            console.log(`🌐 Fetching GitHub content: ${url}`);
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`GitHub fetch failed: ${response.status} ${response.statusText}`);
+            }
+            
+            return await response.text();
+        } catch (error) {
+            console.error(`❌ Failed to fetch GitHub content for ${relativePath}:`, error);
+            throw error;
+        }
+    }
+
     async init() {
         console.log('📚 Initializing Wiki Module...');
         
@@ -103,14 +141,18 @@ class WikiModule {
             `;
         }
         
-        // Generate simple document links
+        // Generate document links with GitHub support
         const links = files.map(file => {
             const fileName = this.formatFileName(file.name || file);
             const relativePath = file.path || file;
+            const isGitHub = file.isGitHub || false;
+            const description = file.description || '';
+            const icon = isGitHub ? '🌐' : '📄';
+            
             return `
                 <div class="form-check">
-                    <a href="#" class="wiki-link" data-path="${relativePath}" data-name="${fileName}">
-                        📄 ${fileName}
+                    <a href="#" class="wiki-link" data-path="${relativePath}" data-name="${fileName}" data-is-github="${isGitHub}" title="${description}">
+                        ${icon} ${fileName}
                     </a>
                 </div>
             `;
@@ -142,9 +184,10 @@ class WikiModule {
                 e.preventDefault();
                 const path = e.target.dataset.path;
                 const name = e.target.dataset.name;
+                const isGitHub = e.target.dataset.isGithub === 'true';
                 
-                // Load content
-                this.loadContent(path, name);
+                // Load content with GitHub support
+                this.loadContent(path, name, isGitHub);
 
                 // Update active state
                 this.tocContainer.querySelectorAll('.wiki-link').forEach(link => link.classList.remove('active'));
@@ -153,18 +196,24 @@ class WikiModule {
         });
     }
 
-    async loadContent(path, fileName = null) {
+    async loadContent(path, fileName = null, isGitHub = false) {
         try {
             console.log(`📖 Loading wiki content: ${path}`);
             this.showLoading();
             
-            // Use fetch API for file loading (relative path)
-            const response = await fetch(path);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
+            let fileContent;
             
-            let fileContent = await response.text();
+            if (isGitHub) {
+                // Use GitHub Raw URL for Phase 4 documentation
+                fileContent = await this.fetchGitHubContent(path);
+            } else {
+                // Use local fetch API for traditional wiki content
+                const response = await fetch(path);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                fileContent = await response.text();
+            }
             
             // IMMEDIATE FIX: Clean up literal \n sequences
             fileContent = fileContent
@@ -184,6 +233,9 @@ class WikiModule {
                     sanitize: false
                 });
                 htmlContent = window.marked.parse(fileContent);
+                
+                // Process Mermaid blocks after markdown rendering
+                htmlContent = this.processMermaidBlocks(htmlContent);
             } else {
                 console.warn('⚠️ marked.js not available, using plain text fallback');
                 htmlContent = `
@@ -228,8 +280,7 @@ class WikiModule {
     // New helper methods
     
     async scanWikiDirectory() {
-        // Return the current documentation structure
-        // This would ideally scan the directory dynamically in a full implementation
+        // Phase 4: Enhanced structure with GitHub integration for Phase 4 docs
         return {
             general: [
                 { name: 'Welcome to Qualia-NSS', path: 'src/wiki/content/Home.md' }
@@ -239,7 +290,26 @@ class WikiModule {
                 { name: 'Understanding Filters', path: 'src/wiki/content/User-Guide/02-Understanding-Filters.md' }
             ],
             devDocs: [
-                { name: 'Architecture Overview', path: 'src/wiki/content/Developer-Docs/01-Architecture-Overview.md' }
+                { name: 'Architecture Overview', path: 'src/wiki/content/Developer-Docs/01-Architecture-Overview.md' },
+                // Phase 4 Documentation (GitHub Raw URLs)
+                { 
+                    name: 'Phase 4 Architecture', 
+                    path: 'dev/st04-comb-filtering/PHASE-4-ARCHITECTURE.md',
+                    isGitHub: true,
+                    description: 'Real-World Audio Input Analysis Architecture with Mermaid diagrams'
+                },
+                { 
+                    name: 'Phase 4 Implementation Plan', 
+                    path: 'dev/st04-comb-filtering/IMPLEMENTATION_PLAN.md',
+                    isGitHub: true,
+                    description: 'Complete implementation roadmap for Phase 4 features'
+                },
+                { 
+                    name: 'Phase 4 PRD', 
+                    path: 'dev/st04-comb-filtering/comb-filtering-experiments-prd.md',
+                    isGitHub: true,
+                    description: 'Product Requirements Document with Phase 4 specifications'
+                }
             ]
         };
     }
@@ -297,6 +367,55 @@ class WikiModule {
         return div.innerHTML;
     }
     
+    processMermaidBlocks(htmlContent) {
+        try {
+            console.log('🧜‍♀️ Processing Mermaid blocks in content...');
+            
+            // Find pre blocks with language "mermaid" or code blocks with mermaid class
+            const mermaidRegex = /<pre><code class="language-mermaid">([\s\S]*?)<\/code><\/pre>/gi;
+            let processedContent = htmlContent;
+            let matches = [];
+            let match;
+            
+            while ((match = mermaidRegex.exec(htmlContent)) !== null) {
+                matches.push({
+                    fullMatch: match[0],
+                    mermaidCode: match[1]
+                });
+            }
+            
+            console.log(`📋 Found ${matches.length} Mermaid blocks to process`);
+            
+            // Replace each mermaid code block with a proper mermaid div
+            matches.forEach((matchData, index) => {
+                const mermaidId = `mermaid-diagram-${index}`;
+                const mermaidDiv = `<div class="mermaid" id="${mermaidId}">${this.escapeHtml(matchData.mermaidCode.trim())}</div>`;
+                
+                processedContent = processedContent.replace(matchData.fullMatch, mermaidDiv);
+            });
+            
+            // If we processed any Mermaid blocks, initialize Mermaid rendering
+            if (matches.length > 0 && this.mermaidInitialized) {
+                // Delay Mermaid rendering to allow DOM insertion
+                setTimeout(() => {
+                    try {
+                        if (typeof mermaid !== 'undefined') {
+                            mermaid.init(undefined, '.mermaid');
+                            console.log(`✅ Rendered ${matches.length} Mermaid diagrams`);
+                        }
+                    } catch (error) {
+                        console.error('❌ Failed to render Mermaid diagrams:', error);
+                    }
+                }, 100);
+            }
+            
+            return processedContent;
+        } catch (error) {
+            console.error('❌ Failed to process Mermaid blocks:', error);
+            return htmlContent; // Return original content on error
+        }
+    }
+
     enhanceContent() {
         // Add syntax highlighting, link processing, etc.
         const content = this.contentContainer.querySelector('.wiki-content');
@@ -313,6 +432,12 @@ class WikiModule {
         
         content.querySelectorAll('pre').forEach(pre => {
             pre.classList.add('wiki-code-block');
+        });
+        
+        // Style Mermaid diagrams
+        content.querySelectorAll('.mermaid').forEach(diagram => {
+            diagram.style.textAlign = 'center';
+            diagram.style.margin = '20px 0';
         });
     }
 
