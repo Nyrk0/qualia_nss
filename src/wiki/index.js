@@ -291,23 +291,23 @@ class WikiModule {
             ],
             devDocs: [
                 { name: 'Architecture Overview', path: 'src/wiki/content/Developer-Docs/01-Architecture-Overview.md' },
-                // Phase 4 Documentation (GitHub Raw URLs from wiki submodule)
+                // Phase 4 Documentation (Local paths from wiki submodule)
                 { 
                     name: 'Phase 4 Architecture', 
                     path: 'src/wiki/content/Developer-Docs/Phase-4/PHASE-4-ARCHITECTURE.md',
-                    isGitHub: true,
+                    isGitHub: false,
                     description: 'Real-World Audio Input Analysis Architecture with Mermaid diagrams'
                 },
                 { 
                     name: 'Phase 4 Implementation Plan', 
                     path: 'src/wiki/content/Developer-Docs/Phase-4/IMPLEMENTATION_PLAN.md',
-                    isGitHub: true,
+                    isGitHub: false,
                     description: 'Complete implementation roadmap for Phase 4 features'
                 },
                 { 
                     name: 'Phase 4 PRD', 
                     path: 'src/wiki/content/Developer-Docs/Phase-4/Phase-4-PRD.md',
-                    isGitHub: true,
+                    isGitHub: false,
                     description: 'Product Requirements Document with Phase 4 specifications'
                 }
             ]
