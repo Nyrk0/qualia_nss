@@ -1,7 +1,7 @@
 # Comb-Filtering Experiments: Educational and Measurement Tool
 
-**Version:** 1.0  
-**Date:** 2025-08-31  
+**Version:** 2.0  
+**Date:** 2025-09-01  
 **Project:** Qualia-NSS Audio Analysis Suite  
 
 **Research References:**  
@@ -172,6 +172,426 @@ Mathematically, for $\tau = 3$ ms (mid-range), first notch $ f_1 = 1/(2 \times 0
 
 Delay $\tau$ (ms)First Notch $ f_1 $ (Hz)Notch Spacing $\Delta f$ (Hz)Potential QUALIA•NSS Impact (Assuming Rear Limit 1–2 kHz)15001000Strong in mids/highs; avoid for immersion—too short for precedence.3167333Affects lows/mids; minimal in highs if rears decay early.683167Low-frequency focus; immersion good, comb negligible in highs.1050100Borderline echo; comb weak if levels differ by >10 dB.202550Perceived as echo; comb disappears, but immersion may suffer.
 This analysis underscores a balance: delays of 3–6 ms optimize QUALIA•NSS for "natural envelopment" without pronounced combing, especially in highs, by leveraging spectral separation.
+
+---
+
+## 5. **COMPUTATIONAL ANALYSIS FRAMEWORK - ADVANCED FEATURES**
+
+### 5.1 **Dual-Path Analysis System**
+
+The Perfect Logic Framework implementation provides unprecedented access to both **dry reference signals** (`analyzers.reference`) and **wet processed signals** (`analyzers.input`), enabling sophisticated **real-time computational analysis** that complements visual/auditory assessment.
+
+#### **Signal Flow for Analysis:**
+```
+Reference Signal Source → speakerBus.input ←── analyzers.reference (DRY PATH)
+                                ↓
+                         [Speaker Processing]
+                                ↓
+                        combFilter.input ←── analyzers.input (WET PATH)
+```
+
+### 5.2 **Real-Time Comb-Filtering Quantification**
+
+**Compare dry vs wet frequency spectra to measure actual comb filtering:**
+
+```javascript
+function analyzeCombFiltering() {
+    const dryFFT = getAnalyzerData('reference');  // Raw reference
+    const wetFFT = getAnalyzerData('input');      // Mixed delayed output
+    
+    // Calculate magnitude difference
+    const combPattern = wetFFT.map((wet, i) => wet - dryFFT[i]);
+    
+    // Detect notch frequencies
+    const notches = findSpectralNotches(combPattern);
+    const peaks = findSpectralPeaks(combPattern);
+    
+    return {
+        notchFrequencies: notches,
+        peakFrequencies: peaks,
+        combDepth: calculateCombDepth(combPattern),
+        notchSpacing: calculateNotchSpacing(notches),
+        theoreticalMatch: compareWithPredicted(notches, speakerDelays)
+    };
+}
+```
+
+### 5.3 **Delay Time Verification & Cross-Correlation**
+
+**Measure actual vs theoretical delays using signal correlation:**
+
+```javascript
+function verifyDelayAccuracy() {
+    const crossCorrelation = calculateCrossCorrelation(drySignal, wetSignal);
+    const measuredDelay = findPeakDelay(crossCorrelation);
+    const theoreticalDelay = computeTheoreticalDelay(listenerPosition);
+    
+    return {
+        measuredDelay: measuredDelay,
+        theoreticalDelay: theoreticalDelay,
+        accuracy: Math.abs(measuredDelay - theoreticalDelay),
+        correlationCoefficient: calculateCorrelation(drySignal, wetSignal),
+        delaySpread: calculateDelaySpread(crossCorrelation)
+    };
+}
+```
+
+### 5.4 **Phase Relationship Analysis**
+
+**Quantify constructive/destructive interference patterns:**
+
+```javascript
+function analyzePhaseInterference() {
+    const dryPhase = calculatePhaseSpectrum(dryFFT);
+    const wetPhase = calculatePhaseSpectrum(wetFFT);
+    const phaseDifference = wetPhase.map((wet, i) => wet - dryPhase[i]);
+    
+    return {
+        phaseShift: phaseDifference,
+        constructiveFreqs: findConstructiveInterference(phaseDifference),
+        destructiveFreqs: findDestructiveInterference(phaseDifference),
+        coherence: calculateCoherence(dryFFT, wetFFT),
+        phaseCoherence: calculatePhaseCoherence(dryPhase, wetPhase)
+    };
+}
+```
+
+### 5.5 **Impulse Response & Transient Analysis**
+
+**Analyze system response to transient events (related to attack/onset velocity):**
+
+```javascript
+function analyzeTransientResponse() {
+    const dryTransient = extractTransient(referenceSignal);   // Pure attack
+    const wetTransient = extractTransient(processedSignal);   // After speaker delays
+    
+    return {
+        attackTime: measureAttackTime(wetTransient),
+        decayTime: measureDecayTime(wetTransient),
+        transientPreservation: compareTransients(dryTransient, wetTransient),
+        echoPattern: detectEchoes(wetTransient),
+        temporalSmearing: calculateTemporalSmearing(dryTransient, wetTransient),
+        attackVelocity: calculateAttackRate(wetTransient),
+        perceivedPunch: calculatePerceivedTransient(wetTransient)
+    };
+}
+```
+
+### 5.6 **Room Acoustics Simulation Validation**
+
+**Compare predicted vs actual acoustic behavior:**
+
+```javascript
+function validateAcousticModel() {
+    const predictedResponse = calculateTheoreticalResponse(
+        listenerPosition, 
+        speakerPositions, 
+        roomGeometry
+    );
+    
+    const measuredResponse = getAnalyzerData('input');
+    
+    return {
+        modelAccuracy: calculateRMSE(predictedResponse, measuredResponse),
+        frequencyResponseMatch: compareFRcurves(predictedResponse, measuredResponse),
+        roomModeDetection: detectRoomModes(measuredResponse),
+        reflectionPattern: analyzeReflectionStructure(measuredResponse)
+    };
+}
+```
+
+### 5.7 **Real-Time Audio Quality Metrics**
+
+**Comprehensive signal quality assessment:**
+
+```javascript
+function calculateAudioMetrics() {
+    return {
+        // Signal Quality
+        SNR: calculateSNR(drySignal, wetSignal),
+        THD: calculateTHD(wetSignal),
+        dynamicRange: calculateDynamicRange(wetSignal),
+        
+        // Spectral Characteristics
+        spectralCentroid: calculateSpectralCentroid(wetFFT),
+        spectralRolloff: calculateSpectralRolloff(wetFFT),
+        spectralFlatness: calculateSpectralFlatness(wetFFT),
+        
+        // Temporal Characteristics
+        zeroCrossingRate: calculateZCR(wetSignal),
+        temporalCentroid: calculateTemporalCentroid(wetSignal),
+        
+        // Psychoacoustic Metrics
+        loudness: calculateLoudness(wetFFT),
+        sharpness: calculateSharpness(wetFFT),
+        roughness: calculateRoughness(wetFFT)
+    };
+}
+```
+
+### 5.8 **Educational Feedback & Learning Analytics**
+
+**Automated learning assistance and progress tracking:**
+
+```javascript
+function generateEducationalFeedback() {
+    const analysis = analyzeCombFiltering();
+    
+    return {
+        // Quantitative Feedback
+        firstNotchFrequency: analysis.notchFrequencies[0],
+        notchSpacingConsistency: evaluateNotchSpacing(analysis.notches),
+        combingEffectiveness: rateCombingStrength(analysis.combDepth),
+        theoreticalMatch: compareWithTheory(analysis, theoreticalPredictions),
+        
+        // Learning Assessment
+        conceptUnderstanding: assessConceptGrasp(userActions, results),
+        learningProgress: trackLearningObjectives(sessionData),
+        difficultyLevel: adaptDifficultyLevel(performanceMetrics),
+        
+        // Contextual Tips
+        learningTips: generateContextualTips(analysis),
+        nextExperiment: suggestNextExperiment(currentLevel),
+        commonMistakes: identifyCommonErrors(userBehavior)
+    };
+}
+```
+
+### 5.9 **Advanced Analysis Capabilities**
+
+#### **Multi-Speaker Coherence Analysis**
+```javascript
+function analyzeMultiSpeakerCoherence() {
+    return {
+        speakerCorrelation: calculateSpeakerCorrelation(),
+        phasingIssues: detectPhasingProblems(),
+        spatialCoherence: calculateSpatialCoherence(),
+        imagingAccuracy: assessStereoImaging()
+    };
+}
+```
+
+#### **Psychoacoustic Analysis**
+```javascript
+function analyzePsychoacoustics() {
+    return {
+        maskingThreshold: calculateMaskingThreshold(wetFFT),
+        auditorySceneAnalysis: performASA(wetSignal),
+        precedenceEffect: measurePrecedenceEffect(multiChannelSignals),
+        localizationCues: analyzeLocalizationCues(binauralSignals)
+    };
+}
+```
+
+### 5.10 **Implementation Opportunities**
+
+#### **Real-Time Metrics Dashboard**
+- Display computed values alongside visualizations
+- Live updating numerical analysis results
+- Color-coded indicators for optimal/problematic conditions
+
+#### **Automated Detection Systems**
+- Highlight predicted vs actual notch frequencies  
+- Phase correlation meters showing interference levels
+- Model validation scores rating theoretical match
+
+#### **Educational Progress Tracking**
+- Quantify learning objectives achievement
+- Adaptive difficulty adjustment based on performance
+- Personalized learning path recommendations
+
+#### **Advanced Research Features**
+- **Room Transfer Function Estimation**
+- **Reverberation Time Calculation** (RT60, EDT)
+- **Speaker Distance Verification** via time-of-flight
+- **Binaural Analysis** for spatial perception studies
+- **Spectral Masking Analysis** for psychoacoustic research
+
+### 5.11 **Educational Value Enhancement**
+
+This computational framework transforms the tool from purely **qualitative** (visual/auditory) to **quantitative** (measurable/comparable) analysis:
+
+1. **Objective Validation:** Students can verify theoretical predictions with measured results
+2. **Scientific Method:** Hypothesis → Prediction → Measurement → Analysis
+3. **Advanced Learning:** Bridge gap between basic concepts and professional acoustics
+4. **Research Applications:** Tool becomes suitable for academic research projects
+
+The dual-path analysis system (dry reference vs wet processed) enables unprecedented educational insight into how acoustic processing affects audio signals in measurable, quantifiable ways.
+
+---
+
+## 6. **PHASE 4: REAL-WORLD AUDIO INPUT ANALYSIS LAYER**
+
+### 6.1 **Multi-Input Audio Configuration System**
+
+**Phase 4 introduces comprehensive real-world audio input analysis**, enabling comparison between digital simulations and actual acoustic measurements using various audio input configurations.
+
+#### **Supported Audio Input Types:**
+- **Internal Microphone** (Raw/Calibrated)
+- **External Microphone** (Raw/Calibrated)  
+- **Audio Line-In** (Analog input)
+- **USB Audio Interfaces** (Professional sound interfaces)
+
+#### **Triple-Path Analysis Architecture:**
+```
+Reference Signal (Digital) → analyzers.reference (SIMULATION INPUT)
+                     ↓
+            Speaker Processing → analyzers.input (SIMULATION OUTPUT)
+                     ↓
+Real-World Microphone Input → analyzers.microphone (MEASURED REALITY)
+```
+
+### 6.2 **Real vs Simulated Acoustic Analysis**
+
+**Complete acoustic measurement validation system:**
+
+```javascript
+function analyzeRealVsSimulated() {
+    const simulatedDry = getAnalyzerData('reference');      // Digital reference
+    const simulatedWet = getAnalyzerData('input');          // Digital processed
+    const measuredReal = getAnalyzerData('microphone');     // Real acoustic measurement
+    
+    return {
+        // Simulation Validation
+        simulationAccuracy: compareSimulationToReality(simulatedWet, measuredReal),
+        roomCharacteristics: extractRoomProperties(measuredReal, simulatedWet),
+        
+        // Real-World Analysis
+        actualCombFiltering: detectRealCombPatterns(measuredReal),
+        roomReverberation: analyzeReverberation(measuredReal, simulatedDry),
+        acousticTransferFunction: calculateRoomTransferFunction(simulatedDry, measuredReal),
+        
+        // Educational Insights
+        theoryVsReality: compareTheoreticalWithMeasured(predicted, measuredReal),
+        roomModeDetection: identifyRoomModes(measuredReal),
+        reflectionAnalysis: analyzeReflectionPatterns(measuredReal)
+    };
+}
+```
+
+### 6.3 **Microphone Calibration System**
+
+**Professional-grade calibration for educational accuracy:**
+
+```javascript
+class MicrophoneCalibration {
+    calibrateInput(inputType, calibrationData) {
+        return {
+            // Frequency Response Correction
+            frequencyCalibration: this.correctFrequencyResponse(calibrationData),
+            
+            // Sensitivity Adjustment
+            sensitivityCorrection: this.adjustSensitivity(inputType),
+            
+            // Environmental Compensation
+            roomCompensation: this.compensateForRoom(calibrationData),
+            
+            // Signal Chain Correction
+            preampGainCorrection: this.correctPreampGain(inputType),
+            
+            // Noise Floor Measurement
+            noiseFloorCharacterization: this.measureNoiseFloor(inputType)
+        };
+    }
+}
+```
+
+### 6.4 **Advanced Real-World Experiments**
+
+#### **Experiment 4: Digital vs Acoustic Validation**
+- **Goal:** Validate digital simulation accuracy against real acoustic measurements
+- **Method:** Compare simulated comb patterns with microphone-measured patterns
+- **Learning:** Understand limitations and accuracy of digital acoustic modeling
+
+#### **Experiment 5: Room Characterization**
+- **Goal:** Measure and characterize real room acoustic properties
+- **Method:** Use reference signals + microphone to create room acoustic fingerprint
+- **Learning:** Room modes, reverberation time, reflection patterns
+
+#### **Experiment 6: Multi-Position Analysis**
+- **Goal:** Create acoustic maps of real spaces
+- **Method:** Move microphone through space while maintaining speaker positions
+- **Learning:** Spatial variation of acoustic properties, sweet spot identification
+
+### 6.5 **Professional Audio Interface Integration**
+
+#### **USB Audio Interface Support:**
+```javascript
+class USBAudioInterface {
+    detectAudioInterfaces() {
+        return {
+            // Interface Detection
+            availableInterfaces: this.scanUSBAudioDevices(),
+            
+            // Capability Analysis  
+            inputChannels: this.getInputChannelCount(),
+            sampleRates: this.getSupportedSampleRates(),
+            bitDepths: this.getSupportedBitDepths(),
+            
+            // Professional Features
+            phantomPower: this.checkPhantomPowerSupport(),
+            preampGain: this.getPreampGainRange(),
+            directMonitoring: this.checkDirectMonitoringCapability()
+        };
+    }
+}
+```
+
+#### **Multi-Channel Analysis:**
+- **Stereo Field Analysis** (Left/Right channel correlation)
+- **Multi-Microphone Arrays** (Spatial coherence measurement)
+- **Binaural Recording** (HRTF analysis capabilities)
+- **Ambisonic Capture** (3D spatial audio analysis)
+
+### 6.6 **Educational Value of Real-World Analysis**
+
+#### **Theory to Practice Bridge:**
+1. **Validation Learning:** Students verify theoretical predictions with real measurements
+2. **Real-World Complexity:** Experience how actual rooms differ from ideal simulations
+3. **Professional Skills:** Learn professional acoustic measurement techniques
+4. **Critical Thinking:** Analyze discrepancies between theory and reality
+
+#### **Advanced Learning Objectives:**
+- **Acoustic Measurement Techniques**
+- **Room Acoustic Characterization** 
+- **Audio Equipment Usage**
+- **Scientific Method Application**
+- **Professional Workflow Development**
+
+### 6.7 **Implementation Requirements**
+
+#### **Audio Input Management:**
+```javascript
+class AudioInputManager {
+    async initializeInputs() {
+        return {
+            // Input Source Selection
+            internalMic: await this.accessInternalMicrophone(),
+            externalMic: await this.accessExternalMicrophone(),
+            lineIn: await this.accessLineInput(),
+            usbInterface: await this.accessUSBAudioInterface(),
+            
+            // Calibration Data
+            calibrationProfiles: this.loadCalibrationProfiles(),
+            
+            // Real-time Processing
+            realtimeAnalyzers: this.setupRealtimeAnalyzers(),
+            
+            // Recording Capabilities
+            recordingEngine: this.initializeRecordingEngine()
+        };
+    }
+}
+```
+
+#### **Measurement Accuracy Features:**
+- **Latency Compensation** (Account for input/output delays)
+- **Clock Synchronization** (Align digital and analog timing)
+- **Noise Reduction** (Filter environmental noise)
+- **Dynamic Range Optimization** (Maximize measurement precision)
+
+This Phase 4 implementation transforms the tool into a **complete acoustic measurement and analysis platform**, bridging the gap between educational simulation and professional acoustic measurement practices.
+
 Key Citations
 
 Bosi, M., & Goldberg, R. E. (2003). Introduction to digital audio coding and standards. Kluwer Academic Publishers. (For comb filter equations; via DSPRelated.com).

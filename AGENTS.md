@@ -1,9 +1,9 @@
 # AGENTS.md - Universal AI Assistant Instructions
 
 **Project**: Qualia-NSS - Web-based Audio Analysis Toolkit  
-**Version**: 2.0  
+**Version**: 2.1  
 **Compatible**: Claude, Gemini, GPT, and other AI assistants  
-**Last Updated**: 2025-08-31
+**Last Updated**: 2025-09-01
 
 ---
 
@@ -385,11 +385,36 @@ class ModuleClass {
 2. **UI/UX Standardization**: Bootstrap accordion pattern across all modules
 3. **Mobile PWA Optimization**: Full-screen iOS Chrome experience
 4. **Wiki System Integration**: Git submodule with live documentation
+5. **Comb-Filtering Tool (ST04)**: **PHASE 2B COMPLETE** - Perfect Logic Framework implemented with educational visualization state machine
 
 ### Specialized Features
 - **Colormap Architecture**: Strict separation between module and component colormaps
 - **Audio Processing**: Professional Web Audio API implementation
 - **3D Visualization**: WebGL spectrogram with Google Chrome Music Lab code
+- **Comb-Filtering Educational Framework**: Multi-speaker delay simulation with Perfect Logic Framework implementation
+  - **Reference Signal Display Mode**: Shows raw reference signals when no speakers active (`analyzers.reference`)
+  - **Simulation Output Display Mode**: Shows mixed delayed signals when speakers active (`analyzers.input`)
+  - **CRITICAL: Reference Signal Embedding**: Reference signals flow THROUGH speaker processing (not isolated)
+    - Same reference signal splits to ALL 4 speaker delay chains simultaneously
+    - Multiple delayed copies mix at `speakerBus.output` → feeds analysis/visualization
+    - Students see BEFORE (raw) vs AFTER (processed) of the same audio source
+  - **Read-only Parameter System**: Delays computed from listener position (general case)
+  - **Framework Compliance Verification**: Automatic validation during critical operations
+  - **Computational Analysis Framework** (Phase 3 Roadmap):
+    - **Dual-Path Analysis**: Unprecedented access to both dry (`analyzers.reference`) and wet (`analyzers.input`) signals
+    - **Real-time Comb Quantification**: Automatic notch detection, delay verification, theoretical vs measured comparisons
+    - **Phase Relationship Analysis**: Constructive/destructive interference measurement, coherence calculation
+    - **Impulse Response & Transients**: Attack velocity analysis, temporal smearing, transient preservation measurement
+    - **Educational Analytics**: Quantitative learning assessment, adaptive feedback, progress tracking
+    - **Research Capabilities**: Room acoustics validation, psychoacoustic analysis, professional-level accuracy
+  - **Future Phase 3**: Centered listener mode with active parameter control
+  - **Future Phase 4**: Real-world audio input analysis layer
+    - **Multi-Input Support**: Internal mic, external mic, audio line-in, USB audio interfaces (raw/calibrated)
+    - **Triple-Path Analysis**: Digital reference + simulation + real acoustic measurement
+    - **Professional Calibration**: Frequency response correction, sensitivity adjustment, noise characterization
+    - **Acoustic Validation**: Compare digital simulations with real-world measurements
+    - **Advanced Experiments**: Room characterization, multi-position analysis, theory vs reality validation
+    - **Research Platform**: Complete acoustic measurement and education platform
 
 ---
 

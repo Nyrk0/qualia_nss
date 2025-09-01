@@ -10,6 +10,18 @@ class WikiModule {
         this.contentContainer = null;
         this.wikiBasePath = 'src/wiki/content';
         this.currentPath = null;
+        
+        // Phase 4: GitHub Raw URL integration
+        this.githubConfig = {
+            owner: 'anthropics',  // Replace with actual repo owner
+            repo: 'claude-code',  // Replace with actual repo name
+            branch: 'main',
+            baseUrl: 'https://raw.githubusercontent.com'
+        };
+        
+        // Mermaid configuration
+        this.mermaidInitialized = false;
+        this.initializeMermaid();
     }
 
     async init() {

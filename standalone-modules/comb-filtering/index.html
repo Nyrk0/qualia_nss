@@ -6,6 +6,7 @@
     <title>Comb-Filter Analysis Tool | Qualia-NSS</title>
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
     <!-- Header Controls -->
@@ -100,47 +101,39 @@
                         </div>
                     </div>
                     
+                    
                     <div class="control-group">
-                        <label for="mix-slider">
-                            <i class="fas fa-balance-scale"></i> Dry/Wet Mix
-                            <span class="tooltip" data-tooltip="Balance between original and processed signal">?</span>
+                        <label>
+                            <i class="fas fa-broadcast-tower"></i> Reference Signals
+                            <span class="tooltip" data-tooltip="Select reference signal for multi-speaker delay simulation">?</span>
                         </label>
-                        <div class="slider-container">
-                            <input type="range" id="mix-slider" min="0" max="100" value="50" step="1">
-                            <span class="value-display" id="mix-value">50%</span>
-                        </div>
-                    </div>
-
-                    <div class="control-group">
-                        <label for="feedback-slider">
-                            <i class="fas fa-redo"></i> Feedback
-                            <span class="tooltip" data-tooltip="Amount of output signal fed back to the input">?</span>
-                        </label>
-                        <div class="slider-container">
-                            <input type="range" id="feedback-slider" min="0" max="0.95" value="0.3" step="0.01">
-                            <span class="value-display" id="feedback-value">30%</span>
+                        <div class="reference-signal-toggles">
+                            <button type="button" class="btn btn-outline-light reference-toggle" id="white-noise-toggle" data-signal="white-noise">
+                                <i class="bi bi-volume-off-fill"></i> White Noise
+                            </button>
+                            <button type="button" class="btn btn-outline-light reference-toggle" id="pink-noise-toggle" data-signal="pink-noise">
+                                <i class="bi bi-volume-up-fill"></i> Pink Noise  
+                            </button>
+                            <button type="button" class="btn btn-outline-light reference-toggle" id="sine-sweep-toggle" data-signal="sine-sweep">
+                                <i class="fas fa-chart-line"></i> Sine Sweep
+                            </button>
+                            <button type="button" class="btn btn-outline-light reference-toggle" id="tone-burst-toggle" data-signal="tone-burst">
+                                <i class="fas fa-wave-square"></i> Tone Burst
+                            </button>
+                            <button type="button" class="btn btn-outline-light reference-toggle" id="custom-tone-toggle" data-signal="custom-tone">
+                                <i class="fas fa-sine-wave"></i> Custom Tone
+                            </button>
+                            <button type="button" class="btn btn-outline-light reference-toggle" id="music-toggle" data-signal="music">
+                                <i class="fas fa-music"></i> Music Sample
+                            </button>
                         </div>
                     </div>
                     
-                    <div class="control-group">
-                        <label for="signal-type">
-                            <i class="fas fa-waveform-lines"></i> Test Signal
-                        </label>
-                        <select id="signal-type" class="control-select">
-                            <option value="white-noise">White Noise</option>
-                            <option value="pink-noise">Pink Noise</option>
-                            <option value="sine-sweep">Sine Sweep</option>
-                            <option value="tone-burst">Tone Burst</option>
-                            <option value="custom-tone">Custom Tone</option>
-                            <option value="music">Music Sample</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Custom Tone Control -->
+                    <!-- Custom Tone Control - shown when custom tone is active -->
                     <div class="control-group" id="tone-control-group" style="display: none;">
                         <label>
-                            <i class="fas fa-sine-wave"></i> Custom Tone
-                            <span class="tooltip" data-tooltip="Adjust frequency and toggle tone on/off">?</span>
+                            <i class="fas fa-sine-wave"></i> Custom Tone Frequency
+                            <span class="tooltip" data-tooltip="Adjust frequency for custom tone signal">?</span>
                         </label>
                         <div class="tone-control-container" style="display: flex; align-items: center; gap: 8px;">
                             <input type="range" id="custom-tone-slider" min="0" max="1000" value="447" step="1" style="flex: 1; width: 100%;">
@@ -228,9 +221,6 @@
                     <button class="viz-tab" data-viz="frequency" title="Frequency response plot">
                         <i class="fas fa-chart-line"></i> Frequency
                     </button>
-                    <button class="viz-tab" data-viz="comparison" title="Compare dry vs wet signals">
-                        <i class="fas fa-balance-scale-right"></i> Comparison
-                    </button>
                     <button class="viz-tab" data-viz="waveform" title="Time domain waveform">
                         <i class="fas fa-water"></i> Waveform
                     </button>
@@ -277,6 +267,9 @@
                     </span>
                     <span class="status-indicator" id="speaker-status">
                         <i class="fas fa-volume-up"></i> Speakers: --
+                    </span>
+                    <span class="status-indicator" id="experiment-mode">
+                        <i class="fas fa-graduation-cap"></i> Mode: Reference Signal Display
                     </span>
                 </div>
                 

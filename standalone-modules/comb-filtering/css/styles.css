@@ -4,7 +4,7 @@
 :root {
     /* Color Palette */
     --primary-color: #2c3e50;
-    --primary-light: #3498db;
+    --primary-light: #28a745;
     --primary-dark: #1a252f;
     --accent-color: #e74c3c;
     --accent-green: #27ae60;
@@ -24,7 +24,7 @@
     --status-red: #e74c3c;
     --status-green: #27ae60;
     --status-yellow: #f39c12;
-    --status-blue: #3498db;
+    --status-blue: #28a745;
     
     /* Layout */
     --header-height: 70px;
@@ -155,6 +155,55 @@ input:checked + .toggle-slider:before {
     text-align: right;
 }
 
+/* Reference Signal Toggles */
+.reference-signal-toggles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-sm);
+    width: 100%;
+}
+
+.reference-toggle {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    justify-content: flex-start;
+    white-space: nowrap;
+}
+
+.reference-toggle:hover {
+    border-color: var(--primary-light);
+    color: var(--text-primary);
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+.reference-toggle.active {
+    background-color: var(--primary-light);
+    border-color: var(--primary-light);
+    color: white;
+}
+
+.reference-toggle.active.white-noise {
+    background-color: white;
+    color: var(--primary-dark);
+    border-color: white;
+}
+
+.reference-toggle.active.pink-noise {
+    background-color: #ff69b4;
+    color: white;
+    border-color: #ff69b4;
+}
+
 /* Base Styles */
 * {
     margin: 0;
@@ -272,7 +321,7 @@ body {
 }
 
 .control-btn.primary:hover {
-    background: #2980b9;
+    background: #28a745;
 }
 
 .control-select {
@@ -397,8 +446,25 @@ body {
 }
 
 .slider-container input[type="range"]::-webkit-slider-thumb:hover {
-    background: #2980b9;
+    background: #28a745;
     transform: scale(1.1);
+}
+
+/* Read-only slider styling (Perfect Logic Framework) */
+.slider-container input[type="range"].read-only {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background: var(--surface-dark);
+}
+
+.slider-container input[type="range"].read-only::-webkit-slider-thumb {
+    background: var(--text-muted);
+    cursor: not-allowed;
+}
+
+.slider-container input[type="range"].read-only::-webkit-slider-thumb:hover {
+    background: var(--text-muted);
+    transform: none;
 }
 
 .value-display {

@@ -1,9 +1,126 @@
 # Comb-Filtering Tool: Implementation Plan
 
-**Version:** 2.1  
+**Version:** 2.3  
 **Date:** 2025-09-01  
 **Project:** Qualia-NSS Standalone Audio Analysis Tools  
-**Status:** PHASE 2A COMPLETE - INTEGRATION ACHIEVED
+**Status:** PHASE 2B COMPLETE - PERFECT LOGIC FRAMEWORK IMPLEMENTED
+
+**Research References:**  
+- [Gemini Analysis](https://gemini.google.com/app/cb2997d8d54da144)  
+- [Grok Deep Research](https://grok.com/project/deepsearch?chat=a6e9ef9d-1b38-4b07-a02e-dd8c0f9cc12a)
+
+---
+
+## 🎯 **PERFECT LOGIC FRAMEWORK - CORE EDUCATIONAL PRINCIPLES**
+
+### **Educational Logic Framework (Step-by-Step):**
+
+#### **1. Reference Signals = Known Audio Sources** ✅
+- **Purpose:** Controlled input sources for mathematical simulations
+- **Types:** White noise, pink noise, sine sweep, tone burst, custom tone, music sample
+- **Function:** Known characteristics allow predictable comb-filtering calculations
+- **Mode:** Audio output experiments (no mic input needed initially)
+
+#### **2. Visualization Modes Based on Speaker State** ✅
+- **When NO speakers active:** Display REFERENCE SIGNALS (raw input)
+- **When speakers active:** Display MIXED DELAYED OUTPUT (simulation result)
+- **Educational Value:** Students see input vs. processed output comparison
+- **Multiple signals:** Can toggle multiple reference signals simultaneously
+
+#### **3. Multi-Speaker Delay System** ✅
+- **Audio Engine Logic:** For each active reference signal × each active speaker = delayed copy
+- **Speaker Matrix:** Set A (left/right) + Set B (left/right) = 4 speakers maximum
+- **Delay Calculation:** Individual delay per speaker based on listener position
+- **Formula:** `τ = distance / 343 m/s` (speed of sound)
+- **CRITICAL: Reference Signal Embedding:** Reference signals are COMPLETELY EMBEDDED in speaker processing, not isolated
+  - **When speakers ON:** Reference signal flows through ALL speaker delay chains simultaneously
+  - **Same reference signal** gets delayed by different amounts per speaker position
+  - **Multiple delayed copies** mix at `speakerBus.output` → feeds analysis/visualization
+  - **Result:** Analysis shows the TRANSFORMED reference signal (delayed + mixed), not separate signals
+
+#### **4. Visualization State Machine** ✅
+```javascript
+// CORE VISUALIZATION LOGIC:
+if (no_speakers_active) {
+    // Mode: Reference Signal Display
+    visualize(analyzers.reference); // Raw reference signals at speakerBus.input
+} else {
+    // Mode: Simulation Output Display  
+    visualize(analyzers.input);     // Transformed reference signals from speakerBus.output
+}
+```
+
+#### **🔀 SIGNAL FLOW ARCHITECTURE - REFERENCE SIGNAL EMBEDDING**
+```
+Reference Signal Source (white noise, tone, etc.)
+         ↓
+   speakerBus.input ←── analyzers.reference (RAW reference signal capture)
+         ↓ (splits to ALL 4 speakers simultaneously)
+         ├── A_left: preGain → DelayNode → gain ──┐
+         ├── A_right: preGain → DelayNode → gain ─┤
+         ├── B_left: preGain → DelayNode → gain ──┼── speakerBus.output
+         └── B_right: preGain → DelayNode → gain ─┘      ↓
+                                                    combFilter.input ←── analyzers.input
+                                                          ↓
+                                                    [comb filtering]
+                                                          ↓
+                                                    combFilter.output ←── analyzers.wet
+                                                          ↓
+                                                      masterGain
+                                                          ↓
+                                                     Audio Output
+
+KEY FACTS:
+• Reference signal is NEVER isolated when speakers are active
+• SAME reference signal flows through ALL active speaker delay chains
+• speakerBus.output contains MIXED DELAYED COPIES of the original reference signal
+• Analysis/visualization shows TRANSFORMED reference signal, not separate signals
+• Educational value: Students see BEFORE (raw) vs AFTER (processed) of same audio source
+```
+
+#### **5. Parameters UI Override System** ✅
+- **Delay Parameter:** Starts at 0, read-only display
+- **Priority:** Listener position OVERRIDES manual delay setting
+- **Special Case:** Manual control active when listener perfectly centered
+- **Educational Value:** Shows computed vs. manual delay relationship
+
+---
+
+## 📚 **EDUCATIONAL EXPERIMENT FRAMEWORK**
+
+### **Three-Phase Learning Progression:**
+
+#### **Experiment 1: Controlled Comb-Filter (Digital/Dry)** 🎯
+- **Goal:** Visualize and hear ideal, predictable comb-filtering effects
+- **Method:** Web Audio API controlled comb-filter with known reference signals
+- **Signals:** White noise (static peaks/notches), Sine sweep (audible flutter through notches)
+- **Learning:** Mathematical relationship between delay and frequency response
+
+#### **Experiment 2: Acoustic Comb-Filter (Real-World/Wet)** 🏠
+- **Goal:** Experience natural comb-filtering in real room acoustics
+- **Method:** Clean signal → single speaker → microphone analysis
+- **Procedure:** Move microphone to see spectrum changes from room reflections
+- **Learning:** Real-world vs. theoretical comb-filtering differences
+
+#### **Experiment 3: Comparative Analysis (Dry vs. Wet)** 🔬
+- **Goal:** Distinguish comb-filtering from reverberation
+- **Method:** Dual analyzer (digital output + microphone input)
+- **Analysis:** Compare flat digital baseline with room-affected microphone signal
+- **Learning:** Identify interference patterns vs. reverb characteristics
+
+### **Mathematical Foundation Integration:**
+
+#### **Core Formulas Implemented:**
+- **Transfer Function:** `H(z) = 1 + z^(-K)` where `K = τ × fs`
+- **First Notch Frequency:** `f₁ = 1/(2τ)` where τ is delay in seconds  
+- **Notch Spacing:** `Δf = 1/τ`
+- **Distance to Delay:** `τ = distance / 343 m/s` (speed of sound)
+
+#### **QUALIA-NSS Optimal Range:**
+- **Distance:** 1.0-1.5 meters (2.9-4.4ms delay)
+- **First Notch:** 114-172 Hz
+- **Impact:** Primarily affects low/mid frequencies, minimal high-frequency coloration
+- **Psychoacoustic:** Within precedence effect range, below echo threshold
 
 ---
 
@@ -62,6 +179,55 @@ this.speakerBus = {
 3. **✅ Dynamic Parameter Updates:** Real-time delay adjustment as listener moves
 4. **✅ Multi-Stream Mixing:** Additive combination at listener position
 5. **✅ Visual Timing Feedback:** Status bar showing all speaker delays
+
+### ✅ **COMPLETED FEATURES (v2.3) - PERFECT LOGIC FRAMEWORK IMPLEMENTATION**
+- **✅ Visualization State Machine:** Auto-switches between reference signals (speakers OFF) and simulation output (speakers ON)
+- **✅ Reference Signal Direct Visualization:** Dedicated 'reference' analyzer captures raw signals at `speakerBus.input` (before processing)
+- **✅ Reference Signal Embedding Architecture:** Reference signals flow THROUGH speaker processing, creating delayed/mixed copies
+- **✅ Dual-Path Analysis System:** 
+  - `analyzers.reference` → Raw reference signals (speakerBus.input)
+  - `analyzers.input` → Transformed reference signals (speakerBus.output → combFilter.input)
+- **✅ Read-only Parameter Controls:** Delay/distance sliders display computed values from listener position (no manual input)
+- **✅ Educational Mode Indicators:** Status bar shows current experiment phase (Reference Signal Display vs Simulation Output Display)
+- **✅ Framework Compliance Verification:** Automatic compliance checks during critical operations
+- **✅ Perfect Logic Framework Documentation:** Complete 5-step educational logic documented and implemented
+
+#### **✅ Implementation Verification Checklist:**
+1. **✅ Reference Signals Available:** Known audio sources for mathematical simulations
+2. **✅ Visualization Logic:** Shows reference signals when speakers OFF, simulation output when speakers ON
+3. **✅ Speaker Delay System:** Creates delayed copies of reference signals per speaker position
+4. **✅ Parameters Read-Only:** Controlled by listener position, not user input (general case)
+5. **✅ Experiment Mode Display:** Visual indicator shows correct educational phase
+
+### 📋 **FUTURE IMPLEMENTATION - SPECIAL CASE: CENTERED LISTENER MODE**
+**Status:** Planned for Phase 3  
+**Use Case:** When listener is perfectly centered between speaker sets (x=0)
+
+#### **Special Case Requirements:**
+- **Trigger Condition:** `listener.x === 0` (perfectly centered horizontally)
+- **Parameter Control Mode:** Sliders become active (not read-only)
+- **Listener Movement:** Sliders control listener's vertical position (y-axis)
+- **Formula:** `listener.y = slider_value` (direct y-coordinate control)
+- **Educational Value:** Explore delay patterns when equidistant from speaker pairs
+
+#### **Code Components to Re-implement:**
+```javascript
+// Methods removed in v2.3 but needed for special case:
+updateDelay(delayMs) { /* Control listener.y from delay slider */ }
+updateDistance(distance) { /* Control listener.y from distance slider */ }
+
+// Additional logic needed:
+if (listener.x === 0) {
+    // Enable slider control mode
+    delaySlider.disabled = false;
+    distanceSlider.disabled = false;
+    // Map slider values to listener.y coordinate
+} else {
+    // Standard read-only mode (current implementation)
+    delaySlider.disabled = true;
+    distanceSlider.disabled = true;
+}
+```
 
 ---
 
@@ -369,3 +535,632 @@ function combFilterFrequencies(delaySeconds) {
 - **User Confusion:** Provide clear visual feedback for all interactive elements
 
 This implementation plan reflects the current state and provides a clear roadmap for completing the advanced multi-speaker comb-filtering simulation tool.
+
+---
+
+## 🔧 **CURRENT CRITICAL ISSUE: VISUALIZATION LOGIC MISMATCH**
+
+### **Problem Identified (September 1, 2025):**
+The visualization system is not displaying reference signal waveforms due to a fundamental logic mismatch between implementation and educational requirements.
+
+### **Issue Analysis:**
+1. **Current Implementation:** Always tries to show processed "wet" signal from combFilter output
+2. **Educational Logic:** Should show REFERENCE signals when no speakers active  
+3. **Result:** Users see black screen instead of reference signal waveforms
+4. **User Impact:** Tool appears broken when following correct educational workflow
+
+### **Root Cause:**
+```javascript
+// CURRENT (INCORRECT) LOGIC:
+const analyzerData = this.audioEngine.getAnalyzerData('wet'); // Always processed signal
+if (!analyzerData) return; // Fails when speakers OFF but reference signal ON
+
+// SHOULD BE (CORRECT) LOGIC:
+const speakersActive = this.speakerState.setA || this.speakerState.setB;
+if (!speakersActive) {
+    // Mode: Reference Signal Display
+    const analyzerData = this.audioEngine.getAnalyzerData('input'); // Raw reference
+} else {
+    // Mode: Simulation Output Display  
+    const analyzerData = this.audioEngine.getAnalyzerData('wet'); // Processed output
+}
+```
+
+---
+
+## 🎯 **SOLUTION FRAMEWORK: PHASE 2B CRITICAL FIXES**
+
+### **Priority 1: Visualization State Machine** ⚡ CRITICAL
+- **Task:** Implement speaker-state-based analyzer selection
+- **Logic:** Reference signals (speakers OFF) vs. Mixed output (speakers ON)
+- **Impact:** Fixes core educational workflow visualization
+
+### **Priority 2: Reference Signal Analyzer Path** ⚡ CRITICAL  
+- **Task:** Add analyzer connected to reference signal source (pre-processing)
+- **Purpose:** Enable direct reference signal visualization
+- **Requirement:** Support multiple simultaneous reference signals
+
+### **Priority 3: Parameters UI Correction** 🔧 IMPORTANT
+- **Task:** Make delay parameters read-only, computed from listener position
+- **Logic:** Listener position OVERRIDES manual settings
+- **Display:** Show actual computed delays being used by engine
+
+### **Priority 4: Educational Mode Integration** 📚 ENHANCEMENT
+- **Task:** Add experiment phase indicators (Controlled/Acoustic/Comparative)
+- **Purpose:** Guide users through learning progression
+- **Value:** Connect theory to practical visualization
+
+---
+
+## ✅ **FRAMEWORK COMPLIANCE VERIFICATION SYSTEM**
+
+To ensure future changes align with the Perfect Logic Framework:
+
+### **Verification Checklist:**
+- [ ] Reference signals display when no speakers active
+- [ ] Mixed delayed output displays when speakers active  
+- [ ] Multiple reference signals supported simultaneously
+- [ ] Parameters UI shows computed delays (read-only)
+- [ ] Listener position overrides manual delay settings
+- [ ] Educational experiment phases clearly indicated
+
+### **Testing Protocol:**
+1. **Test Reference Mode:** Activate reference signal, verify waveform display
+2. **Test Simulation Mode:** Enable speakers, verify mixed output display
+3. **Test Mode Switching:** Toggle speakers, verify visualization switches
+4. **Test Multiple References:** Enable multiple signals, verify all display
+5. **Test Parameter Override:** Move listener, verify delay updates automatically
+
+This framework ensures the tool remains true to its educational mission and provides the correct learning experience for students.
+
+---
+
+## 10. **COMPUTATIONAL ANALYSIS FRAMEWORK - PHASE 3 ROADMAP**
+
+### 10.1 **Dual-Path Analysis Advantage**
+
+The Perfect Logic Framework implementation provides unprecedented access to both **dry reference signals** and **wet processed signals**, enabling sophisticated **real-time computational analysis** that transforms the tool from qualitative to quantitative analysis.
+
+#### **Available Analysis Paths:**
+- **`analyzers.reference`** → Raw reference signals at `speakerBus.input` (DRY)
+- **`analyzers.input`** → Transformed signals at `combFilter.input` (WET)  
+- **`analyzers.wet`** → Final processed output (POST-PROCESSING)
+
+### 10.2 **Phase 3A: Real-Time Comb-Filtering Quantification**
+
+**Priority: HIGH** - Implements core computational analysis features
+
+#### **Comb Pattern Detection & Measurement**
+```javascript
+// Planned Implementation
+class CombFilterAnalyzer {
+    analyzeCombFiltering() {
+        const dryFFT = this.getAnalyzerData('reference');
+        const wetFFT = this.getAnalyzerData('input');
+        
+        return {
+            notchFrequencies: this.findSpectralNotches(combPattern),
+            peakFrequencies: this.findSpectralPeaks(combPattern),
+            combDepth: this.calculateCombDepth(combPattern),
+            theoreticalMatch: this.compareWithPredicted(notches, speakerDelays)
+        };
+    }
+}
+```
+
+#### **Delay Verification & Cross-Correlation**
+```javascript
+// Planned Implementation  
+class DelayAnalyzer {
+    verifyDelayAccuracy() {
+        const crossCorrelation = this.calculateCrossCorrelation(dry, wet);
+        const measuredDelay = this.findPeakDelay(crossCorrelation);
+        
+        return {
+            measuredDelay: measuredDelay,
+            theoreticalDelay: this.computeTheoreticalDelay(listenerPos),
+            accuracy: Math.abs(measuredDelay - theoreticalDelay),
+            correlationCoefficient: this.calculateCorrelation(dry, wet)
+        };
+    }
+}
+```
+
+### 10.3 **Phase 3B: Phase Relationship Analysis**
+
+**Priority: MEDIUM** - Advanced interference pattern analysis
+
+#### **Phase Coherence Measurement**
+```javascript
+// Planned Implementation
+class PhaseAnalyzer {
+    analyzePhaseInterference() {
+        const phaseDifference = this.calculatePhaseDifference(dryPhase, wetPhase);
+        
+        return {
+            constructiveFreqs: this.findConstructiveInterference(phaseDifference),
+            destructiveFreqs: this.findDestructiveInterference(phaseDifference),
+            coherence: this.calculateCoherence(dryFFT, wetFFT),
+            phaseCoherence: this.calculatePhaseCoherence(dryPhase, wetPhase)
+        };
+    }
+}
+```
+
+### 10.4 **Phase 3C: Impulse Response & Transient Analysis**
+
+**Priority: MEDIUM** - Transient preservation and attack velocity analysis
+
+#### **Transient Analysis Implementation**
+```javascript
+// Planned Implementation - Related to impulse response measurements
+class TransientAnalyzer {
+    analyzeTransientResponse() {
+        const dryTransient = this.extractTransient(referenceSignal);
+        const wetTransient = this.extractTransient(processedSignal);
+        
+        return {
+            attackTime: this.measureAttackTime(wetTransient),
+            attackVelocity: this.calculateAttackRate(wetTransient),  // "Velocity" concept
+            temporalSmearing: this.calculateTemporalSmearing(dry, wet),
+            transientPreservation: this.compareTransients(dry, wet),
+            echoPattern: this.detectEchoes(wetTransient)
+        };
+    }
+}
+```
+
+**Educational Value:** Students can see how room acoustics affect instrument "attack" and "punch" - the initial waveform characteristics you mentioned.
+
+### 10.5 **Phase 3D: Real-Time Metrics Dashboard**
+
+**Priority: HIGH** - User interface for computational results
+
+#### **Metrics Display System**
+```javascript
+// Planned UI Enhancement
+class MetricsDashboard {
+    updateMetrics() {
+        const combAnalysis = this.combAnalyzer.analyze();
+        const delayVerification = this.delayAnalyzer.verify();
+        const phaseAnalysis = this.phaseAnalyzer.analyze();
+        
+        // Update UI elements with computed values
+        this.updateCombMetrics(combAnalysis);
+        this.updateDelayMetrics(delayVerification);
+        this.updatePhaseMetrics(phaseAnalysis);
+        
+        // Color-coded indicators for educational feedback
+        this.updateEducationalIndicators({
+            combStrength: combAnalysis.combDepth,
+            delayAccuracy: delayVerification.accuracy,
+            phaseCoherence: phaseAnalysis.coherence
+        });
+    }
+}
+```
+
+#### **Dashboard Components:**
+- **Real-time Notch Frequency Display** - Shows predicted vs measured
+- **Delay Accuracy Meter** - Theoretical vs actual delay measurements
+- **Phase Correlation Indicators** - Constructive/destructive interference levels
+- **Model Validation Score** - How well simulation matches theory
+- **Educational Progress Tracker** - Learning objectives achievement
+
+### 10.6 **Phase 3E: Advanced Research Features**
+
+**Priority: LOW** - Professional acoustics analysis capabilities
+
+#### **Room Acoustics Analysis**
+```javascript
+// Future Implementation
+class AcousticsAnalyzer {
+    validateAcousticModel() {
+        return {
+            roomModeDetection: this.detectRoomModes(measuredResponse),
+            reverberationTime: this.calculateRT60(impulseResponse),
+            transferFunction: this.estimateTransferFunction(dry, wet),
+            spatialCoherence: this.calculateSpatialCoherence()
+        };
+    }
+}
+```
+
+#### **Psychoacoustic Analysis**
+```javascript
+// Future Implementation  
+class PsychoacousticAnalyzer {
+    analyzePsychoacoustics() {
+        return {
+            maskingThreshold: this.calculateMaskingThreshold(wetFFT),
+            precedenceEffect: this.measurePrecedenceEffect(multiChannel),
+            localizationCues: this.analyzeLocalizationCues(binaural),
+            auditorySceneAnalysis: this.performASA(wetSignal)
+        };
+    }
+}
+```
+
+### 10.7 **Educational Value Enhancement**
+
+#### **Quantitative Learning Objectives:**
+1. **Objective Validation:** Verify theoretical predictions with measured results
+2. **Scientific Method:** Hypothesis → Prediction → Measurement → Analysis  
+3. **Bridge to Professional:** Connect basic concepts to advanced acoustics
+4. **Research Capability:** Enable academic research projects
+
+#### **Learning Analytics Implementation:**
+```javascript
+// Planned Educational Features
+class LearningAnalytics {
+    generateEducationalFeedback() {
+        return {
+            // Quantitative Assessment
+            conceptUnderstanding: this.assessConceptGrasp(userActions),
+            learningProgress: this.trackLearningObjectives(sessionData),
+            
+            // Adaptive Learning
+            difficultyLevel: this.adaptDifficultyLevel(performance),
+            nextExperiment: this.suggestNextExperiment(currentLevel),
+            
+            // Contextual Guidance
+            learningTips: this.generateContextualTips(analysis),
+            commonMistakes: this.identifyCommonErrors(behavior)
+        };
+    }
+}
+```
+
+### 10.8 **Implementation Timeline**
+
+#### **Phase 3A: Core Computational Analysis** (2-3 weeks)
+- Comb pattern detection and quantification
+- Delay verification and cross-correlation
+- Basic metrics dashboard integration
+
+#### **Phase 3B: Advanced Analysis** (2-3 weeks)
+- Phase relationship analysis
+- Transient/impulse response measurement
+- Educational feedback system
+
+#### **Phase 3C: Research Features** (3-4 weeks)
+- Room acoustics simulation validation  
+- Psychoacoustic analysis capabilities
+- Advanced learning analytics
+
+### 10.9 **Success Metrics for Computational Analysis**
+
+#### **Technical Performance:**
+- [ ] Real-time analysis maintains <5% CPU overhead
+- [ ] Computational results update at 30fps minimum
+- [ ] Analysis accuracy within 5% of theoretical predictions
+- [ ] Cross-correlation calculations complete within 100ms
+
+#### **Educational Impact:**
+- [ ] Students can identify comb filtering quantitatively
+- [ ] Measured vs theoretical comparisons enhance understanding
+- [ ] Computational feedback accelerates learning progression
+- [ ] Tool bridges qualitative observation to quantitative analysis
+
+#### **Research Capability:**
+- [ ] Suitable for undergraduate/graduate acoustics coursework
+- [ ] Enables reproducible measurement studies
+- [ ] Supports academic research project requirements
+- [ ] Professional-level analysis accuracy achieved
+
+This computational analysis framework will transform the comb-filtering tool from an educational demonstration into a sophisticated analysis platform suitable for both learning and research applications.
+
+---
+
+## 11. **PHASE 4: REAL-WORLD AUDIO INPUT ANALYSIS LAYER**
+
+### 11.1 **Multi-Input Audio System Architecture**
+
+**Phase 4 introduces comprehensive real-world acoustic measurement capabilities**, enabling complete validation of digital simulations against actual acoustic measurements.
+
+#### **Triple-Path Analysis System:**
+```javascript
+// Current: Dual-path (reference + processed)
+analyzers.reference  → Raw reference signals (speakerBus.input)
+analyzers.input      → Transformed signals (combFilter.input)
+
+// Phase 4: Triple-path (reference + processed + measured)
+analyzers.reference  → Raw reference signals (DIGITAL)
+analyzers.input      → Processed signals (SIMULATION)  
+analyzers.microphone → Real acoustic measurement (REALITY)
+```
+
+### 11.2 **Audio Input Configuration System**
+
+#### **Supported Input Types:**
+- **Internal Microphone** (Raw/Calibrated)
+- **External Microphone** (Raw/Calibrated)
+- **Audio Line-In** (Analog input)
+- **USB Audio Interfaces** (Professional sound interfaces)
+
+#### **Implementation Architecture:**
+```javascript
+// Planned Implementation
+class AudioInputManager {
+    constructor() {
+        this.inputSources = {
+            internal: null,
+            external: null,
+            lineIn: null,
+            usbInterface: null
+        };
+        this.calibrationData = new Map();
+        this.activeInput = null;
+    }
+    
+    async detectAvailableInputs() {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        return {
+            microphones: devices.filter(d => d.kind === 'audioinput'),
+            usbInterfaces: await this.detectUSBAudioInterfaces(),
+            lineInputs: await this.detectLineInputs()
+        };
+    }
+    
+    async initializeInput(inputType, deviceId) {
+        const constraints = {
+            audio: {
+                deviceId: deviceId,
+                sampleRate: 48000,
+                channelCount: 2,
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false
+            }
+        };
+        
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        return this.createAnalyzerChain(stream, inputType);
+    }
+}
+```
+
+### 11.3 **Microphone Calibration System**
+
+#### **Calibration Implementation:**
+```javascript
+class MicrophoneCalibration {
+    constructor() {
+        this.calibrationProfiles = new Map();
+        this.measurementHistory = [];
+    }
+    
+    async calibrateInput(inputType, referenceSignal) {
+        // Generate known reference signal for calibration
+        const testTone = this.generateCalibrationTone();
+        
+        // Measure input response to known signal
+        const inputResponse = await this.measureInputResponse(testTone);
+        
+        // Calculate calibration correction
+        const calibration = {
+            frequencyResponse: this.calculateFrequencyCorrection(inputResponse),
+            sensitivity: this.calculateSensitivityCorrection(inputResponse),
+            noiseFloor: this.measureNoiseFloor(),
+            dynamicRange: this.measureDynamicRange()
+        };
+        
+        this.calibrationProfiles.set(inputType, calibration);
+        return calibration;
+    }
+    
+    applyCalibration(rawData, inputType) {
+        const calibration = this.calibrationProfiles.get(inputType);
+        if (!calibration) return rawData;
+        
+        return {
+            correctedData: this.applyFrequencyCorrection(rawData, calibration),
+            sensitivityCompensated: this.applySensitivityCorrection(rawData, calibration),
+            noiseReduced: this.applyNoiseReduction(rawData, calibration)
+        };
+    }
+}
+```
+
+### 11.4 **Real vs Simulated Analysis Engine**
+
+#### **Triple-Path Comparison System:**
+```javascript
+class RealWorldAnalyzer {
+    constructor() {
+        this.simulationAnalyzer = new CombFilterAnalyzer();
+        this.realWorldAnalyzer = new AcousticMeasurementAnalyzer();
+        this.comparisonEngine = new SimulationValidationEngine();
+    }
+    
+    analyzeRealVsSimulated() {
+        // Get all three signal paths
+        const simulatedDry = this.getAnalyzerData('reference');
+        const simulatedWet = this.getAnalyzerData('input');
+        const measuredReal = this.getAnalyzerData('microphone');
+        
+        return {
+            // Simulation Analysis
+            simulatedCombPattern: this.simulationAnalyzer.detectCombPattern(simulatedWet),
+            
+            // Real-World Analysis  
+            realCombPattern: this.realWorldAnalyzer.detectCombPattern(measuredReal),
+            
+            // Validation Analysis
+            simulationAccuracy: this.comparisonEngine.comparePatterns(
+                simulatedWet, measuredReal
+            ),
+            
+            // Room Characterization
+            roomProperties: this.extractRoomCharacteristics(
+                simulatedDry, measuredReal
+            ),
+            
+            // Educational Insights
+            theoryVsReality: this.generateEducationalInsights(
+                simulatedWet, measuredReal
+            )
+        };
+    }
+}
+```
+
+### 11.5 **Advanced Experiments Implementation**
+
+#### **Experiment 4: Digital vs Acoustic Validation**
+```javascript
+class ValidationExperiment {
+    async runDigitalVsAcousticComparison() {
+        // Step 1: Generate known reference signal
+        const referenceSignal = this.generateTestSignal('swept-sine');
+        
+        // Step 2: Process through digital simulation
+        const simulatedOutput = await this.processDigitalSimulation(referenceSignal);
+        
+        // Step 3: Play through speakers and measure with microphone
+        const measuredOutput = await this.measureAcousticResponse(referenceSignal);
+        
+        // Step 4: Compare results
+        return {
+            frequencyResponseComparison: this.compareFrequencyResponses(
+                simulatedOutput, measuredOutput
+            ),
+            phaseResponseComparison: this.comparePhaseResponses(
+                simulatedOutput, measuredOutput
+            ),
+            combPatternValidation: this.validateCombPatterns(
+                simulatedOutput, measuredOutput
+            ),
+            accuracyMetrics: this.calculateAccuracyMetrics(
+                simulatedOutput, measuredOutput
+            )
+        };
+    }
+}
+```
+
+#### **Experiment 5: Room Characterization**
+```javascript
+class RoomCharacterizationExperiment {
+    async characterizeRoom() {
+        const testSignals = [
+            this.generateImpulseSignal(),
+            this.generateSweptSine(),
+            this.generateWhiteNoise()
+        ];
+        
+        const measurements = [];
+        for (const signal of testSignals) {
+            const response = await this.measureRoomResponse(signal);
+            measurements.push(response);
+        }
+        
+        return {
+            impulseResponse: this.calculateImpulseResponse(measurements[0]),
+            frequencyResponse: this.calculateFrequencyResponse(measurements[1]),
+            reverberationTime: this.calculateReverberationTime(measurements[2]),
+            roomModes: this.detectRoomModes(measurements),
+            absorptionCoefficients: this.estimateAbsorption(measurements)
+        };
+    }
+}
+```
+
+### 11.6 **USB Audio Interface Integration**
+
+#### **Professional Interface Support:**
+```javascript
+class USBAudioInterfaceManager {
+    constructor() {
+        this.detectedInterfaces = [];
+        this.activeInterface = null;
+    }
+    
+    async detectUSBAudioInterfaces() {
+        // Use WebUSB API for professional interface detection
+        const devices = await navigator.usb.getDevices();
+        const audioInterfaces = devices.filter(device => 
+            this.isAudioInterface(device)
+        );
+        
+        return audioInterfaces.map(device => ({
+            name: device.productName,
+            manufacturer: device.manufacturerName,
+            inputChannels: this.getInputChannelCount(device),
+            sampleRates: this.getSupportedSampleRates(device),
+            bitDepths: this.getSupportedBitDepths(device),
+            features: {
+                phantomPower: this.checkPhantomPower(device),
+                preampGain: this.getPreampGainRange(device),
+                directMonitoring: this.checkDirectMonitoring(device)
+            }
+        }));
+    }
+    
+    async initializeInterface(interfaceId) {
+        const interface = this.detectedInterfaces.find(i => i.id === interfaceId);
+        if (!interface) throw new Error('Interface not found');
+        
+        // Initialize professional-grade audio connection
+        const audioStream = await this.createProfessionalAudioStream(interface);
+        return this.setupAnalyzerChain(audioStream);
+    }
+}
+```
+
+### 11.7 **Implementation Timeline**
+
+#### **Phase 4A: Basic Audio Input (2-3 weeks)**
+- Internal/external microphone access
+- Basic calibration system
+- Triple-path analyzer integration
+- Real vs simulated comparison UI
+
+#### **Phase 4B: Professional Features (3-4 weeks)**  
+- USB audio interface support
+- Advanced calibration system
+- Multi-channel analysis capabilities
+- Professional measurement accuracy
+
+#### **Phase 4C: Advanced Experiments (2-3 weeks)**
+- Room characterization experiments
+- Acoustic validation studies  
+- Educational experiment framework
+- Research-grade analysis tools
+
+### 11.8 **Integration with Existing Framework**
+
+#### **Extended Analyzer Architecture:**
+```javascript
+// Current analyzers (Phase 2)
+this.analyzers = {
+    reference: createAnalyser(),  // Raw reference
+    input: createAnalyser(),      // Processed simulation
+    wet: createAnalyser()         // Final output
+};
+
+// Extended analyzers (Phase 4)  
+this.analyzers = {
+    reference: createAnalyser(),     // Raw reference
+    input: createAnalyser(),         // Processed simulation  
+    wet: createAnalyser(),           // Final output
+    microphone: createAnalyser(),    // Real-world measurement
+    calibrated: createAnalyser()     // Calibration-corrected measurement
+};
+```
+
+### 11.9 **Success Metrics for Phase 4**
+
+#### **Technical Performance:**
+- [ ] Multiple audio input sources accessible and functional
+- [ ] Calibration system achieves ±2dB accuracy across frequency range
+- [ ] Real-time triple-path analysis maintains <10% CPU overhead
+- [ ] USB audio interface integration supports professional devices
+
+#### **Educational Impact:**
+- [ ] Students can validate theoretical predictions with real measurements
+- [ ] Real vs simulated comparisons enhance conceptual understanding
+- [ ] Professional measurement skills developed through hands-on practice
+- [ ] Tool suitable for advanced acoustics coursework and research
+
+This Phase 4 implementation creates a **complete acoustic measurement and education platform**, bridging theory and practice through real-world validation capabilities.

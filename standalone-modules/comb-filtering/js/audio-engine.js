@@ -31,7 +31,9 @@ class CombFilterAudioEngine {
             input: null,       // Pre-processing
             dry: null,         // Direct signal
             wet: null,         // Processed signal
-            microphone: null   // Microphone input
+            microphone: null,  // Microphone input
+            reference: null,   // Raw reference signals (Phase 2B)
+            calibrated: null   // Calibration-corrected measurement (Phase 4)
         };
         
         // Microphone
@@ -39,13 +41,20 @@ class CombFilterAudioEngine {
         this.microphoneSource = null;
         this.microphoneGain = null;
         
-        // Parameters
+        // Parameters (simplified for listener-only educational use)
         this.parameters = {
-            delayTime: 0.005,      // 5ms default
-            feedback: 0.0,         // No feedback initially
-            mix: 0.5,              // 50/50 dry/wet
+            delayTime: 0.005,      // 5ms default (legacy - now handled by multi-speaker system)
             masterVolume: 0.3,     // Safe volume level
             microphoneGain: 1.0    // Mic gain
+        };
+        
+        // Phase 4: Audio Input Management
+        this.audioInputManager = {
+            availableInputs: [],
+            activeInput: null,
+            inputTypes: ['internal', 'external', 'lineIn', 'usbInterface'],
+            calibrationData: new Map(),
+            isCalibrated: false
         };
         
         // Custom tone state
@@ -193,6 +202,14 @@ class CombFilterAudioEngine {
         this.analyzers.microphone = this.audioContext.createAnalyser();
         Object.assign(this.analyzers.microphone, analyzerConfig);
         
+        // Reference signal analyzer (raw reference signals, pre-processing)
+        this.analyzers.reference = this.audioContext.createAnalyser();
+        Object.assign(this.analyzers.reference, analyzerConfig);
+        
+        // Phase 4: Calibrated microphone analyzer for real-world measurement
+        this.analyzers.calibrated = this.audioContext.createAnalyser();
+        Object.assign(this.analyzers.calibrated, analyzerConfig);
+        
         // Connect analyzers to appropriate points
         this.combFilter.input.connect(this.analyzers.input);
         this.combFilter.dryGain.connect(this.analyzers.dry);
@@ -238,6 +255,9 @@ class CombFilterAudioEngine {
 
         // Speaker bus feeds comb filter input
         this.speakerBus.output.connect(this.combFilter.input);
+        
+        // Connect reference analyzer to raw input signals (pre-speaker processing)
+        this.speakerBus.input.connect(this.analyzers.reference);
 
         // Apply initial enabled states
         this.applySetEnable('A', this.speakerBus.setEnabled.A);
@@ -640,10 +660,7 @@ class CombFilterAudioEngine {
                 }
             }
             
-            if (params.mix !== undefined) {
-                this.parameters.mix = Math.max(0, Math.min(1, params.mix));
-                this.updateMixParameters();
-            }
+            // Mix parameter removed - fixed at 100% wet for listener-only scenario
             
             if (params.masterVolume !== undefined) {
                 this.parameters.masterVolume = Math.max(0, Math.min(1, params.masterVolume));
@@ -667,24 +684,20 @@ class CombFilterAudioEngine {
     }
     
     /**
-     * Update dry/wet mix based on mix parameter
+     * Update mix parameters for listener-only scenario
+     * Force 100% wet (multi-speaker processed) signal for educational demo
      */
     updateMixParameters() {
         if (!this.combFilter.dryGain || !this.combFilter.wetGain) return;
         
-        const mix = this.parameters.mix;
-        const dryLevel = Math.sqrt(1 - mix); // Equal power crossfade
-        const wetLevel = Math.sqrt(mix);
-        
         const now = this.audioContext.currentTime;
         const rampTime = 0.01;
         
-        this.combFilter.dryGain.gain.exponentialRampToValueAtTime(
-            Math.max(0.001, dryLevel), now + rampTime
-        );
-        this.combFilter.wetGain.gain.exponentialRampToValueAtTime(
-            Math.max(0.001, wetLevel), now + rampTime
-        );
+        // Listener-only scenario: 100% processed signal from multi-speaker system
+        // Dry = 0% (no direct signal bypass)
+        // Wet = 100% (full multi-speaker phase interference simulation)
+        this.combFilter.dryGain.gain.exponentialRampToValueAtTime(0.001, now + rampTime);
+        this.combFilter.wetGain.gain.exponentialRampToValueAtTime(1.0, now + rampTime);
     }
 
     /**

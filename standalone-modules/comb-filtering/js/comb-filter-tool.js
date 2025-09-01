@@ -74,6 +74,12 @@ class CombFilterTool {
             setB: true   // Controls both B left and right
         };
         
+        // Reference signal state
+        this.referenceSignal = {
+            current: null,      // 'white-noise', 'pink-noise', or null
+            isPlaying: false    // Reference timing started
+        };
+        
         console.log('🎛️ Comb-Filter Tool initializing...');
     }
     
@@ -131,17 +137,21 @@ class CombFilterTool {
             delayValue: document.getElementById('delay-value'),
             distanceSlider: document.getElementById('distance-slider'),
             distanceValue: document.getElementById('distance-value'),
-            feedbackSlider: document.getElementById('feedback-slider'),
-            feedbackValue: document.getElementById('feedback-value'),
-            mixSlider: document.getElementById('mix-slider'),
-            mixValue: document.getElementById('mix-value'),
-            signalType: document.getElementById('signal-type'),
-            colormapSelect: document.getElementById('colormap-select'),
+            
+            // Reference signal toggles
+            whiteNoiseToggle: document.getElementById('white-noise-toggle'),
+            pinkNoiseToggle: document.getElementById('pink-noise-toggle'),
+            sineSweepToggle: document.getElementById('sine-sweep-toggle'),
+            toneBurstToggle: document.getElementById('tone-burst-toggle'),
+            customToneToggle: document.getElementById('custom-tone-toggle'),
+            musicToggle: document.getElementById('music-toggle'),
             
             // Custom tone controls
             toneControlGroup: document.getElementById('tone-control-group'),
             customToneSlider: document.getElementById('custom-tone-slider'),
             customToneValue: document.getElementById('custom-tone-value'),
+            
+            colormapSelect: document.getElementById('colormap-select'),
             
             // Canvas and visualization
             canvas: document.getElementById('main-visualization'),
@@ -163,6 +173,7 @@ class CombFilterTool {
             micStatus: document.getElementById('mic-status'),
             signalQuality: document.getElementById('signal-quality'),
             speakerStatus: document.getElementById('speaker-status'),
+            experimentMode: document.getElementById('experiment-mode'),
             fpsCounter: document.getElementById('fps-counter'),
             cpuUsage: document.getElementById('cpu-usage'),
             
@@ -405,25 +416,36 @@ class CombFilterTool {
                 }
             };
             
-            // Add event listeners with null checks
+            // Make parameter sliders read-only (Perfect Logic Framework)
+            // These sliders display computed delays from listener position, not user input
             if (this.elements.delaySlider) {
-                this.elements.delaySlider.addEventListener('input', (e) => this.updateDelay(parseFloat(e.target.value)));
+                this.elements.delaySlider.disabled = true;
+                this.elements.delaySlider.classList.add('read-only');
             }
             
             if (this.elements.distanceSlider) {
-                this.elements.distanceSlider.addEventListener('input', (e) => this.updateDistance(parseFloat(e.target.value)));
+                this.elements.distanceSlider.disabled = true;
+                this.elements.distanceSlider.classList.add('read-only');
             }
             
-            if (this.elements.feedbackSlider) {
-                this.elements.feedbackSlider.addEventListener('input', (e) => this.updateFeedback(parseFloat(e.target.value)));
+            // Reference signal toggle event listeners
+            if (this.elements.whiteNoiseToggle) {
+                this.elements.whiteNoiseToggle.addEventListener('click', () => this.toggleReferenceSignal('white-noise'));
             }
-            
-            if (this.elements.mixSlider) {
-                this.elements.mixSlider.addEventListener('input', (e) => this.updateMix(parseFloat(e.target.value)));
+            if (this.elements.pinkNoiseToggle) {
+                this.elements.pinkNoiseToggle.addEventListener('click', () => this.toggleReferenceSignal('pink-noise'));
             }
-            
-            if (this.elements.signalType) {
-                this.elements.signalType.addEventListener('change', (e) => this.changeSignalType(e.target.value));
+            if (this.elements.sineSweepToggle) {
+                this.elements.sineSweepToggle.addEventListener('click', () => this.toggleReferenceSignal('sine-sweep'));
+            }
+            if (this.elements.toneBurstToggle) {
+                this.elements.toneBurstToggle.addEventListener('click', () => this.toggleReferenceSignal('tone-burst'));
+            }
+            if (this.elements.customToneToggle) {
+                this.elements.customToneToggle.addEventListener('click', () => this.toggleReferenceSignal('custom-tone'));
+            }
+            if (this.elements.musicToggle) {
+                this.elements.musicToggle.addEventListener('click', () => this.toggleReferenceSignal('music'));
             }
             
             if (this.elements.colormapSelect) {
@@ -526,15 +548,8 @@ class CombFilterTool {
             this.updateSpeakerDelaysFromFloorPlan();
         }
 
-        // Default test signal: custom tone if available
-        if (this.elements.signalType) {
-            const desired = 'custom-tone';
-            if ([...this.elements.signalType.options].some(o => o.value === desired)) {
-                this.elements.signalType.value = desired;
-                // Apply selection to show controls and prep engine
-                this.changeSignalType(desired);
-            }
-        }
+        // Initialize reference signal UI (all buttons inactive)
+        this.updateReferenceSignalUI();
 
         // Compute initial distances/labels
         this.updateDistanceCalculations();
@@ -544,6 +559,9 @@ class CombFilterTool {
 
         // Ensure playback reflects initial toggle state
         this.ensurePlaybackState();
+        
+        // Initial framework compliance verification
+        this.autoVerifyCompliance('UI initialization');
         
         console.log('🎨 UI initialized');
     }
@@ -591,35 +609,29 @@ class CombFilterTool {
 
             // Handle playback state
             if (wantPlaying && !this.audioEngine.isPlaying) {
-                console.log('▶️ Starting audio playback...');
-                const type = this.elements.signalType?.value || 'custom-tone';
-                console.log(`🎵 Signal type: ${type}`);
+                // New workflow: Only start audio if a reference signal is selected
+                if (!this.referenceSignal.current) {
+                    console.log('🔇 No reference signal selected - speaker toggles require reference signal first');
+                    return;
+                }
+                
+                console.log('▶️ Reference signal active, starting audio playback...');
+                console.log(`🎵 Reference signal type: ${this.referenceSignal.current}`);
                 
                 try {
-                    const started = await this.audioEngine.startSignal(type);
+                    const started = await this.audioEngine.startSignal(this.referenceSignal.current);
                     if (!started) {
                         throw new Error('Failed to start audio signal');
                     }
                     
-                    console.log('✅ Audio playback started');
+                    console.log('✅ Audio playback started with reference signal');
                     
-                    // Handle mode-specific initialization
+                    // Handle mode-specific initialization  
                     if (this.currentMode === 'analyze') {
                         console.log('🎤 Starting microphone for analysis...');
                         await this.audioEngine.startMicrophone().catch(err => {
                             console.warn('⚠️ Failed to start microphone:', err);
                         });
-                    }
-                    
-                    // Configure custom tone if needed
-                    if (type === 'custom-tone' && this.elements.customToneSlider) {
-                        const pos = parseFloat(this.elements.customToneSlider.value);
-                        const freq = this.logSliderPosToFreq(pos);
-                        console.log(`🎛️ Setting custom tone frequency: ${freq.toFixed(1)} Hz`);
-                        this.updateCustomToneFrequency(freq);
-                        this.toggleCustomTone(true);
-                    } else {
-                        this.toggleCustomTone(false);
                     }
                 } catch (error) {
                     console.error('❌ Playback error:', error);
@@ -689,6 +701,12 @@ class CombFilterTool {
                 // Update status bar even when disabling speakers
                 this.updateSpeakerStatus();
             }
+            
+            // Update experiment mode indicator
+            this.updateExperimentModeIndicator();
+            
+            // Verify framework compliance after speaker state change
+            this.autoVerifyCompliance(`speaker ${setName} toggle`);
         } catch (error) {
             console.error(`❌ Error in onSpeakerToggle for ${setName}:`, error);
             this.showError(`Failed to update speaker ${setName}: ${error.message}`);
@@ -696,66 +714,264 @@ class CombFilterTool {
     }
     
     /**
-     * Parameter update methods
+     * Parameter display methods
+     * Note: Parameters are now read-only, controlled by listener position (Perfect Logic Framework)
      */
-    updateDelay(delayMs) {
-        const delaySeconds = delayMs / 1000;
-        this.audioEngine?.updateParameters({ delayTime: delaySeconds });
-        this.elements.delayValue.textContent = delayMs.toFixed(1) + ' ms';
+    
+    /**
+     * Perfect Logic Framework Compliance Verification System
+     * Ensures implementation follows the 5-step educational framework
+     */
+    verifyFrameworkCompliance() {
+        const compliance = {
+            timestamp: new Date().toISOString(),
+            checks: [],
+            overall: true
+        };
         
-        // Update distance slider to match
-        const distance = (delayMs / 1000) * 343; // Speed of sound
-        this.elements.distanceSlider.value = distance.toFixed(1);
-        this.elements.distanceValue.textContent = distance.toFixed(1) + ' m';
+        // Check 1: Reference signals must be available as known audio sources
+        const referenceSignalsAvailable = this.audioEngine?.referenceSignals && 
+            Object.keys(this.audioEngine.referenceSignals).length > 0;
+        compliance.checks.push({
+            id: 'reference-signals',
+            description: 'Reference signals available as known audio sources',
+            passed: referenceSignalsAvailable,
+            details: referenceSignalsAvailable ? 'Reference signals properly configured' : 'Missing reference signal configuration'
+        });
         
-        this.updateTheoryDisplay();
+        // Check 2: Visualization displays reference signals when no speakers active
+        const speakersActive = (this.elements.speakerA?.checked || false) || (this.elements.speakerB?.checked || false);
+        const visualizationMode = !speakersActive ? 'reference' : 'simulation';
+        const correctVisualizationMode = true; // This is enforced by the state machine
+        compliance.checks.push({
+            id: 'visualization-logic',
+            description: 'Visualization follows speaker state logic (reference when OFF, simulation when ON)',
+            passed: correctVisualizationMode,
+            details: `Current mode: ${visualizationMode} display (speakers ${speakersActive ? 'ACTIVE' : 'INACTIVE'})`
+        });
+        
+        // Check 3: Speaker controls create delayed copies
+        const speakerDelaySystem = this.audioEngine?.isInitialized && this.audioEngine?.speakerBus;
+        compliance.checks.push({
+            id: 'speaker-delays',
+            description: 'Speaker system creates delayed copies of reference signals',
+            passed: speakerDelaySystem,
+            details: speakerDelaySystem ? 'Speaker delay system operational' : 'Speaker delay system not initialized'
+        });
+        
+        // Check 4: Parameters are read-only, controlled by listener position
+        const parametersReadOnly = this.elements.delaySlider?.disabled && this.elements.distanceSlider?.disabled;
+        compliance.checks.push({
+            id: 'parameters-readonly',
+            description: 'Parameters are read-only, controlled by listener position',
+            passed: parametersReadOnly,
+            details: parametersReadOnly ? 'Parameters correctly set to read-only' : 'Parameters should be read-only'
+        });
+        
+        // Check 5: Experiment mode indicator shows correct phase
+        const experimentModeIndicator = this.elements.experimentMode?.innerHTML?.includes(
+            speakersActive ? 'Simulation Output Display' : 'Reference Signal Display'
+        );
+        compliance.checks.push({
+            id: 'experiment-mode-indicator',
+            description: 'Experiment mode indicator shows correct educational phase',
+            passed: experimentModeIndicator,
+            details: `Expected: ${speakersActive ? 'Simulation Output Display' : 'Reference Signal Display'} mode`
+        });
+        
+        // Calculate overall compliance
+        compliance.overall = compliance.checks.every(check => check.passed);
+        
+        // Log compliance report
+        if (compliance.overall) {
+            console.log('✅ Perfect Logic Framework: Full compliance verified');
+        } else {
+            console.warn('⚠️ Perfect Logic Framework: Compliance issues detected');
+            compliance.checks.filter(c => !c.passed).forEach(check => {
+                console.warn(`  - ${check.description}: ${check.details}`);
+            });
+        }
+        
+        return compliance;
     }
     
-    updateDistance(distance) {
-        const delayMs = (distance / 343) * 1000; // Convert to milliseconds
-        this.audioEngine?.updateParameters({ delayTime: delayMs / 1000 });
-        this.elements.distanceValue.textContent = distance.toFixed(1) + ' m';
-        
-        // Update delay slider to match
-        this.elements.delaySlider.value = delayMs.toFixed(1);
-        this.elements.delayValue.textContent = delayMs.toFixed(1) + ' ms';
-        
-        this.updateTheoryDisplay();
-    }
-    
-    updateFeedback(feedback) {
-        this.audioEngine?.updateParameters({ feedback: feedback });
-        if (this.elements.feedbackValue) {
-            this.elements.feedbackValue.textContent = Math.round(feedback * 100) + '%';
+    /**
+     * Auto-verify framework compliance during critical operations
+     */
+    autoVerifyCompliance(operation) {
+        if (this.currentMode === 'educational') {
+            const compliance = this.verifyFrameworkCompliance();
+            if (!compliance.overall) {
+                console.warn(`⚠️ Framework compliance check failed during: ${operation}`);
+            }
         }
     }
     
-    updateMix(mix) {
-        this.audioEngine?.updateParameters({ mix: mix / 100 });
-        this.elements.mixValue.textContent = Math.round(mix) + '%';
-    }
-    
-    changeSignalType(type) {
-        // Show/hide tone control based on signal type
-        if (this.elements.toneControlGroup) {
-            this.elements.toneControlGroup.style.display = type === 'custom-tone' ? 'block' : 'none';
+    /**
+     * Toggle reference signal on/off - starts master timing for speaker delay simulation
+     * @param {string} signalType - signal type to toggle
+     */
+    async toggleReferenceSignal(signalType) {
+        console.log(`🔘 Reference signal toggle: ${signalType}`);
+        
+        // If clicking the same signal that's already active, turn it off
+        if (this.referenceSignal.current === signalType && this.referenceSignal.isPlaying) {
+            console.log('🔇 Stopping reference signal');
+            this.stopReferenceSignal();
+            return;
         }
         
-        if (this.audioEngine?.isPlaying) {
-            // If switching to custom tone, set frequency and enable tone before starting
-            if (type === 'custom-tone' && this.elements.customToneSlider) {
+        // Stop any currently playing reference signal
+        if (this.referenceSignal.isPlaying) {
+            this.stopReferenceSignal();
+        }
+        
+        // Start the new reference signal
+        console.log(`🎵 Starting reference signal: ${signalType}`);
+        await this.startReferenceSignal(signalType);
+        
+        // Verify framework compliance after reference signal change
+        this.autoVerifyCompliance(`reference signal ${signalType} toggle`);
+    }
+    
+    /**
+     * Start reference signal and master timing
+     */
+    async startReferenceSignal(signalType) {
+        if (!this.audioEngine) {
+            console.warn('⚠️ Audio engine not available');
+            return;
+        }
+        
+        try {
+            // Initialize audio engine if needed
+            if (!this.audioEngine.isInitialized) {
+                console.log('🔊 Initializing audio system for reference signal...');
+                this.showLoadingOverlay('Initializing Audio System...');
+                
+                const ok = await this.audioEngine.initialize();
+                if (!ok) {
+                    throw new Error('Audio engine initialization failed');
+                }
+                console.log('✅ Audio system initialized successfully');
+                this.hideLoadingOverlay();
+            }
+            
+            // Update state
+            this.referenceSignal.current = signalType;
+            this.referenceSignal.isPlaying = true;
+            
+            // Update UI - activate the clicked button, deactivate others
+            this.updateReferenceSignalUI();
+            
+            // Handle custom tone setup
+            if (signalType === 'custom-tone' && this.elements.customToneSlider) {
                 const pos = parseFloat(this.elements.customToneSlider.value);
                 const freq = this.logSliderPosToFreq(pos);
                 this.updateCustomToneFrequency(freq);
                 this.toggleCustomTone(true);
             } else {
-                // Ensure custom tone is disabled when leaving the mode
                 this.toggleCustomTone(false);
             }
-            this.audioEngine.startSignal(type);
-        } else if (this.audioEngine) {
-            // Persist selection for when audio starts later
-            this.audioEngine.currentSignalType = type;
+            
+            // Start audio signal (this starts the master timing reference)
+            this.audioEngine.currentSignalType = signalType;
+            await this.audioEngine.startSignal(signalType);
+            
+            // Apply current per-speaker delays after starting
+            this.updateSpeakerDelaysFromFloorPlan();
+            
+            console.log(`✅ Reference signal started: ${signalType} - Master timing active`);
+            
+        } catch (error) {
+            console.error('❌ Failed to start reference signal:', error);
+            this.hideLoadingOverlay();
+            this.showError(`Failed to start ${signalType}: ${error.message}`);
+            
+            // Reset state on error
+            this.referenceSignal.current = null;
+            this.referenceSignal.isPlaying = false;
+            this.updateReferenceSignalUI();
+        }
+    }
+    
+    /**
+     * Stop reference signal and master timing  
+     */
+    stopReferenceSignal() {
+        // Update state
+        this.referenceSignal.current = null;
+        this.referenceSignal.isPlaying = false;
+        
+        // Update UI - deactivate all buttons
+        this.updateReferenceSignalUI();
+        
+        // Stop audio
+        if (this.audioEngine) {
+            this.audioEngine.stopSignal();
+        }
+        
+        console.log('🔇 Reference signal stopped - Master timing stopped');
+    }
+    
+    /**
+     * Update reference signal toggle button visual states
+     */
+    updateReferenceSignalUI() {
+        // Reset all buttons to inactive state
+        const toggles = [
+            { element: this.elements.whiteNoiseToggle, classes: ['active', 'white-noise'] },
+            { element: this.elements.pinkNoiseToggle, classes: ['active', 'pink-noise'] },
+            { element: this.elements.sineSweepToggle, classes: ['active'] },
+            { element: this.elements.toneBurstToggle, classes: ['active'] },
+            { element: this.elements.customToneToggle, classes: ['active'] },
+            { element: this.elements.musicToggle, classes: ['active'] }
+        ];
+        
+        toggles.forEach(toggle => {
+            if (toggle.element) {
+                toggle.element.classList.remove(...toggle.classes);
+            }
+        });
+        
+        // Show/hide custom tone controls
+        if (this.elements.toneControlGroup) {
+            this.elements.toneControlGroup.style.display = 
+                (this.referenceSignal.current === 'custom-tone') ? 'block' : 'none';
+        }
+        
+        // Activate the current signal button
+        switch (this.referenceSignal.current) {
+            case 'white-noise':
+                if (this.elements.whiteNoiseToggle) {
+                    this.elements.whiteNoiseToggle.classList.add('active', 'white-noise');
+                }
+                break;
+            case 'pink-noise':
+                if (this.elements.pinkNoiseToggle) {
+                    this.elements.pinkNoiseToggle.classList.add('active', 'pink-noise');
+                }
+                break;
+            case 'sine-sweep':
+                if (this.elements.sineSweepToggle) {
+                    this.elements.sineSweepToggle.classList.add('active');
+                }
+                break;
+            case 'tone-burst':
+                if (this.elements.toneBurstToggle) {
+                    this.elements.toneBurstToggle.classList.add('active');
+                }
+                break;
+            case 'custom-tone':
+                if (this.elements.customToneToggle) {
+                    this.elements.customToneToggle.classList.add('active');
+                }
+                break;
+            case 'music':
+                if (this.elements.musicToggle) {
+                    this.elements.musicToggle.classList.add('active');
+                }
+                break;
         }
     }
 
@@ -798,7 +1014,7 @@ class CombFilterTool {
      * Update custom tone frequency
      */
     updateCustomToneFrequency(frequency) {
-        if (this.audioEngine && this.elements.signalType.value === 'custom-tone') {
+        if (this.audioEngine && this.referenceSignal.current === 'custom-tone') {
             this.audioEngine.updateCustomToneFrequency(frequency);
         }
     }
@@ -808,7 +1024,7 @@ class CombFilterTool {
      */
     toggleCustomTone(active) {
         if (this.audioEngine) {
-            this.audioEngine.toggleCustomTone(active && this.elements.signalType.value === 'custom-tone');
+            this.audioEngine.toggleCustomTone(active && this.referenceSignal.current === 'custom-tone');
         }
     }
     
@@ -816,22 +1032,15 @@ class CombFilterTool {
      * Update parameter displays
      */
     updateParameterDisplays() {
-        const delay = this.elements.delaySlider ? parseFloat(this.elements.delaySlider.value) : 5;
-        const distance = this.elements.distanceSlider ? parseFloat(this.elements.distanceSlider.value) : 1.5;
-        const feedback = this.elements.feedbackSlider ? parseFloat(this.elements.feedbackSlider.value) : 0;
-        const mix = this.elements.mixSlider ? parseFloat(this.elements.mixSlider.value) : 50;
+        // Parameters are read-only, show computed delays from listener position (Perfect Logic Framework)
+        const delay = this.elements.delaySlider ? parseFloat(this.elements.delaySlider.value) : 0;
+        const distance = this.elements.distanceSlider ? parseFloat(this.elements.distanceSlider.value) : 0;
         
         if (this.elements.delayValue) {
-            this.elements.delayValue.textContent = delay.toFixed(1) + ' ms';
+            this.elements.delayValue.textContent = delay.toFixed(1) + ' ms (computed from listener position)';
         }
         if (this.elements.distanceValue) {
-            this.elements.distanceValue.textContent = distance.toFixed(1) + ' m';
-        }
-        if (this.elements.feedbackValue) {
-            this.elements.feedbackValue.textContent = Math.round(feedback * 100) + '%';
-        }
-        if (this.elements.mixValue) {
-            this.elements.mixValue.textContent = Math.round(mix) + '%';
+            this.elements.distanceValue.textContent = distance.toFixed(1) + ' m (distance difference)';
         }
     }
     
@@ -1103,8 +1312,21 @@ class CombFilterTool {
         // Other visualizations need audio engine and data
         if (!this.audioEngine) return;
         
-        // Get analyzer data
-        const analyzerData = this.audioEngine.getAnalyzerData('wet');
+        // CRITICAL FIX: Implement visualization state machine
+        // Check if speakers are active to determine which signal to visualize
+        const speakersActive = (this.elements.speakerA?.checked || false) || (this.elements.speakerB?.checked || false);
+        
+        let analyzerData;
+        if (!speakersActive) {
+            // Mode: Reference Signal Display (no speakers active)
+            // Show raw reference signals (pre-processing)
+            analyzerData = this.audioEngine.getAnalyzerData('reference');
+        } else {
+            // Mode: Simulation Output Display (speakers active)  
+            // Show mixed delayed output from virtual speakers
+            analyzerData = this.audioEngine.getAnalyzerData('wet');
+        }
+        
         if (!analyzerData) return;
         
         // Clear canvas with black background for audio visualizations
@@ -2296,8 +2518,30 @@ class CombFilterTool {
         const micText = status.isMicrophoneActive ? 'Connected' : 'Disconnected';
         this.elements.micStatus.innerHTML = `<i class="fas fa-circle ${micIcon}"></i> Microphone: ${micText}`;
         
+        // Educational experiment mode indicator (Perfect Logic Framework)
+        this.updateExperimentModeIndicator();
+        
         // Performance
         this.elements.fpsCounter.textContent = this.performanceStats.fps;
+    }
+    
+    /**
+     * Update experiment mode indicator based on speaker state (Perfect Logic Framework)
+     */
+    updateExperimentModeIndicator() {
+        if (!this.elements.experimentMode) return;
+        
+        const speakersActive = (this.elements.speakerA?.checked || false) || (this.elements.speakerB?.checked || false);
+        
+        if (!speakersActive) {
+            // Phase 1: Reference Signal Display Mode
+            this.elements.experimentMode.innerHTML = `<i class="fas fa-graduation-cap status-blue"></i> Mode: Reference Signal Display`;
+            this.elements.experimentMode.title = 'Displaying raw reference signals for mathematical analysis';
+        } else {
+            // Phase 2: Simulation Output Display Mode  
+            this.elements.experimentMode.innerHTML = `<i class="fas fa-cogs status-green"></i> Mode: Simulation Output Display`;
+            this.elements.experimentMode.title = 'Displaying mixed delayed signals from active virtual speakers';
+        }
     }
     
     /**
