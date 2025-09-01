@@ -60,6 +60,20 @@ class CombFilterAudioEngine {
         this.isPlaying = false;
         this.isMicrophoneActive = false;
         
+        // Speaker bus (per-speaker delayed copies)
+        this.speakerBus = {
+            input: null,
+            output: null,
+            nodes: {}, // keys: A_left, A_right, B_left, B_right
+            setEnabled: { A: false, B: false }, // Initialize with default values
+            delaysSec: { // Initialize with default values
+                A_left: 0,
+                A_right: 0,
+                B_left: 0,
+                B_right: 0
+            }
+        };
+        
         // Callbacks
         this.onParameterChange = null;
         this.onStatusChange = null;
@@ -100,6 +114,9 @@ class CombFilterAudioEngine {
             // Initialize signal generators
             this.initializeSignalGenerators();
             
+            // Initialize multi-speaker delay bus
+            this.initializeSpeakerBus();
+            
             this.isInitialized = true;
             console.log('✅ Audio Engine initialized successfully');
             console.log(`Sample Rate: ${this.sampleRate} Hz`);
@@ -128,7 +145,8 @@ class CombFilterAudioEngine {
         
         // Set initial values
         this.combFilter.delayNode.delayTime.value = this.parameters.delayTime;
-        this.combFilter.feedbackGain.gain.value = this.parameters.feedback;
+        // Force feedback to 0 in standalone tool
+        this.combFilter.feedbackGain.gain.value = 0;
         this.updateMixParameters();
         
         // Connect the graph
@@ -136,16 +154,15 @@ class CombFilterAudioEngine {
         this.combFilter.input.connect(this.combFilter.dryGain);
         this.combFilter.input.connect(this.combFilter.delayNode);
         
-        // Delay path with feedback
+        // Delay path (no feedback in standalone tool)
         this.combFilter.delayNode.connect(this.combFilter.wetGain);
-        this.combFilter.delayNode.connect(this.combFilter.feedbackGain);
-        this.combFilter.feedbackGain.connect(this.combFilter.delayNode);
+        // Feedback loop intentionally disabled
         
         // Mix dry and wet to output
         this.combFilter.dryGain.connect(this.combFilter.output);
         this.combFilter.wetGain.connect(this.combFilter.output);
         
-        // Connect to master
+        // Connect to master (downstream of speaker bus)
         this.combFilter.output.connect(this.masterGain);
         
         console.log('🔗 Comb filter chain initialized');
@@ -182,6 +199,51 @@ class CombFilterAudioEngine {
         this.combFilter.output.connect(this.analyzers.wet);
         
         console.log('📊 Analysis nodes initialized');
+    }
+
+    /**
+     * Initialize multi-speaker delay/mix bus
+     * Graph: source -> speakerBus.input -> [per speaker gains]->Delay->Gain -> speakerBus.output -> combFilter.input
+     */
+    initializeSpeakerBus() {
+        this.speakerBus.input = this.audioContext.createGain();
+        this.speakerBus.output = this.audioContext.createGain();
+
+        const mkSpeakerChain = () => {
+            const preGain = this.audioContext.createGain();
+            const delay = this.audioContext.createDelay(2.0); // up to ~2s (~686m)
+            const gain = this.audioContext.createGain();
+            // defaults
+            preGain.gain.value = 1.0;
+            delay.delayTime.value = 0.0;
+            gain.gain.value = 1.0;
+            // connect
+            preGain.connect(delay);
+            delay.connect(gain);
+            gain.connect(this.speakerBus.output);
+            return { preGain, delay, gain };
+        };
+
+        // Build chains
+        this.speakerBus.nodes.A_left = mkSpeakerChain();
+        this.speakerBus.nodes.A_right = mkSpeakerChain();
+        this.speakerBus.nodes.B_left = mkSpeakerChain();
+        this.speakerBus.nodes.B_right = mkSpeakerChain();
+
+        // Split input to all speakers
+        this.speakerBus.input.connect(this.speakerBus.nodes.A_left.preGain);
+        this.speakerBus.input.connect(this.speakerBus.nodes.A_right.preGain);
+        this.speakerBus.input.connect(this.speakerBus.nodes.B_left.preGain);
+        this.speakerBus.input.connect(this.speakerBus.nodes.B_right.preGain);
+
+        // Speaker bus feeds comb filter input
+        this.speakerBus.output.connect(this.combFilter.input);
+
+        // Apply initial enabled states
+        this.applySetEnable('A', this.speakerBus.setEnabled.A);
+        this.applySetEnable('B', this.speakerBus.setEnabled.B);
+
+        console.log('🔀 Speaker delay bus initialized');
     }
     
     /**
@@ -493,7 +555,8 @@ class CombFilterAudioEngine {
             
             // Create and start new source
             const source = this.createSignalSource(type);
-            source.connect(this.combFilter.input);
+            // Route through multi-speaker bus (splits to per-speaker delays)
+            source.connect(this.speakerBus.input);
             
             // Handle custom tone differently (oscillator needs to be started)
             if (type === 'custom-tone') {
@@ -537,9 +600,9 @@ class CombFilterAudioEngine {
                     this.customTone.oscillator = null;
                     this.customTone.gain = null;
                 } else {
-                    current.stop();
+                    try { current.stop(); } catch (e) {}
                 }
-                current.disconnect();
+                try { current.disconnect(); } catch (e) {}
                 this.signalGenerators.delete('current');
             }
             
@@ -569,11 +632,12 @@ class CombFilterAudioEngine {
                 );
             }
             
+            // Feedback parameter intentionally ignored in standalone tool
             if (params.feedback !== undefined) {
-                this.parameters.feedback = Math.max(0, Math.min(0.95, params.feedback));
-                this.combFilter.feedbackGain.gain.exponentialRampToValueAtTime(
-                    Math.max(0.001, this.parameters.feedback), now + rampTime
-                );
+                this.parameters.feedback = 0;
+                if (this.combFilter.feedbackGain) {
+                    this.combFilter.feedbackGain.gain.setValueAtTime(0, now);
+                }
             }
             
             if (params.mix !== undefined) {
@@ -621,6 +685,60 @@ class CombFilterAudioEngine {
         this.combFilter.wetGain.gain.exponentialRampToValueAtTime(
             Math.max(0.001, wetLevel), now + rampTime
         );
+    }
+
+    /**
+     * Update per-speaker delays (seconds)
+     * delays = { A_left, A_right, B_left, B_right }
+     */
+    setSpeakerDelays(delays) {
+        // Save desired state
+        this.speakerBus.delaysSec = {
+            ...this.speakerBus.delaysSec,
+            ...delays
+        };
+        if (!this.isInitialized || !this.speakerBus.nodes || !this.speakerBus.nodes.A_left) return;
+
+        const now = this.audioContext.currentTime;
+        const ramp = 0.01;
+        const clamp = (v) => Math.max(0, Math.min(2.0, Number.isFinite(v) ? v : 0));
+
+        const apply = (key) => {
+            const node = this.speakerBus.nodes[key];
+            if (!node) return;
+            const d = clamp(this.speakerBus.delaysSec[key] || 0);
+            node.delay.delayTime.linearRampToValueAtTime(d, now + ramp);
+        };
+        apply('A_left');
+        apply('A_right');
+        apply('B_left');
+        apply('B_right');
+    }
+
+    /**
+     * Enable/disable an entire set ('A' or 'B')
+     */
+    setSetEnabled(setName, enabled) {
+        if (!['A','B'].includes(setName)) return;
+        this.speakerBus.setEnabled[setName] = !!enabled;
+        if (!this.isInitialized || !this.speakerBus.nodes || !this.speakerBus.nodes.A_left) return;
+        this.applySetEnable(setName, !!enabled);
+    }
+
+    /**
+     * Internal helper to ramp output gain per speaker for a set
+     */
+    applySetEnable(setName, enabled) {
+        const keys = setName === 'A' ? ['A_left', 'A_right'] : ['B_left', 'B_right'];
+        const now = this.audioContext.currentTime;
+        const ramp = 0.01;
+        keys.forEach(k => {
+            const node = this.speakerBus.nodes[k];
+            if (!node) return;
+            node.gain.gain.exponentialRampToValueAtTime(
+                Math.max(0.001, enabled ? 1.0 : 0.001), now + ramp
+            );
+        });
     }
     
     /**
@@ -700,6 +818,31 @@ class CombFilterAudioEngine {
         } catch (error) {
             console.error('❌ Error disposing audio engine:', error);
         }
+    }
+    
+    /**
+     * Get timing status for all speakers (for status bar display)
+     * Returns array of speaker timing information
+     */
+    getTimingStatus() {
+        return Object.entries(this.speakerBus.delaysSec).map(([speaker, delay]) => ({
+            speaker: speaker.replace('_', '-'),
+            distance: `${(delay * 343).toFixed(2)}m`,
+            delay: `${(delay * 1000).toFixed(1)}ms`,
+            enabled: this.isSpeakerEnabled(speaker)
+        }));
+    }
+    
+    /**
+     * Check if individual speaker is enabled (helper for getTimingStatus)
+     */
+    isSpeakerEnabled(speakerKey) {
+        if (speakerKey.startsWith('A_')) {
+            return this.speakerBus.setEnabled.A;
+        } else if (speakerKey.startsWith('B_')) {
+            return this.speakerBus.setEnabled.B;
+        }
+        return false;
     }
     
     /**

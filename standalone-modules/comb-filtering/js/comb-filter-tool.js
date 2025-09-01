@@ -68,6 +68,12 @@ class CombFilterTool {
             activeTarget: null // Track which element is being hovered
         };
         
+        // Speaker state tracking for audio simulation
+        this.speakerState = {
+            setA: true,  // Controls both A left and right
+            setB: true   // Controls both B left and right
+        };
+        
         console.log('🎛️ Comb-Filter Tool initializing...');
     }
     
@@ -108,15 +114,17 @@ class CombFilterTool {
      * Cache DOM elements for performance
      */
     cacheElements() {
-        // Control elements
+        console.log('🔍 Caching DOM elements...');
+        
+        // Cache frequently accessed DOM elements
         this.elements = {
-            // Header controls
-            startAudio: document.getElementById('start-audio'),
-            calibrate: document.getElementById('calibrate'),
-            sampleRate: document.getElementById('sample-rate'),
-            
-            // Mode buttons
-            modeBtns: document.querySelectorAll('.mode-btn'),
+            // Speaker controls
+            speakerA: document.getElementById('speaker-a'),
+            speakerB: document.getElementById('speaker-b'),
+            distanceA: document.getElementById('distance-a'),
+            distanceB: document.getElementById('distance-b'),
+            distanceLabelA: document.getElementById('distance-a'),
+            distanceLabelB: document.getElementById('distance-b'),
             
             // Parameter controls
             delaySlider: document.getElementById('delay-slider'),
@@ -128,30 +136,41 @@ class CombFilterTool {
             mixSlider: document.getElementById('mix-slider'),
             mixValue: document.getElementById('mix-value'),
             signalType: document.getElementById('signal-type'),
-            toneControlGroup: document.getElementById('tone-control-group'),
-            customToneControl: document.getElementById('custom-tone-control'),
             colormapSelect: document.getElementById('colormap-select'),
-            colormapPreview: document.getElementById('colormap-preview'),
             
-            // Theory display
-            firstNotch: document.getElementById('first-notch'),
-            notchSpacing: document.getElementById('notch-spacing'),
-            patternDesc: document.getElementById('pattern-desc'),
-            qualiaImpact: document.getElementById('qualia-impact'),
+            // Custom tone controls
+            toneControlGroup: document.getElementById('tone-control-group'),
+            customToneSlider: document.getElementById('custom-tone-slider'),
+            customToneValue: document.getElementById('custom-tone-value'),
             
-            // Visualization
+            // Canvas and visualization
             canvas: document.getElementById('main-visualization'),
+            
+            // Mode and visualization controls
+            modeBtns: document.querySelectorAll('.mode-btn'),
             vizTabs: document.querySelectorAll('.viz-tab'),
             freezeDisplay: document.getElementById('freeze-display'),
-            clearDisplay: document.getElementById('clear-display'),
-            fullscreenViz: document.getElementById('fullscreen-viz'),
+            
+            // Colormap preview
+            colormapPreview: document.getElementById('colormap-preview'),
+            
+            // Other UI elements
+            loadingOverlay: document.getElementById('loading-overlay'),
+            loadingText: document.querySelector('#loading-overlay .loading-content p'),
             
             // Status indicators
             audioStatus: document.getElementById('audio-status'),
             micStatus: document.getElementById('mic-status'),
             signalQuality: document.getElementById('signal-quality'),
+            speakerStatus: document.getElementById('speaker-status'),
             fpsCounter: document.getElementById('fps-counter'),
             cpuUsage: document.getElementById('cpu-usage'),
+            
+            // Theory display elements
+            firstNotch: document.getElementById('first-notch'),
+            notchSpacing: document.getElementById('notch-spacing'),
+            patternDesc: document.getElementById('pattern-desc'),
+            qualiaImpact: document.getElementById('qualia-impact'),
             
             // Analysis results
             notchList: document.getElementById('notch-list'),
@@ -344,54 +363,133 @@ class CombFilterTool {
      * Setup UI event listeners
      */
     setupEventListeners() {
-        // Audio controls
-        this.elements.startAudio.addEventListener('click', () => this.toggleAudio());
-        this.elements.calibrate.addEventListener('click', () => this.calibrateSystem());
-        this.elements.sampleRate.addEventListener('change', (e) => this.changeSampleRate(e.target.value));
+        console.log('🔌 Setting up event listeners...');
         
-        // Mode switching
-        this.elements.modeBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => this.switchMode(e.target.dataset.mode));
-        });
-        
-        // Parameter controls
-        this.elements.delaySlider.addEventListener('input', (e) => this.updateDelay(parseFloat(e.target.value)));
-        this.elements.distanceSlider.addEventListener('input', (e) => this.updateDistance(parseFloat(e.target.value)));
-        this.elements.feedbackSlider.addEventListener('input', (e) => this.updateFeedback(parseFloat(e.target.value)));
-        this.elements.mixSlider.addEventListener('input', (e) => this.updateMix(parseFloat(e.target.value)));
-        this.elements.signalType.addEventListener('change', (e) => this.changeSignalType(e.target.value));
-        this.elements.colormapSelect.addEventListener('change', (e) => this.changeColormap(e.target.value));
-        
-        // Tone control events
-        if (this.elements.customToneControl) {
-            this.elements.customToneControl.addEventListener('frequency-change', (e) => this.updateCustomToneFrequency(e.detail.frequency));
-            this.elements.customToneControl.addEventListener('toggle', (e) => this.toggleCustomTone(e.detail.active));
+        try {
+            // Window events
+            if (window) {
+                window.addEventListener('resize', () => this.resizeCanvas());
+            } else {
+                console.warn('⚠️ Window object not available');
+            }
+            
+            // Speaker toggle events
+            if (this.elements.speakerA) {
+                console.log('🔌 Found speaker A toggle:', this.elements.speakerA);
+                this.elements.speakerA.addEventListener('change', (e) => {
+                    console.log('🔊 Speaker A toggled:', e.target.checked);
+                    this.onSpeakerToggle('A', e.target.checked);
+                });
+            } else {
+                console.warn('⚠️ Speaker A toggle not found!');
+            }
+            
+            if (this.elements.speakerB) {
+                console.log('🔌 Found speaker B toggle:', this.elements.speakerB);
+                this.elements.speakerB.addEventListener('change', (e) => {
+                    console.log('🔊 Speaker B toggled:', e.target.checked);
+                    this.onSpeakerToggle('B', e.target.checked);
+                });
+            } else {
+                console.warn('⚠️ Speaker B toggle not found!');
+            }
+            
+            // Parameter control events
+            const addSliderListener = (elementId, handler) => {
+                const element = this.elements[elementId];
+                if (element) {
+                    element.addEventListener('input', (e) => handler(parseFloat(e.target.value)));
+                    console.log(`🔌 Added listener for ${elementId}`);
+                } else {
+                    console.warn(`⚠️ ${elementId} not found!`);
+                }
+            };
+            
+            // Add event listeners with null checks
+            if (this.elements.delaySlider) {
+                this.elements.delaySlider.addEventListener('input', (e) => this.updateDelay(parseFloat(e.target.value)));
+            }
+            
+            if (this.elements.distanceSlider) {
+                this.elements.distanceSlider.addEventListener('input', (e) => this.updateDistance(parseFloat(e.target.value)));
+            }
+            
+            if (this.elements.feedbackSlider) {
+                this.elements.feedbackSlider.addEventListener('input', (e) => this.updateFeedback(parseFloat(e.target.value)));
+            }
+            
+            if (this.elements.mixSlider) {
+                this.elements.mixSlider.addEventListener('input', (e) => this.updateMix(parseFloat(e.target.value)));
+            }
+            
+            if (this.elements.signalType) {
+                this.elements.signalType.addEventListener('change', (e) => this.changeSignalType(e.target.value));
+            }
+            
+            if (this.elements.colormapSelect) {
+                this.elements.colormapSelect.addEventListener('change', (e) => this.changeColormap(e.target.value));
+            }
+            
+            // Tone control events
+            if (this.elements.customToneSlider) {
+                this.elements.customToneSlider.addEventListener('input', (e) => {
+                    const pos = parseFloat(e.target.value);
+                    const freq = this.logSliderPosToFreq(pos);
+                    // Update label (Hz/kHz formatting)
+                    if (this.elements.customToneValue) {
+                        this.elements.customToneValue.textContent = this.formatFreqLabel(freq);
+                    }
+                    // Propagate to audio engine if active
+                    this.updateCustomToneFrequency(freq);
+                });
+                console.log('🔌 Custom tone slider initialized');
+            } else {
+                console.warn('⚠️ Custom tone slider not found!');
+            }
+            
+            // Mode button events
+            if (this.elements.modeBtns) {
+                this.elements.modeBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const mode = e.target.closest('.mode-btn').dataset.mode;
+                        this.switchMode(mode);
+                    });
+                });
+                console.log('🔌 Mode button listeners added');
+            }
+            
+            // Visualization tab events
+            if (this.elements.vizTabs) {
+                this.elements.vizTabs.forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        const vizType = e.target.closest('.viz-tab').dataset.viz;
+                        this.switchVisualization(vizType);
+                    });
+                });
+                console.log('🔌 Visualization tab listeners added');
+            }
+            
+            // Visualization control events
+            if (this.elements.freezeDisplay) {
+                this.elements.freezeDisplay.addEventListener('click', () => this.toggleFreeze());
+            }
+            
+            // Floor plan canvas drag events
+            if (this.elements.canvas) {
+                this.elements.canvas.addEventListener('mousedown', (e) => this.onFloorPlanMouseDown(e));
+                this.elements.canvas.addEventListener('mousemove', (e) => this.onFloorPlanMouseMove(e));
+                this.elements.canvas.addEventListener('mouseup', (e) => this.onFloorPlanMouseUp(e));
+                this.elements.canvas.addEventListener('mouseleave', (e) => this.onFloorPlanMouseUp(e));
+            } else {
+                console.warn('⚠️ Canvas element not found!');
+            }
+            
+            console.log('✅ Event listeners setup complete');
+            
+        } catch (error) {
+            console.error('❌ Error setting up event listeners:', error);
+            this.showError('Failed to set up event listeners: ' + error.message);
         }
-        
-        // Visualization controls
-        this.elements.vizTabs.forEach(tab => {
-            tab.addEventListener('click', (e) => this.switchVisualization(e.target.dataset.viz));
-        });
-        this.elements.freezeDisplay.addEventListener('click', () => this.toggleFreeze());
-        this.elements.clearDisplay.addEventListener('click', () => this.clearDisplay());
-        this.elements.fullscreenViz.addEventListener('click', () => this.toggleFullscreen());
-        
-        // Export controls
-        this.elements.saveData.addEventListener('click', () => this.saveData());
-        this.elements.exportImage.addEventListener('click', () => this.exportImage());
-        this.elements.exportCsv.addEventListener('click', () => this.exportCsv());
-        this.elements.generateReport.addEventListener('click', () => this.generateReport());
-        
-        // Window resize
-        window.addEventListener('resize', () => this.resizeCanvas());
-        
-        // Floor plan canvas drag events
-        this.elements.canvas.addEventListener('mousedown', (e) => this.onFloorPlanMouseDown(e));
-        this.elements.canvas.addEventListener('mousemove', (e) => this.onFloorPlanMouseMove(e));
-        this.elements.canvas.addEventListener('mouseup', (e) => this.onFloorPlanMouseUp(e));
-        this.elements.canvas.addEventListener('mouseleave', (e) => this.onFloorPlanMouseUp(e));
-        
-        console.log('👂 Event listeners setup complete');
     }
     
     /**
@@ -410,39 +508,190 @@ class CombFilterTool {
         // Update status
         this.updateStatus();
         
+        // Initialize custom tone label if present
+        if (this.elements.customToneSlider && this.elements.customToneValue) {
+            const pos = parseFloat(this.elements.customToneSlider.value);
+            const freq = this.logSliderPosToFreq(pos);
+            this.elements.customToneValue.textContent = this.formatFreqLabel(freq);
+        }
+        
+        // Default: start with both speaker sets OFF
+        if (this.elements.speakerA) this.elements.speakerA.checked = false;
+        if (this.elements.speakerB) this.elements.speakerB.checked = false;
+
+        // Ensure engine reflects initial OFF state and apply initial delays
+        if (this.audioEngine) {
+            this.audioEngine.setSetEnabled('A', false);
+            this.audioEngine.setSetEnabled('B', false);
+            this.updateSpeakerDelaysFromFloorPlan();
+        }
+
+        // Default test signal: custom tone if available
+        if (this.elements.signalType) {
+            const desired = 'custom-tone';
+            if ([...this.elements.signalType.options].some(o => o.value === desired)) {
+                this.elements.signalType.value = desired;
+                // Apply selection to show controls and prep engine
+                this.changeSignalType(desired);
+            }
+        }
+
+        // Compute initial distances/labels
+        this.updateDistanceCalculations();
+        
+        // Update initial speaker status display
+        this.updateSpeakerStatus();
+
+        // Ensure playback reflects initial toggle state
+        this.ensurePlaybackState();
+        
         console.log('🎨 UI initialized');
     }
     
     /**
-     * Audio control methods
+     * Auto-manage audio playback based on speaker toggles
      */
-    async toggleAudio() {
-        if (!this.audioEngine) return;
+    async ensurePlaybackState() {
+        console.log('🔄 Ensuring playback state...');
         
-        if (!this.audioEngine.isInitialized) {
-            this.showLoadingOverlay('Initializing Audio System...');
-            const success = await this.audioEngine.initialize();
-            this.hideLoadingOverlay();
-            
-            if (!success) {
-                this.showError('Failed to initialize audio system');
-                return;
-            }
+        if (!this.audioEngine) {
+            console.warn('⚠️ Audio engine not available');
+            return;
         }
         
-        if (this.audioEngine.isPlaying) {
-            this.audioEngine.stopSignal();
-            this.elements.startAudio.innerHTML = '<i class="fas fa-play"></i> Start Audio';
-        } else {
-            const success = await this.audioEngine.startSignal();
-            if (success) {
-                this.elements.startAudio.innerHTML = '<i class="fas fa-stop"></i> Stop Audio';
+        const speakerAOn = this.elements.speakerA?.checked || false;
+        const speakerBOn = this.elements.speakerB?.checked || false;
+        const wantPlaying = speakerAOn || speakerBOn;
+        
+        console.log(`🔈 Speaker states - A: ${speakerAOn}, B: ${speakerBOn}, Want playing: ${wantPlaying}`);
+
+        try {
+            // Initialize on first demand
+            if (wantPlaying && !this.audioEngine.isInitialized) {
+                console.log('🔊 Initializing audio system...');
+                this.showLoadingOverlay('Initializing Audio System...');
                 
-                // Start microphone if in analyze mode
-                if (this.currentMode === 'analyze') {
-                    await this.audioEngine.startMicrophone();
+                try {
+                    const ok = await this.audioEngine.initialize();
+                    if (!ok) {
+                        throw new Error('Audio engine initialization failed');
+                    }
+                    console.log('✅ Audio system initialized successfully');
+                    
+                    // Apply current per-speaker delays after init
+                    this.updateSpeakerDelaysFromFloorPlan();
+                } catch (error) {
+                    console.error('❌ Audio initialization error:', error);
+                    this.showError(`Failed to initialize audio system: ${error.message}`);
+                    return;
+                } finally {
+                    this.hideLoadingOverlay();
                 }
             }
+
+            // Handle playback state
+            if (wantPlaying && !this.audioEngine.isPlaying) {
+                console.log('▶️ Starting audio playback...');
+                const type = this.elements.signalType?.value || 'custom-tone';
+                console.log(`🎵 Signal type: ${type}`);
+                
+                try {
+                    const started = await this.audioEngine.startSignal(type);
+                    if (!started) {
+                        throw new Error('Failed to start audio signal');
+                    }
+                    
+                    console.log('✅ Audio playback started');
+                    
+                    // Handle mode-specific initialization
+                    if (this.currentMode === 'analyze') {
+                        console.log('🎤 Starting microphone for analysis...');
+                        await this.audioEngine.startMicrophone().catch(err => {
+                            console.warn('⚠️ Failed to start microphone:', err);
+                        });
+                    }
+                    
+                    // Configure custom tone if needed
+                    if (type === 'custom-tone' && this.elements.customToneSlider) {
+                        const pos = parseFloat(this.elements.customToneSlider.value);
+                        const freq = this.logSliderPosToFreq(pos);
+                        console.log(`🎛️ Setting custom tone frequency: ${freq.toFixed(1)} Hz`);
+                        this.updateCustomToneFrequency(freq);
+                        this.toggleCustomTone(true);
+                    } else {
+                        this.toggleCustomTone(false);
+                    }
+                } catch (error) {
+                    console.error('❌ Playback error:', error);
+                    this.showError(`Playback error: ${error.message}`);
+                }
+            } else if (!wantPlaying && this.audioEngine.isPlaying) {
+                console.log('⏹️ Stopping audio playback...');
+                this.audioEngine.stopSignal();
+                
+                if (this.currentMode === 'analyze') {
+                    try {
+                        await this.audioEngine.stopMicrophone?.();
+                    } catch (err) {
+                        console.warn('⚠️ Error stopping microphone:', err);
+                    }
+                }
+                console.log('✅ Audio playback stopped');
+            }
+        } catch (error) {
+            console.error('❌ Error in ensurePlaybackState:', error);
+            this.showError(`Playback error: ${error.message}`);
+        }
+    }
+
+    /**
+     * Handle speaker set toggle changes
+     */
+    onSpeakerToggle(setName, enabled) {
+        console.log(`🔊 Speaker ${setName} toggled: ${enabled ? 'ON' : 'OFF'}`);
+        
+        if (!this.audioEngine) {
+            console.warn('⚠️ Audio engine not initialized');
+            return;
+        }
+        
+        console.log(`🎚️ Updating audio engine state for speaker ${setName} to:`, enabled);
+        
+        try {
+            // Update audio engine state
+            this.audioEngine.setSetEnabled(setName, enabled);
+            console.log(`✅ Audio engine updated for speaker ${setName}`);
+            
+            // Update UI to reflect the new state
+            const speakerElement = this.elements[`speaker${setName}`];
+            if (speakerElement) {
+                if (speakerElement.checked !== enabled) {
+                    console.log(`🔄 Updating UI checkbox for speaker ${setName} to:`, enabled);
+                    speakerElement.checked = enabled;
+                }
+            } else {
+                console.warn(`⚠️ Speaker element not found for ${setName}`);
+            }
+            
+            // Update playback state based on toggles
+            console.log('🔄 Ensuring playback state...');
+            this.ensurePlaybackState().then(() => {
+                console.log(`✅ Playback state updated for speaker ${setName}`);
+            }).catch(error => {
+                console.error(`❌ Error updating playback state for speaker ${setName}:`, error);
+            });
+            
+            // Update speaker delays if needed
+            if (enabled) {
+                console.log('🔄 Updating speaker delays from floor plan...');
+                this.updateSpeakerDelaysFromFloorPlan();
+            } else {
+                // Update status bar even when disabling speakers
+                this.updateSpeakerStatus();
+            }
+        } catch (error) {
+            console.error(`❌ Error in onSpeakerToggle for ${setName}:`, error);
+            this.showError(`Failed to update speaker ${setName}: ${error.message}`);
         }
     }
     
@@ -476,7 +725,9 @@ class CombFilterTool {
     
     updateFeedback(feedback) {
         this.audioEngine?.updateParameters({ feedback: feedback });
-        this.elements.feedbackValue.textContent = Math.round(feedback * 100) + '%';
+        if (this.elements.feedbackValue) {
+            this.elements.feedbackValue.textContent = Math.round(feedback * 100) + '%';
+        }
     }
     
     updateMix(mix) {
@@ -491,15 +742,63 @@ class CombFilterTool {
         }
         
         if (this.audioEngine?.isPlaying) {
+            // If switching to custom tone, set frequency and enable tone before starting
+            if (type === 'custom-tone' && this.elements.customToneSlider) {
+                const pos = parseFloat(this.elements.customToneSlider.value);
+                const freq = this.logSliderPosToFreq(pos);
+                this.updateCustomToneFrequency(freq);
+                this.toggleCustomTone(true);
+            } else {
+                // Ensure custom tone is disabled when leaving the mode
+                this.toggleCustomTone(false);
+            }
             this.audioEngine.startSignal(type);
+        } else if (this.audioEngine) {
+            // Persist selection for when audio starts later
+            this.audioEngine.currentSignalType = type;
         }
+    }
+
+    /**
+     * Map log slider position [0..1000] to frequency [20..20000] Hz
+     */
+    logSliderPosToFreq(pos) {
+        const fmin = 20;
+        const fmax = 20000;
+        const t = Math.max(0, Math.min(1000, pos)) / 1000;
+        const ratio = fmax / fmin;
+        return fmin * Math.pow(ratio, t);
+    }
+
+    /**
+     * Map frequency [20..20000] Hz to log slider position [0..1000]
+     */
+    freqToLogSliderPos(freq) {
+        const fmin = 20;
+        const fmax = 20000;
+        const f = Math.max(fmin, Math.min(fmax, freq));
+        const ratio = fmax / fmin;
+        return Math.round(1000 * (Math.log(f / fmin) / Math.log(ratio)));
+    }
+
+    /**
+     * Format frequency label for display
+     */
+    formatFreqLabel(freq) {
+        if (freq >= 1000) {
+            const val = freq / 1000;
+            // Use one decimal for <10 kHz, no decimals otherwise
+            const str = val < 10 ? val.toFixed(1) : Math.round(val).toString();
+            return `${str} kHz`;
+        }
+        return `${Math.round(freq)} Hz`;
     }
     
     /**
      * Update custom tone frequency
      */
     updateCustomToneFrequency(frequency) {
-        if (this.audioEngine?.isPlaying && this.elements.signalType.value === 'custom-tone') {
+        if (this.audioEngine && this.elements.signalType.value === 'custom-tone') {
             this.audioEngine.updateCustomToneFrequency(frequency);
         }
     }
@@ -508,8 +807,8 @@ class CombFilterTool {
      * Toggle custom tone on/off
      */
     toggleCustomTone(active) {
-        if (this.audioEngine?.isPlaying && this.elements.signalType.value === 'custom-tone') {
-            this.audioEngine.toggleCustomTone(active);
+        if (this.audioEngine) {
+            this.audioEngine.toggleCustomTone(active && this.elements.signalType.value === 'custom-tone');
         }
     }
     
@@ -517,60 +816,102 @@ class CombFilterTool {
      * Update parameter displays
      */
     updateParameterDisplays() {
-        const delay = parseFloat(this.elements.delaySlider.value);
-        const distance = parseFloat(this.elements.distanceSlider.value);
-        const feedback = parseFloat(this.elements.feedbackSlider.value);
-        const mix = parseFloat(this.elements.mixSlider.value);
+        const delay = this.elements.delaySlider ? parseFloat(this.elements.delaySlider.value) : 5;
+        const distance = this.elements.distanceSlider ? parseFloat(this.elements.distanceSlider.value) : 1.5;
+        const feedback = this.elements.feedbackSlider ? parseFloat(this.elements.feedbackSlider.value) : 0;
+        const mix = this.elements.mixSlider ? parseFloat(this.elements.mixSlider.value) : 50;
         
-        this.elements.delayValue.textContent = delay.toFixed(1) + ' ms';
-        this.elements.distanceValue.textContent = distance.toFixed(1) + ' m';
-        this.elements.feedbackValue.textContent = Math.round(feedback * 100) + '%';
-        this.elements.mixValue.textContent = Math.round(mix) + '%';
+        if (this.elements.delayValue) {
+            this.elements.delayValue.textContent = delay.toFixed(1) + ' ms';
+        }
+        if (this.elements.distanceValue) {
+            this.elements.distanceValue.textContent = distance.toFixed(1) + ' m';
+        }
+        if (this.elements.feedbackValue) {
+            this.elements.feedbackValue.textContent = Math.round(feedback * 100) + '%';
+        }
+        if (this.elements.mixValue) {
+            this.elements.mixValue.textContent = Math.round(mix) + '%';
+        }
     }
     
     /**
      * Update theory display with calculations
      */
     updateTheoryDisplay() {
-        const delayMs = parseFloat(this.elements.delaySlider.value);
+        const delayMs = this.elements.delaySlider ? parseFloat(this.elements.delaySlider.value) : 5;
         const delaySeconds = delayMs / 1000;
         
         if (delaySeconds <= 0) {
             // No delay = no comb filtering
-            this.elements.firstNotch.textContent = 'No notches';
-            this.elements.notchSpacing.textContent = 'No filtering';
-            this.elements.patternDesc.textContent = 'Constructive summation';
-            this.elements.qualiaImpact.textContent = 'Optimal';
-            this.elements.qualiaImpact.className = 'calc-value impact-optimal';
+            if (this.elements.firstNotch) this.elements.firstNotch.textContent = 'No notches';
+            if (this.elements.notchSpacing) this.elements.notchSpacing.textContent = 'No filtering';
+            if (this.elements.patternDesc) this.elements.patternDesc.textContent = 'Constructive summation';
+            if (this.elements.qualiaImpact) {
+                this.elements.qualiaImpact.textContent = 'Optimal';
+                this.elements.qualiaImpact.className = 'calc-value impact-optimal';
+            }
         } else {
             const firstNotch = 1 / (2 * delaySeconds);
             const spacing = 1 / delaySeconds;
             
-            this.elements.firstNotch.textContent = Math.round(firstNotch) + ' Hz';
-            this.elements.notchSpacing.textContent = Math.round(spacing) + ' Hz';
+            if (this.elements.firstNotch) this.elements.firstNotch.textContent = Math.round(firstNotch) + ' Hz';
+            if (this.elements.notchSpacing) this.elements.notchSpacing.textContent = Math.round(spacing) + ' Hz';
             
             // Determine pattern description
             let pattern, impact;
             if (firstNotch > 500) {
                 pattern = 'High-frequency focus';
                 impact = 'Too short';
-                this.elements.qualiaImpact.className = 'calc-value impact-danger';
+                if (this.elements.qualiaImpact) this.elements.qualiaImpact.className = 'calc-value impact-danger';
             } else if (firstNotch > 200) {
                 pattern = 'Mid-frequency focus';
                 impact = 'Borderline';
-                this.elements.qualiaImpact.className = 'calc-value impact-warning';
+                if (this.elements.qualiaImpact) this.elements.qualiaImpact.className = 'calc-value impact-warning';
             } else if (firstNotch > 100) {
                 pattern = 'Low-mid focus';
                 impact = 'Optimal';
-                this.elements.qualiaImpact.className = 'calc-value impact-optimal';
+                if (this.elements.qualiaImpact) this.elements.qualiaImpact.className = 'calc-value impact-optimal';
             } else {
                 pattern = 'Low-frequency focus';
                 impact = 'Good';
-                this.elements.qualiaImpact.className = 'calc-value impact-optimal';
+                if (this.elements.qualiaImpact) this.elements.qualiaImpact.className = 'calc-value impact-optimal';
             }
             
-            this.elements.patternDesc.textContent = pattern;
-            this.elements.qualiaImpact.textContent = impact;
+            if (this.elements.patternDesc) this.elements.patternDesc.textContent = pattern;
+            if (this.elements.qualiaImpact) this.elements.qualiaImpact.textContent = impact;
+        }
+    }
+    
+    /**
+     * Update speaker status display in status bar
+     */
+    updateSpeakerStatus() {
+        if (!this.elements.speakerStatus || !this.audioEngine?.isInitialized) {
+            return;
+        }
+        
+        try {
+            const timingStatus = this.audioEngine.getTimingStatus();
+            const statusText = timingStatus.map(s => 
+                `${s.speaker}: ${s.distance} (${s.delay}) ${s.enabled ? 'ON' : 'OFF'}`
+            ).join(' | ');
+            
+            // Update the status element text (preserving icon)
+            const icon = this.elements.speakerStatus.querySelector('i');
+            if (icon) {
+                this.elements.speakerStatus.innerHTML = icon.outerHTML + ' ' + statusText;
+            } else {
+                this.elements.speakerStatus.textContent = 'Speakers: ' + statusText;
+            }
+        } catch (error) {
+            console.warn('⚠️ Error updating speaker status:', error);
+            const icon = this.elements.speakerStatus.querySelector('i');
+            if (icon) {
+                this.elements.speakerStatus.innerHTML = icon.outerHTML + ' Speakers: Error';
+            } else {
+                this.elements.speakerStatus.textContent = 'Speakers: Error';
+            }
         }
     }
     
@@ -658,7 +999,7 @@ class CombFilterTool {
                 content = `
                     <h4>Digital Comb-Filter</h4>
                     <p>Generate controlled comb-filtering effects to understand the theory.</p>
-                    <p><strong>Controls:</strong> Adjust delay, feedback, and mix to hear different effects.</p>
+                    <p><strong>Controls:</strong> Adjust delay and mix to hear different effects.</p>
                     <p><strong>Signals:</strong> Try different test signals to hear how comb-filtering affects various sounds.</p>
                 `;
                 break;
@@ -666,7 +1007,7 @@ class CombFilterTool {
                 content = `
                     <h4>Room Analysis</h4>
                     <p>Measure real-world comb-filtering in your acoustic space.</p>
-                    <p><strong>Setup:</strong> Click "Start Audio" to begin microphone analysis.</p>
+                    <p><strong>Setup:</strong> Enable a speaker set (A or B) to begin playback and analysis.</p>
                     <p><strong>Method:</strong> Compare the direct signal with the microphone capture to identify room effects.</p>
                 `;
                 break;
@@ -786,18 +1127,26 @@ class CombFilterTool {
         const width = canvas.width;
         const height = canvas.height;
         const frequencyData = data.frequency;
+        const nyquist = this.audioEngine ? this.audioEngine.sampleRate / 2 : 22050;
         
         ctx.strokeStyle = '#00ff88';
         ctx.lineWidth = 2;
         ctx.beginPath();
         
-        for (let i = 0; i < frequencyData.length; i++) {
-            const x = (i / frequencyData.length) * width;
+        // Plot using log-frequency x-axis from 20 Hz to Nyquist
+        let started = false;
+        const denom = Math.log10(nyquist / 20);
+        const len = frequencyData.length;
+        for (let i = 0; i < len; i++) {
+            const freq = (i / (len - 1)) * nyquist;
+            if (freq < 20 || !isFinite(freq) || denom <= 0) continue;
+            const x = (Math.log10(freq / 20) / denom) * width;
             const amplitude = (frequencyData[i] + 140) / 140; // Normalize from -140dB to 0dB
             const y = height - (amplitude * height);
             
-            if (i === 0) {
+            if (!started) {
                 ctx.moveTo(x, y);
+                started = true;
             } else {
                 ctx.lineTo(x, y);
             }
@@ -925,16 +1274,19 @@ class CombFilterTool {
      * Draw frequency labels
      */
     drawFrequencyLabels(ctx, canvas) {
-        const frequencies = [20, 100, 500, 1000, 5000, 10000, 20000];
+        const frequencies = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000];
         const width = canvas.width;
         const height = canvas.height;
+        const nyquist = this.audioEngine ? this.audioEngine.sampleRate / 2 : 22050;
+        const denom = Math.log10(nyquist / 20);
         
         ctx.fillStyle = '#888';
         ctx.font = '12px monospace';
         ctx.textAlign = 'center';
         
         frequencies.forEach(freq => {
-            const x = Math.log10(freq / 20) / Math.log10(1000) * width;
+            if (freq < 20 || freq > nyquist || denom <= 0) return;
+            const x = (Math.log10(freq / 20) / denom) * width;
             if (x >= 0 && x <= width) {
                 ctx.fillText(freq >= 1000 ? (freq/1000) + 'k' : freq, x, height - 5);
                 
@@ -1117,26 +1469,7 @@ class CombFilterTool {
         // Direction indicator (front face)
         ctx.fillRect(speakerAR.x - 6, speakerAR.y + 3, 12, 1);
         
-        // Draw cone angles for Set A speakers (pointing toward listener)
-        ctx.strokeStyle = '#cc3333';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([2, 2]);
-        
-        // Left speaker cone
-        ctx.beginPath();
-        ctx.moveTo(speakerAL.x, speakerAL.y);
-        ctx.lineTo(listener.x - 10, listener.y);
-        ctx.moveTo(speakerAL.x, speakerAL.y);
-        ctx.lineTo(listener.x + 10, listener.y);
-        ctx.stroke();
-        
-        // Right speaker cone
-        ctx.beginPath();
-        ctx.moveTo(speakerAR.x, speakerAR.y);
-        ctx.lineTo(listener.x - 10, listener.y);
-        ctx.moveTo(speakerAR.x, speakerAR.y);
-        ctx.lineTo(listener.x + 10, listener.y);
-        ctx.stroke();
+        // Removed red dotted lines from listener to Set A speakers
         
         // Draw Set B speakers (back/side) - smaller speaker icons
         const speakerBL = toPixels(this.floorPlan.speakersB.left.x, this.floorPlan.speakersB.left.y);
@@ -1222,22 +1555,41 @@ class CombFilterTool {
         ctx.beginPath();
         ctx.arc(speakerBR.x, speakerBR.y - 3, 2, 0, Math.PI * 2);
         ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(speakerBR.x, speakerBR.y - 3, 1, 0, Math.PI * 2);
-        ctx.fill();
         
-        // Bass port (rectangular)
-        ctx.fillRect(speakerBR.x - 2, speakerBR.y - 7, 4, 2);
+        // Green dotted lines from listener to each speaker with distance and delay labels
+        {
+            const c = 343; // m/s
+            const fmt = (m) => `${m.toFixed(2)}m, ${((m / c) * 1000).toFixed(1)}ms`;
+            const pairs = [
+                { px: speakerAL, m: this.floorPlan.speakersA.left },
+                { px: speakerAR, m: this.floorPlan.speakersA.right },
+                { px: speakerBL, m: this.floorPlan.speakersB.left },
+                { px: speakerBR, m: this.floorPlan.speakersB.right },
+            ];
+            ctx.save();
+            ctx.setLineDash([3, 3]);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#00aa00';
+            ctx.fillStyle = '#00aa00';
+            ctx.font = '11px monospace';
+            ctx.textAlign = 'center';
+            for (const p of pairs) {
+                const dx = p.m.x - this.floorPlan.listener.x;
+                const dy = p.m.y - this.floorPlan.listener.y;
+                const dist = Math.hypot(dx, dy);
+                // line
+                ctx.beginPath();
+                ctx.moveTo(listener.x, listener.y);
+                ctx.lineTo(p.px.x, p.px.y);
+                ctx.stroke();
+                // label
+                const midX = (listener.x + p.px.x) / 2;
+                const midY = (listener.y + p.px.y) / 2 + 12;
+                ctx.fillText(fmt(dist), midX, midY);
+            }
+            ctx.restore();
+        }
         
-        // Direction indicator (front face)
-        ctx.strokeRect(speakerBR.x - 8, speakerBR.y + 6, 16, 2);
-        
-        ctx.setLineDash([]);
-        
-        // Draw speaker separation lines and labels
-        ctx.strokeStyle = '#666';
-        ctx.lineWidth = 1;
-        ctx.fillStyle = '#666';
         ctx.font = '11px monospace';
         ctx.textAlign = 'center';
         
@@ -1332,15 +1684,9 @@ class CombFilterTool {
         ctx.restore();
         
         // Draw Listener to Set A and Listener to Set B distance lines
-        const listenerToSetADistance = Math.sqrt(
-            Math.pow(this.floorPlan.speakersA.left.x - this.floorPlan.listener.x, 2) + 
-            Math.pow(this.floorPlan.speakersA.left.y - this.floorPlan.listener.y, 2)
-        );
-        
-        const listenerToSetBDistance = Math.sqrt(
-            Math.pow(this.floorPlan.speakersB.left.x - this.floorPlan.listener.x, 2) + 
-            Math.pow(this.floorPlan.speakersB.left.y - this.floorPlan.listener.y, 2)
-        );
+        // NOTE: Use vertical (Y-axis) separation only, not diagonal distance
+        const listenerToSetADistance = Math.abs(this.floorPlan.speakersA.left.y - this.floorPlan.listener.y);
+        const listenerToSetBDistance = Math.abs(this.floorPlan.speakersB.left.y - this.floorPlan.listener.y);
         
         // Position for single listener distance line (30px from rightmost speaker)
         const listenerDistanceLineX = rightmostSpeakerPixelX + 30;
@@ -1390,96 +1736,65 @@ class CombFilterTool {
         ctx.fillText(`${listenerToSetBDistance.toFixed(2)}m`, 0, 0);
         ctx.restore();
         
-        // Draw horizontal measurement lines for listener (X-axis distances)
-        const listenerHorizontalDistance = {
-            toSetA: Math.abs(this.floorPlan.listener.x - (this.floorPlan.speakersA.left.x + this.floorPlan.speakersA.right.x) / 2),
-            toSetB: Math.abs(this.floorPlan.listener.x - (this.floorPlan.speakersB.left.x + this.floorPlan.speakersB.right.x) / 2)
-        };
+        // Removed gray horizontal line from listener to Set A center
         
-        // Draw horizontal line from listener to Set A (if there's horizontal separation)
-        if (listenerHorizontalDistance.toSetA > 0.05) {
-            const setACenterX = toPixels((this.floorPlan.speakersA.left.x + this.floorPlan.speakersA.right.x) / 2, this.floorPlan.speakersA.left.y).x;
-            const listenerToSetAY = listener.y - 40; // Above listener
+        // Set B speakers separation line (moved further down to create space at original position)
+        {
+            const ySpeakers = speakerBL.y + 75; // moved further below original (~+55)
             
             ctx.strokeStyle = '#888';
             ctx.lineWidth = 1;
-            
-            // Horizontal line from listener X to Set A center X
             ctx.beginPath();
-            ctx.moveTo(listener.x, listenerToSetAY);
-            ctx.lineTo(setACenterX, listenerToSetAY);
+            ctx.moveTo(speakerBL.x, ySpeakers);
+            ctx.lineTo(speakerBR.x, ySpeakers);
             ctx.stroke();
-            
-            // End markers
+            // End markers at B-L and B-R
             ctx.beginPath();
-            ctx.moveTo(listener.x, listenerToSetAY - 3);
-            ctx.lineTo(listener.x, listenerToSetAY + 3);
-            ctx.moveTo(setACenterX, listenerToSetAY - 3);
-            ctx.lineTo(setACenterX, listenerToSetAY + 3);
+            ctx.moveTo(speakerBL.x, ySpeakers - 3);
+            ctx.lineTo(speakerBL.x, ySpeakers + 3);
+            // Listener marker on the same horizontal line
+            ctx.moveTo(listener.x, ySpeakers - 3);
+            ctx.lineTo(listener.x, ySpeakers + 3);
+            ctx.moveTo(speakerBR.x, ySpeakers - 3);
+            ctx.lineTo(speakerBR.x, ySpeakers + 3);
             ctx.stroke();
-            
-            // Label
-            const midX = (listener.x + setACenterX) / 2;
+            // Two labels on the same line: listener-to-BL and listener-to-BR
+            const horizToBLeft = Math.abs(this.floorPlan.listener.x - this.floorPlan.speakersB.left.x);
+            const horizToBRight = Math.abs(this.floorPlan.listener.x - this.floorPlan.speakersB.right.x);
+            const midLeft = (listener.x + speakerBL.x) / 2;
+            const midRight = (listener.x + speakerBR.x) / 2;
             ctx.fillStyle = '#888';
             ctx.font = '11px monospace';
             ctx.textAlign = 'center';
-            ctx.fillText(`${listenerHorizontalDistance.toSetA.toFixed(2)}m`, midX, listenerToSetAY - 8);
+            const labelY = ySpeakers + 15; // both labels at same vertical position
+            ctx.fillText(`${horizToBLeft.toFixed(2)}m`, midLeft, labelY);
+            ctx.fillText(`${horizToBRight.toFixed(2)}m`, midRight, labelY);
         }
         
-        // Draw horizontal line from listener to Set B (if there's horizontal separation)
-        if (listenerHorizontalDistance.toSetB > 0.05) {
-            const setBCenterX = toPixels((this.floorPlan.speakersB.left.x + this.floorPlan.speakersB.right.x) / 2, this.floorPlan.speakersB.left.y).x;
-            const listenerToSetBY = listener.y + 40; // Below listener
-            
-            ctx.strokeStyle = '#888';
-            ctx.lineWidth = 1;
-            
-            // Horizontal line from listener X to Set B center X
-            ctx.beginPath();
-            ctx.moveTo(listener.x, listenerToSetBY);
-            ctx.lineTo(setBCenterX, listenerToSetBY);
-            ctx.stroke();
-            
-            // End markers
-            ctx.beginPath();
-            ctx.moveTo(listener.x, listenerToSetBY - 3);
-            ctx.lineTo(listener.x, listenerToSetBY + 3);
-            ctx.moveTo(setBCenterX, listenerToSetBY - 3);
-            ctx.lineTo(setBCenterX, listenerToSetBY + 3);
-            ctx.stroke();
-            
-            // Label
-            const midX = (listener.x + setBCenterX) / 2;
-            ctx.fillStyle = '#888';
-            ctx.font = '11px monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText(`${listenerHorizontalDistance.toSetB.toFixed(2)}m`, midX, listenerToSetBY + 15);
-        }
+        
+        
         
         // Draw distance measurements
         ctx.fillStyle = '#333';
         ctx.font = '12px monospace';
         ctx.textAlign = 'center';
         
-        // Distance from Set A to listener
-        const distanceA = Math.sqrt(
-            Math.pow(this.floorPlan.speakersA.left.x - this.floorPlan.listener.x, 2) + 
-            Math.pow(this.floorPlan.speakersA.left.y - this.floorPlan.listener.y, 2)
-        );
-        
-        // Distance from Set B to listener  
-        const distanceB = Math.sqrt(
-            Math.pow(this.floorPlan.speakersB.left.x - this.floorPlan.listener.x, 2) + 
-            Math.pow(this.floorPlan.speakersB.left.y - this.floorPlan.listener.y, 2)
-        );
+        // Distance from Set A/B to listener (vertical separation only)
+        const distanceA = Math.abs(this.floorPlan.speakersA.left.y - this.floorPlan.listener.y);
+        const distanceB = Math.abs(this.floorPlan.speakersB.left.y - this.floorPlan.listener.y);
         
         // Distance difference
         const distanceDiff = Math.abs(distanceA - distanceB);
         
         // Labels
         ctx.fillText('Listener', listener.x, listener.y + 25);
-        ctx.fillText('Set A (Front)', (speakerAL.x + speakerAR.x) / 2, speakerAL.y - 15);
-        ctx.fillText('Set B (Back)', (speakerBL.x + speakerBR.x) / 2, speakerBL.y + 25);
+        // Place Set labels inline, vertically centered with speakers
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Set A (Front)', (speakerAL.x + speakerAR.x) / 2, (speakerAL.y + speakerAR.y) / 2);
+        ctx.fillText('Set B (Back)', (speakerBL.x + speakerBR.x) / 2, (speakerBL.y + speakerBR.y) / 2);
+        ctx.restore();
         
         // Distance info
         ctx.textAlign = 'left';
@@ -1914,7 +2229,43 @@ class CombFilterTool {
             this.updateParameterDisplays();
             this.updateTheoryDisplay();
         }
+        
+        // Update sidebar distance labels (use left speaker for display consistency)
+        if (this.elements.distanceLabelA) {
+            const msA = (distanceA / 343) * 1000;
+            this.elements.distanceLabelA.textContent = `${distanceA.toFixed(2)} m / ${msA.toFixed(1)} ms`;
+        }
+        if (this.elements.distanceLabelB) {
+            const msB = (distanceB / 343) * 1000;
+            this.elements.distanceLabelB.textContent = `${distanceB.toFixed(2)} m / ${msB.toFixed(1)} ms`;
+        }
+        
+        // Apply per-speaker delays to the audio engine
+        this.updateSpeakerDelaysFromFloorPlan();
     }
+
+    /**
+     * Compute per-speaker delays from floor plan and update audio engine
+     */
+    updateSpeakerDelaysFromFloorPlan() {
+        if (!this.audioEngine?.isInitialized) return;
+        const L = this.floorPlan.listener;
+        const dist = (p) => Math.sqrt(Math.pow(p.x - L.x, 2) + Math.pow(p.y - L.y, 2));
+        const dA_L = dist(this.floorPlan.speakersA.left) / 343;   // seconds
+        const dA_R = dist(this.floorPlan.speakersA.right) / 343;  // seconds
+        const dB_L = dist(this.floorPlan.speakersB.left) / 343;   // seconds
+        const dB_R = dist(this.floorPlan.speakersB.right) / 343;  // seconds
+        this.audioEngine.setSpeakerDelays({
+            A_left: dA_L,
+            A_right: dA_R,
+            B_left: dB_L,
+            B_right: dB_R
+        });
+        
+        // Update status bar display
+        this.updateSpeakerStatus();
+    }
+
     
     /**
      * Update UI elements
@@ -2071,15 +2422,16 @@ class CombFilterTool {
     }
 }
 
-// Initialize the application when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    window.combFilterTool = new CombFilterTool();
-    window.combFilterTool.init();
-});
+// Expose class to global scope
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = CombFilterTool;
+} else {
+    window.CombFilterTool = CombFilterTool;
+}
 
 // Handle page unload
 window.addEventListener('beforeunload', () => {
-    if (window.combFilterTool) {
-        window.combFilterTool.destroy();
+    if (window.combFilterApp) {
+        window.combFilterApp.destroy();
     }
 });

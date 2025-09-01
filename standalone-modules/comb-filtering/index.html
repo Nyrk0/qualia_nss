@@ -28,9 +28,6 @@
         </div>
         
         <div class="global-controls">
-            <button id="start-audio" class="control-btn primary" title="Start audio system">
-                <i class="fas fa-play"></i> Start Audio
-            </button>
             <button id="calibrate" class="control-btn" title="Calibrate system">
                 <i class="fas fa-ruler"></i> Calibrate
             </button>
@@ -45,6 +42,39 @@
     <main class="app-container">
         <!-- Left Panel: Controls & Theory -->
         <aside class="control-sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-volume-up"></i> Speaker Control</h3>
+                <div class="speaker-controls">
+                    <div class="speaker-group">
+                        <h4>Set A (Front)</h4>
+                        <div class="speaker-toggle-row">
+                            <div class="speaker-toggle">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="speaker-a">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span class="speaker-label">Set A</span>
+                                <span class="speaker-distance" id="distance-a">--m</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="speaker-group">
+                        <h4>Set B (Back)</h4>
+                        <div class="speaker-toggle-row">
+                            <div class="speaker-toggle">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="speaker-b">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span class="speaker-label">Set B</span>
+                                <span class="speaker-distance" id="distance-b">--m</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="sidebar-section">
                 <h3><i class="fas fa-cog"></i> Parameters</h3>
                 <div class="parameter-controls">
@@ -71,17 +101,6 @@
                     </div>
                     
                     <div class="control-group">
-                        <label for="feedback-slider">
-                            <i class="fas fa-sync-alt"></i> Feedback
-                            <span class="tooltip" data-tooltip="Amount of delayed signal fed back">?</span>
-                        </label>
-                        <div class="slider-container">
-                            <input type="range" id="feedback-slider" min="0" max="0.95" value="0" step="0.05">
-                            <span class="value-display" id="feedback-value">0%</span>
-                        </div>
-                    </div>
-                    
-                    <div class="control-group">
                         <label for="mix-slider">
                             <i class="fas fa-balance-scale"></i> Dry/Wet Mix
                             <span class="tooltip" data-tooltip="Balance between original and processed signal">?</span>
@@ -89,6 +108,17 @@
                         <div class="slider-container">
                             <input type="range" id="mix-slider" min="0" max="100" value="50" step="1">
                             <span class="value-display" id="mix-value">50%</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="feedback-slider">
+                            <i class="fas fa-redo"></i> Feedback
+                            <span class="tooltip" data-tooltip="Amount of output signal fed back to the input">?</span>
+                        </label>
+                        <div class="slider-container">
+                            <input type="range" id="feedback-slider" min="0" max="0.95" value="0.3" step="0.01">
+                            <span class="value-display" id="feedback-value">30%</span>
                         </div>
                     </div>
                     
@@ -112,8 +142,9 @@
                             <i class="fas fa-sine-wave"></i> Custom Tone
                             <span class="tooltip" data-tooltip="Adjust frequency and toggle tone on/off">?</span>
                         </label>
-                        <div class="tone-control-container">
-                            <tone-control id="custom-tone-control" value="0.566" active="false"></tone-control>
+                        <div class="tone-control-container" style="display: flex; align-items: center; gap: 8px;">
+                            <input type="range" id="custom-tone-slider" min="0" max="1000" value="447" step="1" style="flex: 1; width: 100%;">
+                            <span class="value-display" id="custom-tone-value" style="white-space: nowrap;">440 Hz</span>
                         </div>
                     </div>
                     
@@ -139,55 +170,6 @@
                         <div class="colormap-labels">
                             <span>-∞ dB</span>
                             <span>0 dB</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="sidebar-section">
-                <h3><i class="fas fa-volume-up"></i> Speaker Control</h3>
-                <div class="speaker-controls">
-                    <div class="speaker-group">
-                        <h4>Set A (Front)</h4>
-                        <div class="speaker-toggle-row">
-                            <div class="speaker-toggle">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="speaker-a-left" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                                <span class="speaker-label">A-L</span>
-                                <span class="speaker-distance" id="distance-a-left">--m</span>
-                            </div>
-                            <div class="speaker-toggle">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="speaker-a-right" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                                <span class="speaker-label">A-R</span>
-                                <span class="speaker-distance" id="distance-a-right">--m</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="speaker-group">
-                        <h4>Set B (Back)</h4>
-                        <div class="speaker-toggle-row">
-                            <div class="speaker-toggle">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="speaker-b-left" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                                <span class="speaker-label">B-L</span>
-                                <span class="speaker-distance" id="distance-b-left">--m</span>
-                            </div>
-                            <div class="speaker-toggle">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="speaker-b-right" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                                <span class="speaker-label">B-R</span>
-                                <span class="speaker-distance" id="distance-b-right">--m</span>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -292,6 +274,9 @@
                     </span>
                     <span class="status-indicator" id="signal-quality">
                         <i class="fas fa-signal"></i> Signal: --
+                    </span>
+                    <span class="status-indicator" id="speaker-status">
+                        <i class="fas fa-volume-up"></i> Speakers: --
                     </span>
                 </div>
                 
@@ -405,15 +390,24 @@
     </div>
 
     <!-- Scripts -->
-    <script src="../../../src/components/tone-control/tone-control.js"></script>
+    <!-- Removed ES module (tone-control.js) to avoid classic script parse error -->
     <script src="js/ui-components.js"></script>
     <script src="lib/audio-utils.js"></script>
     <script src="lib/spectrum-analyzer.js"></script>
     <script src="lib/comb-filter-core.js"></script>
     <script src="js/audio-engine.js"></script>
-    <script src="js/visualization-engine.js"></script>
-    <script src="js/measurement-engine.js"></script>
-    <script src="js/educational-content.js"></script>
+    <!-- Removed missing modules to avoid 404s; functionality is handled in comb-filter-tool.js for now -->
     <script src="js/comb-filter-tool.js"></script>
+    <script>
+        (function() {
+            try {
+                var app = new CombFilterTool();
+                window.combFilterApp = app;
+                app.init();
+            } catch (e) {
+                console.error('Failed to bootstrap CombFilterTool:', e);
+            }
+        })();
+    </script>
 </body>
 </html>
