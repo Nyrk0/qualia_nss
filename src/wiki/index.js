@@ -358,38 +358,65 @@ class WikiModule {
     processMermaidBlocks(htmlContent) {
         try {
             console.log('🧜‍♀️ Processing Mermaid blocks in content...');
+            console.log('HTML content preview:', htmlContent.substring(0, 500));
             
-            // Find pre blocks with language "mermaid" or code blocks with mermaid class
-            const mermaidRegex = /<pre><code class="language-mermaid">([\s\S]*?)<\/code><\/pre>/gi;
+            // Multiple regex patterns to catch different markdown rendering outputs
+            const mermaidPatterns = [
+                /<pre><code class="language-mermaid">([\s\S]*?)<\/code><\/pre>/gi,
+                /<code class="language-mermaid">([\s\S]*?)<\/code>/gi,
+                /<pre><code class="mermaid">([\s\S]*?)<\/code><\/pre>/gi,
+                /<code class="mermaid">([\s\S]*?)<\/code>/gi
+            ];
+            
             let processedContent = htmlContent;
-            let matches = [];
-            let match;
+            let totalMatches = 0;
             
-            while ((match = mermaidRegex.exec(htmlContent)) !== null) {
-                matches.push({
-                    fullMatch: match[0],
-                    mermaidCode: match[1]
-                });
-            }
-            
-            console.log(`📋 Found ${matches.length} Mermaid blocks to process`);
-            
-            // Replace each mermaid code block with a proper mermaid div
-            matches.forEach((matchData, index) => {
-                const mermaidId = `mermaid-diagram-${index}`;
-                const mermaidDiv = `<div class="mermaid" id="${mermaidId}">${this.escapeHtml(matchData.mermaidCode.trim())}</div>`;
+            mermaidPatterns.forEach((regex, patternIndex) => {
+                let matches = [];
+                let match;
                 
-                processedContent = processedContent.replace(matchData.fullMatch, mermaidDiv);
+                // Reset regex lastIndex
+                regex.lastIndex = 0;
+                
+                while ((match = regex.exec(processedContent)) !== null) {
+                    matches.push({
+                        fullMatch: match[0],
+                        mermaidCode: match[1]
+                    });
+                }
+                
+                console.log(`Pattern ${patternIndex + 1} found ${matches.length} Mermaid blocks`);
+                
+                // Replace each mermaid code block with a proper mermaid div
+                matches.forEach((matchData, index) => {
+                    const mermaidId = `mermaid-diagram-${totalMatches + index}`;
+                    // Don't escape HTML for mermaid content - it needs to be raw
+                    const cleanContent = matchData.mermaidCode
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>')
+                        .replace(/&amp;/g, '&')
+                        .replace(/&quot;/g, '"')
+                        .trim();
+                    
+                    const mermaidDiv = `<div class="mermaid" id="${mermaidId}">\n${cleanContent}\n</div>`;
+                    
+                    processedContent = processedContent.replace(matchData.fullMatch, mermaidDiv);
+                    console.log(`Replaced Mermaid block ${index + 1}:`, cleanContent.substring(0, 50));
+                });
+                
+                totalMatches += matches.length;
             });
             
+            console.log(`📋 Total Mermaid blocks processed: ${totalMatches}`);
+            
             // If we processed any Mermaid blocks, initialize Mermaid rendering
-            if (matches.length > 0 && this.mermaidInitialized) {
+            if (totalMatches > 0 && this.mermaidInitialized) {
                 // Delay Mermaid rendering to allow DOM insertion
                 setTimeout(() => {
                     try {
                         if (typeof mermaid !== 'undefined') {
                             mermaid.init(undefined, '.mermaid');
-                            console.log(`✅ Rendered ${matches.length} Mermaid diagrams`);
+                            console.log(`✅ Rendered ${totalMatches} Mermaid diagrams`);
                         }
                     } catch (error) {
                         console.error('❌ Failed to render Mermaid diagrams:', error);
