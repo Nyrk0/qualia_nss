@@ -13,8 +13,8 @@ class WikiModule {
         
         // Phase 4: GitHub Raw URL integration
         this.githubConfig = {
-            owner: 'anthropics',  // Replace with actual repo owner
-            repo: 'claude-code',  // Replace with actual repo name
+            owner: 'Nyrk0',
+            repo: 'qualia_nss',
             branch: 'main',
             baseUrl: 'https://raw.githubusercontent.com'
         };
@@ -306,7 +306,7 @@ class WikiModule {
                 },
                 { 
                     name: 'Phase 4 PRD', 
-                    path: 'dev/st04-comb-filtering/comb-filtering-experiments-prd.md',
+                    path: 'dev/st04-comb-filtering/comb-filtering-experiments-prd-md',
                     isGitHub: true,
                     description: 'Product Requirements Document with Phase 4 specifications'
                 }
