@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comb-Filter Analysis Tool | Qualia-NSS</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header Controls -->
+    <header class="control-panel">
+        <div class="app-title">
+            <h1><i class="fas fa-wave-square"></i> Comb-Filter Analysis Tool</h1>
+            <span class="version">v1.0 | Qualia-NSS</span>
+        </div>
+        
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="educational" title="Learn about comb-filtering">
+                <i class="fas fa-graduation-cap"></i> Learn
+            </button>
+            <button class="mode-btn" data-mode="generator" title="Generate digital comb-filter">
+                <i class="fas fa-sliders-h"></i> Generate
+            </button>
+            <button class="mode-btn" data-mode="analyze" title="Measure room acoustics">
+                <i class="fas fa-microphone"></i> Measure
+            </button>
+        </div>
+        
+        <div class="global-controls">
+            <button id="start-audio" class="control-btn primary" title="Start audio system">
+                <i class="fas fa-play"></i> Start Audio
+            </button>
+            <button id="calibrate" class="control-btn" title="Calibrate system">
+                <i class="fas fa-ruler"></i> Calibrate
+            </button>
+            <select id="sample-rate" class="control-select">
+                <option value="44100">44.1 kHz</option>
+                <option value="48000">48 kHz</option>
+            </select>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="app-container">
+        <!-- Left Panel: Controls & Theory -->
+        <aside class="control-sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-cog"></i> Parameters</h3>
+                <div class="parameter-controls">
+                    <div class="control-group">
+                        <label for="delay-slider">
+                            <i class="fas fa-clock"></i> Delay Time
+                            <span class="tooltip" data-tooltip="Time delay between direct and reflected signal">?</span>
+                        </label>
+                        <div class="slider-container">
+                            <input type="range" id="delay-slider" min="0" max="50" value="5" step="0.1">
+                            <span class="value-display" id="delay-value">5.0 ms</span>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="distance-slider">
+                            <i class="fas fa-ruler-horizontal"></i> Distance
+                            <span class="tooltip" data-tooltip="Physical distance corresponding to delay time">?</span>
+                        </label>
+                        <div class="slider-container">
+                            <input type="range" id="distance-slider" min="0" max="17.2" value="1.5" step="0.1">
+                            <span class="value-display" id="distance-value">1.5 m</span>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="feedback-slider">
+                            <i class="fas fa-sync-alt"></i> Feedback
+                            <span class="tooltip" data-tooltip="Amount of delayed signal fed back">?</span>
+                        </label>
+                        <div class="slider-container">
+                            <input type="range" id="feedback-slider" min="0" max="0.95" value="0" step="0.05">
+                            <span class="value-display" id="feedback-value">0%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="mix-slider">
+                            <i class="fas fa-balance-scale"></i> Dry/Wet Mix
+                            <span class="tooltip" data-tooltip="Balance between original and processed signal">?</span>
+                        </label>
+                        <div class="slider-container">
+                            <input type="range" id="mix-slider" min="0" max="100" value="50" step="1">
+                            <span class="value-display" id="mix-value">50%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="signal-type">
+                            <i class="fas fa-waveform-lines"></i> Test Signal
+                        </label>
+                        <select id="signal-type" class="control-select">
+                            <option value="white-noise">White Noise</option>
+                            <option value="pink-noise">Pink Noise</option>
+                            <option value="sine-sweep">Sine Sweep</option>
+                            <option value="tone-burst">Tone Burst</option>
+                            <option value="custom-tone">Custom Tone</option>
+                            <option value="music">Music Sample</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Custom Tone Control -->
+                    <div class="control-group" id="tone-control-group" style="display: none;">
+                        <label>
+                            <i class="fas fa-sine-wave"></i> Custom Tone
+                            <span class="tooltip" data-tooltip="Adjust frequency and toggle tone on/off">?</span>
+                        </label>
+                        <div class="tone-control-container">
+                            <tone-control id="custom-tone-control" value="0.566" active="false"></tone-control>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="colormap-select">
+                            <i class="fas fa-palette"></i> Colormap
+                            <span class="tooltip" data-tooltip="Choose spectrogram color scheme">?</span>
+                        </label>
+                        <select id="colormap-select" class="control-select">
+                            <option value="musiclab">MusicLab</option>
+                            <option value="custom">Custom (Default)</option>
+                            <option value="jet">Jet</option>
+                            <option value="viridis">Viridis</option>
+                            <option value="plasma">Plasma</option>
+                            <option value="hot">Hot</option>
+                            <option value="cool">Cool</option>
+                            <option value="grayscale">Grayscale</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group colormap-preview">
+                        <div class="colormap-bar" id="colormap-preview"></div>
+                        <div class="colormap-labels">
+                            <span>-∞ dB</span>
+                            <span>0 dB</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3><i class="fas fa-volume-up"></i> Speaker Control</h3>
+                <div class="speaker-controls">
+                    <div class="speaker-group">
+                        <h4>Set A (Front)</h4>
+                        <div class="speaker-toggle-row">
+                            <div class="speaker-toggle">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="speaker-a-left" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span class="speaker-label">A-L</span>
+                                <span class="speaker-distance" id="distance-a-left">--m</span>
+                            </div>
+                            <div class="speaker-toggle">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="speaker-a-right" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span class="speaker-label">A-R</span>
+                                <span class="speaker-distance" id="distance-a-right">--m</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="speaker-group">
+                        <h4>Set B (Back)</h4>
+                        <div class="speaker-toggle-row">
+                            <div class="speaker-toggle">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="speaker-b-left" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span class="speaker-label">B-L</span>
+                                <span class="speaker-distance" id="distance-b-left">--m</span>
+                            </div>
+                            <div class="speaker-toggle">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="speaker-b-right" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span class="speaker-label">B-R</span>
+                                <span class="speaker-distance" id="distance-b-right">--m</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3><i class="fas fa-calculator"></i> Theory</h3>
+                <div class="theory-panel">
+                    <div class="calculation-display">
+                        <div class="calc-item">
+                            <label>First Notch:</label>
+                            <span class="calc-value" id="first-notch">100 Hz</span>
+                        </div>
+                        <div class="calc-item">
+                            <label>Notch Spacing:</label>
+                            <span class="calc-value" id="notch-spacing">200 Hz</span>
+                        </div>
+                        <div class="calc-item">
+                            <label>Pattern Type:</label>
+                            <span class="calc-value" id="pattern-desc">Low-mid focus</span>
+                        </div>
+                        <div class="calc-item">
+                            <label>QUALIA Impact:</label>
+                            <span class="calc-value impact-optimal" id="qualia-impact">Optimal</span>
+                        </div>
+                    </div>
+                    
+                    <div class="formula-display">
+                        <div class="formula">
+                            <strong>First Notch:</strong><br>
+                            <code>f₁ = 1 / (2τ)</code>
+                        </div>
+                        <div class="formula">
+                            <strong>Notch Spacing:</strong><br>
+                            <code>Δf = 1 / τ</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section educational-content" id="educational-panel">
+                <h3><i class="fas fa-book"></i> Learn</h3>
+                <div class="lesson-content" id="lesson-content">
+                    <p>Select a learning mode from the header to begin exploring comb-filtering concepts.</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center: Main Visualization -->
+        <section class="visualization-main">
+            <div class="viz-header">
+                <div class="viz-tabs">
+                    <button class="viz-tab active" data-viz="spectrogram" title="2D time-frequency analysis">
+                        <i class="fas fa-chart-area"></i> Spectrogram
+                    </button>
+                    <button class="viz-tab" data-viz="frequency" title="Frequency response plot">
+                        <i class="fas fa-chart-line"></i> Frequency
+                    </button>
+                    <button class="viz-tab" data-viz="comparison" title="Compare dry vs wet signals">
+                        <i class="fas fa-balance-scale-right"></i> Comparison
+                    </button>
+                    <button class="viz-tab" data-viz="waveform" title="Time domain waveform">
+                        <i class="fas fa-water"></i> Waveform
+                    </button>
+                    <button class="viz-tab" data-viz="floorplan" title="Speaker and listener placement diagram">
+                        <i class="fas fa-home"></i> Floor Plan
+                    </button>
+                </div>
+                
+                <div class="viz-controls">
+                    <button class="viz-control" id="freeze-display" title="Freeze/unfreeze display">
+                        <i class="fas fa-pause"></i>
+                    </button>
+                    <button class="viz-control" id="clear-display" title="Clear display">
+                        <i class="fas fa-broom"></i>
+                    </button>
+                    <button class="viz-control" id="fullscreen-viz" title="Toggle fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="canvas-container">
+                <canvas id="main-visualization" width="800" height="400"></canvas>
+                <div class="canvas-overlay">
+                    <div class="axis-labels">
+                        <div class="frequency-axis" id="freq-labels"></div>
+                        <div class="time-axis" id="time-labels"></div>
+                        <div class="amplitude-axis" id="amp-labels"></div>
+                    </div>
+                    <div class="cursor-info" id="cursor-info"></div>
+                </div>
+            </div>
+            
+            <div class="viz-status">
+                <div class="status-indicators">
+                    <span class="status-indicator" id="audio-status">
+                        <i class="fas fa-circle status-red"></i> Audio: Stopped
+                    </span>
+                    <span class="status-indicator" id="mic-status">
+                        <i class="fas fa-circle status-red"></i> Microphone: Disconnected
+                    </span>
+                    <span class="status-indicator" id="signal-quality">
+                        <i class="fas fa-signal"></i> Signal: --
+                    </span>
+                </div>
+                
+                <div class="performance-indicators">
+                    <span class="perf-indicator">FPS: <span id="fps-counter">--</span></span>
+                    <span class="perf-indicator">CPU: <span id="cpu-usage">--</span>%</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Panel: Analysis Results -->
+        <aside class="analysis-sidebar">
+            <div class="sidebar-section">
+                <h3><i class="fas fa-chart-bar"></i> Analysis</h3>
+                <div class="measurement-results">
+                    <div class="result-section">
+                        <h4>Detected Features</h4>
+                        <div class="result-item">
+                            <label><i class="fas fa-crosshairs"></i> Notches:</label>
+                            <ul id="notch-list" class="feature-list">
+                                <li class="no-data">No analysis data</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="result-item">
+                            <label><i class="fas fa-mountain"></i> Peaks:</label>
+                            <ul id="peak-list" class="feature-list">
+                                <li class="no-data">No analysis data</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="result-section">
+                        <h4>Room Characteristics</h4>
+                        <div class="result-item">
+                            <label>RT60:</label>
+                            <span class="result-value" id="rt60-value">-- ms</span>
+                        </div>
+                        <div class="result-item">
+                            <label>Early Reflections:</label>
+                            <span class="result-value" id="reflections-value">--</span>
+                        </div>
+                        <div class="result-item">
+                            <label>Room Size Est:</label>
+                            <span class="result-value" id="room-size">-- m³</span>
+                        </div>
+                    </div>
+                    
+                    <div class="result-section">
+                        <h4>QUALIA-NSS Assessment</h4>
+                        <div class="assessment-display" id="qualia-assessment">
+                            <p class="no-data">Start measurement to see assessment</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3><i class="fas fa-download"></i> Export</h3>
+                <div class="export-controls">
+                    <button class="export-btn" id="save-measurement">
+                        <i class="fas fa-save"></i> Save Data
+                    </button>
+                    <button class="export-btn" id="export-image">
+                        <i class="fas fa-image"></i> Export Image
+                    </button>
+                    <button class="export-btn" id="export-csv">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
+                    <button class="export-btn" id="generate-report">
+                        <i class="fas fa-file-alt"></i> Generate Report
+                    </button>
+                </div>
+                
+                <div class="preset-controls">
+                    <h4>Presets</h4>
+                    <select id="preset-selector" class="control-select">
+                        <option value="">Select Preset...</option>
+                        <option value="small-room">Small Room (1m)</option>
+                        <option value="medium-room">Medium Room (2m)</option>
+                        <option value="large-room">Large Room (3m)</option>
+                        <option value="studio">Studio Setup</option>
+                    </select>
+                    <button class="preset-btn" id="save-preset">
+                        <i class="fas fa-plus"></i> Save Preset
+                    </button>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Initializing Audio System...</p>
+        </div>
+    </div>
+
+    <!-- Modal for Help/Info -->
+    <div class="modal" id="help-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Comb-Filter Analysis Tool</h2>
+                <button class="modal-close" id="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>This tool helps you understand and measure comb-filtering effects in audio systems.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../../src/components/tone-control/tone-control.js"></script>
+    <script src="js/ui-components.js"></script>
+    <script src="lib/audio-utils.js"></script>
+    <script src="lib/spectrum-analyzer.js"></script>
+    <script src="lib/comb-filter-core.js"></script>
+    <script src="js/audio-engine.js"></script>
+    <script src="js/visualization-engine.js"></script>
+    <script src="js/measurement-engine.js"></script>
+    <script src="js/educational-content.js"></script>
+    <script src="js/comb-filter-tool.js"></script>
+</body>
+</html>
