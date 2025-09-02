@@ -137,15 +137,58 @@ npx http-server -p 8080
 <div style="padding: 10px; background: #333;">Content</div>
 ```
 
-### JavaScript Standards (MANDATORY)
+### JavaScript Standards (MANDATORY ES6+)
+
+**⚠️ EXCEPTION: Files in `/standalone-modules/` are exempt from ES6 requirements**
+- Standalone modules are development/testing environments
+- May use vanilla JS patterns (var, function declarations, string concatenation)
+- Serve as simplified development sources for main application components
+
+**For ALL OTHER JavaScript files (mainly `/src/`):**
+
 ```javascript
+// ✅ REQUIRED: ES6 Module System (MANDATORY)
+export { ClassName, functionName };
+import { Component } from './component.js';
+
+// ✅ REQUIRED: ES6 Classes (MANDATORY)
+class ModuleClass {
+    constructor() {}
+    async init() {}
+    destroy() {}
+}
+
+// ✅ REQUIRED: const/let declarations (NO var)
+const config = { setting: true };
+let mutableValue = 'initial';
+
+// ✅ REQUIRED: Arrow functions for event handlers
+element.addEventListener('click', (e) => {
+    e.preventDefault();
+    this.handleClick(e);
+});
+
+// ✅ REQUIRED: Template literals for HTML
+const template = `
+    <div class="component">
+        <h2>${title}</h2>
+    </div>
+`;
+
 // ✅ CORRECT: Class-based state management
 element.classList.add('is-active');
 element.classList.remove('is-disabled');
 
+// ❌ FORBIDDEN: var declarations (use const/let) - EXCEPT /standalone-modules/
+var oldStyle = 'deprecated';
+
 // ❌ FORBIDDEN: Direct style manipulation
 element.style.color = 'red';
 element.style.display = 'none';
+
+// ❌ FORBIDDEN: Non-module scripts (use type="module") - EXCEPT /standalone-modules/
+<script src="script.js"></script> // WRONG
+<script type="module" src="script.js"></script> // CORRECT
 ```
 
 ---
@@ -230,6 +273,35 @@ if (typeof window !== 'undefined') {
     window.ComponentName = ComponentName;
 }
 ```
+
+### Standalone Modules Development (Vanilla JS Allowed)
+```javascript
+// ✅ ALLOWED in /standalone-modules/: Vanilla JS patterns
+var config = { setting: true };
+function handleClick() {
+    // Traditional function declarations OK
+}
+
+// ✅ ALLOWED in /standalone-modules/: String concatenation
+var html = '<div class="' + className + '">' + content + '</div>';
+
+// ✅ ALLOWED in /standalone-modules/: Non-module scripts
+<script src="script.js"></script>
+
+// ✅ ALLOWED in /standalone-modules/: Callback patterns
+getData(function(result) {
+    processResult(result, function(processed) {
+        // Traditional callbacks OK for standalone testing
+    });
+});
+```
+
+**Standalone Modules Purpose:**
+- Development and testing environments
+- Simplified component prototypes
+- Educational examples and demos
+- Browser compatibility testing
+- No build process required
 
 ---
 

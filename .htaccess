@@ -33,8 +33,4 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^$ /index.html [L]
 
-# Prevent access to dev directory in production
-<Directory "dev">
-    Order allow,deny
-    Deny from all
-</Directory>
+# Note: Directory restrictions moved to Apache main config

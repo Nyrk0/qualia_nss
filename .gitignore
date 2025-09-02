@@ -1,6 +1,6 @@
 # Huge folders not needed to deploy at qualia-nss.com
-# docs/
-# modules/
+docs/
+modules/
 # dev/
 
 # MacOS

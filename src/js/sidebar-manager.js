@@ -155,6 +155,13 @@ document.addEventListener('DOMContentLoaded', () => {
         'wiki': `
             <div id="sidebar-canvas">
                 <div id="sidebar-content">
+                    <div class="sidebar-section">
+                        <h3 style="text-align: center; margin-bottom: 1rem; font-weight: 600;">
+                            <a href="#" class="wiki-home-link" data-path="Home.md" data-name="Home" style="text-decoration: none; color: inherit; cursor: pointer;" title="Go to Wiki Home">
+                                Our Wiki For You
+                            </a>
+                        </h3>
+                    </div>
                     <div id="wiki-toc-container" class="sidebar-section"></div>
                 </div>
             </div>

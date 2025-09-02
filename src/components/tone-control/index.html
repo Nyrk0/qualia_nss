@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tone Control Component - Development Test</title>
+    <style>
+        /* Development test page styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e2328 0%, #2a2f35 100%);
+            color: #e1e5e9;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .header p {
+            color: #9aa6b2;
+            font-size: 1.1em;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .test-section h2 {
+            margin-bottom: 15px;
+            color: #ffffff;
+            font-size: 1.4em;
+        }
+
+        .test-section p {
+            margin-bottom: 15px;
+            color: #9aa6b2;
+            line-height: 1.5;
+        }
+
+        .tone-control-demo {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        button {
+            padding: 8px 16px;
+            background: #4a5568;
+            color: white;
+            border: 1px solid #666;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #5a6578;
+        }
+
+        input, select {
+            padding: 8px 12px;
+            background: #2d3339;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 4px;
+        }
+
+        .status-display {
+            font-family: 'Monaco', 'Consolas', monospace;
+            background: #1a1d21;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            margin: 15px 0;
+            white-space: pre-wrap;
+        }
+
+        .event-log {
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.9em;
+            color: #9aa6b2;
+        }
+
+        .css-vars {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .css-var {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .css-var input {
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎛️ Tone Control Component</h1>
+            <p>Development Testing Environment</p>
+        </div>
+
+        <!-- Basic Demo -->
+        <div class="test-section">
+            <h2>Basic Usage</h2>
+            <p>Default tone control with 1 kHz frequency and built-in Qualia 7-band colormap.</p>
+            
+            <div class="tone-control-demo">
+                <tone-control id="basic" aria-label="Basic tone control demo"></tone-control>
+            </div>
+        </div>
+
+        <!-- Google Turbo Colormap Demo -->
+        <div class="test-section">
+            <h2>Google Turbo Colormap</h2>
+            <p>Tone control using Google's research-grade Turbo colormap for perceptually uniform colors.</p>
+            
+            <div class="tone-control-demo">
+                <tone-control id="turbo" colormap="googleturbo" aria-label="Turbo colormap demo"></tone-control>
+            </div>
+        </div>
+
+        <!-- API Testing -->
+        <div class="test-section">
+            <h2>API Testing & Control</h2>
+            <p>Interactive controls to test the tone control component's JavaScript API.</p>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label for="freqInput">Set Frequency (Hz):</label>
+                    <input type="number" id="freqInput" min="20" max="20000" value="1000">
+                    <button onclick="setFrequency()">Apply Frequency</button>
+                </div>
+
+                <div class="control-group">
+                    <label for="colormapSelect">Colormap Mode:</label>
+                    <select id="colormapSelect" onchange="setColormap()">
+                        <option value="qualia7band">Qualia 7-band</option>
+                        <option value="googleturbo">Google Turbo</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Active State:</label>
+                    <button onclick="toggleActive()">Toggle Active</button>
+                    <button onclick="setActive(true)">Set Active</button>
+                    <button onclick="setActive(false)">Set Inactive</button>
+                </div>
+
+                <div class="control-group">
+                    <label for="labelInput">Custom Label:</label>
+                    <input type="text" id="labelInput" placeholder="Custom label text">
+                    <button onclick="setLabel()">Set Label</button>
+                    <button onclick="clearLabel()">Clear Label</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CSS Custom Properties Testing -->
+        <div class="test-section">
+            <h2>CSS Custom Properties</h2>
+            <p>Test CSS variable customization for theming the tone control component.</p>
+
+            <div class="css-vars">
+                <div class="css-var">
+                    <label for="toneColor">--tone-color:</label>
+                    <input type="color" id="toneColor" value="#9aa6b2" onchange="updateCSSVar('--tone-color', this.value)">
+                </div>
+                <div class="css-var">
+                    <label for="panelBorder">--panel-border-color:</label>
+                    <input type="color" id="panelBorder" value="#333333" onchange="updateCSSVar('--panel-border-color', this.value)">
+                </div>
+                <div class="css-var">
+                    <label for="textColor">--text-color:</label>
+                    <input type="color" id="textColor" value="#dddddd" onchange="updateCSSVar('--text-color', this.value)">
+                </div>
+            </div>
+
+            <div class="tone-control-demo">
+                <tone-control id="themed" aria-label="Themed tone control demo"></tone-control>
+            </div>
+        </div>
+
+        <!-- Status Display -->
+        <div class="test-section">
+            <h2>Component Status</h2>
+            <div id="status" class="status-display">Component loading...</div>
+        </div>
+
+        <!-- Event Log -->
+        <div class="test-section">
+            <h2>Event Log</h2>
+            <p>Live log of events fired by the tone control components.</p>
+            <div id="eventLog" class="event-log status-display">Waiting for events...\n</div>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+    </div>
+
+    <!-- Load the tone control component -->
+    <script type="module" src="tone-control.js"></script>
+
+    <script>
+        let testComponent = null;
+        const eventLog = document.getElementById('eventLog');
+        const statusDisplay = document.getElementById('status');
+
+        // Wait for component to be defined
+        customElements.whenDefined('tone-control').then(() => {
+            testComponent = document.getElementById('basic');
+            updateStatus();
+            log('✅ Tone control component loaded and ready');
+
+            // Bind event listeners to all tone controls
+            const allControls = document.querySelectorAll('tone-control');
+            allControls.forEach((control, index) => {
+                control.addEventListener('frequencychange', (e) => {
+                    log(`🎵 [${control.id || index}] Frequency changed: ${e.detail.frequency.toFixed(1)} Hz (slider: ${e.detail.value.toFixed(3)})`);
+                    updateStatus();
+                });
+
+                control.addEventListener('toggle', (e) => {
+                    log(`🔊 [${control.id || index}] Toggle: ${e.detail.active ? 'ON' : 'OFF'}`);
+                    updateStatus();
+                });
+
+                control.addEventListener('start', (e) => {
+                    log(`▶️ [${control.id || index}] Started at ${e.detail.frequency.toFixed(1)} Hz`);
+                });
+
+                control.addEventListener('stop', (e) => {
+                    log(`⏹️ [${control.id || index}] Stopped`);
+                });
+            });
+        });
+
+        function updateStatus() {
+            if (!testComponent) {
+                statusDisplay.textContent = 'Component not ready';
+                return;
+            }
+
+            const status = {
+                frequency: testComponent.frequency.toFixed(1) + ' Hz',
+                active: testComponent.active,
+                label: testComponent.label,
+                colormap: testComponent.colormap,
+                'Custom element defined': !!customElements.get('tone-control'),
+                'Component instance': !!testComponent.shadowRoot
+            };
+
+            statusDisplay.textContent = JSON.stringify(status, null, 2);
+        }
+
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            eventLog.textContent += `[${timestamp}] ${message}\n`;
+            eventLog.scrollTop = eventLog.scrollHeight;
+        }
+
+        function clearLog() {
+            eventLog.textContent = 'Event log cleared.\n';
+        }
+
+        // API Testing Functions
+        function setFrequency() {
+            const freq = parseFloat(document.getElementById('freqInput').value);
+            if (testComponent && freq >= 20 && freq <= 20000) {
+                testComponent.frequency = freq;
+                log(`🎛️ Set frequency to ${freq} Hz via API`);
+            }
+        }
+
+        function setColormap() {
+            const colormap = document.getElementById('colormapSelect').value;
+            if (testComponent) {
+                testComponent.colormap = colormap;
+                log(`🎨 Set colormap to ${colormap} via API`);
+            }
+        }
+
+        function toggleActive() {
+            if (testComponent) {
+                testComponent.active = !testComponent.active;
+                log(`🔄 Toggled active state via API`);
+            }
+        }
+
+        function setActive(state) {
+            if (testComponent) {
+                testComponent.active = state;
+                log(`⚡ Set active to ${state} via API`);
+            }
+        }
+
+        function setLabel() {
+            const label = document.getElementById('labelInput').value;
+            if (testComponent) {
+                testComponent.label = label;
+                log(`🏷️ Set label to "${label}" via API`);
+            }
+        }
+
+        function clearLabel() {
+            if (testComponent) {
+                testComponent.label = '';
+                log(`🏷️ Cleared label via API`);
+            }
+        }
+
+        function updateCSSVar(property, value) {
+            document.documentElement.style.setProperty(property, value);
+            log(`🎨 Updated CSS variable ${property} to ${value}`);
+        }
+
+        // Initialize CSS variables
+        document.documentElement.style.setProperty('--tone-color', '#9aa6b2');
+        document.documentElement.style.setProperty('--panel-border-color', '#333');
+        document.documentElement.style.setProperty('--text-color', '#ddd');
+    </script>
+</body>
+</html>

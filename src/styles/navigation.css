@@ -1,16 +1,20 @@
 /**
  * Navigation Styles - Header, Navbar, Theme Toggle, and Logo
  * Part of the Qualia-NSS modular CSS architecture
+ * ENHANCED BY QODER - 2025-09-01
  */
 
-/* Header and Navbar */
+/* CRITICAL: Navigation Override - Must take precedence over navigation.css */
 header {
-    background-color: var(--panel-bg-color);
-    border-bottom: 1px solid var(--panel-border-color);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+    background: var(--panel-glass-bg) !important;
+    backdrop-filter: var(--glass-backdrop) !important;
+    -webkit-backdrop-filter: var(--glass-backdrop) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-shadow) !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
+    transition: all var(--transition-normal) !important;
     
     /* Mobile PWA optimizations - iOS safe area compensation */
     margin-top: calc(-1 * env(safe-area-inset-top));
@@ -18,199 +22,176 @@ header {
 }
 
 .main-navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.25rem 1rem;
-    backdrop-filter: blur(10px);
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: var(--spacing-sm) var(--spacing-lg) !important;
+    gap: var(--spacing-md) !important;
+    min-height: 60px !important;
+    backdrop-filter: none !important;
 }
 
-.nav-left, .nav-center, .nav-right {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
+/* Navigation Layout Fix - OVERRIDE EXISTING */
 .nav-left {
-    margin-right: auto; /* Push center and right to the right */
+    flex: 0 0 auto !important;
+    margin-right: var(--spacing-md) !important;
+    display: flex !important;
+    align-items: center !important;
 }
 
 .nav-center {
-    flex: 1; /* Take up available space */
-    justify-content: center; /* Center the navigation items */
+    flex: 1 !important;
+    display: flex !important;
+    justify-content: center !important;
+    max-width: none !important;
+    margin: 0 !important;
 }
 
 .nav-right {
-    /* Will naturally align to the right */
+    flex: 0 0 auto !important;
+    margin-left: var(--spacing-md) !important;
+    display: flex !important;
+    align-items: center !important;
 }
 
-/* Style for the Wiki link in the nav-right */
-.nav-right .nav-link {
-    padding: 0.4rem 0.75rem;
-    margin: 0;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    white-space: nowrap;
+.nav-center .navbar {
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
-.nav-right .nav-link:hover {
-    background-color: var(--hover-bg);
-    text-decoration: none;
+/* CRITICAL: Navigation Container Width Fix */
+.nav-center .navbar-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 3px !important;
+    justify-content: center !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    flex-wrap: nowrap !important;
+    overflow: visible !important;
+    position: relative !important;
 }
 
-.nav-right .nav-link.active {
-    color: var(--primary-color) !important;
-    background-color: var(--active-bg);
+/* CRITICAL: FORCE ALL NAVIGATION ITEMS TO BE VISIBLE */
+.nav-center .navbar-nav .nav-link {
+    color: var(--text-color-secondary) !important;
+    font-weight: 500 !important;
+    font-size: var(--font-size-sm) !important;
+    padding: var(--spacing-sm) var(--spacing-md) !important;
+    border-radius: 8px !important;
+    margin: 3px !important;
+    background: var(--surface-color) !important;
+    border: 1px solid var(--border-subtle) !important;
+    backdrop-filter: blur(8px) !important;
+    transition: all var(--transition-normal) !important;
+    white-space: nowrap !important;
+    display: flex !important;
+    align-items: center !important;
+    text-decoration: none !important;
+    min-width: auto !important;
+    flex-shrink: 0 !important;
+    /* FORCE VISIBILITY */
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 10 !important;
+    max-width: none !important;
+    overflow: visible !important;
 }
 
+/* CRITICAL: Enhanced Logo - Override Existing */
 .logo {
-    color: white;
-    margin-right: 12px;
-    font-size: 1rem;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    font-weight: 500;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    padding: 0.25rem 0.5rem;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    transition: all 0.2s ease;
+    background: var(--primary-gradient) !important;
+    color: white !important;
+    padding: var(--spacing-sm) var(--spacing-md) !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: var(--font-size-base) !important;
+    letter-spacing: 0.02em !important;
+    text-transform: uppercase !important;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25) !important;
+    transition: all var(--transition-normal) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    text-decoration: none !important;
+    margin: 0 !important;
 }
 
 .logo:hover {
-    border-color: #666;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35) !important;
+    color: white !important;
+    text-decoration: none !important;
 }
 
 .logo-clover {
-    height: 18px;
-    width: 18px;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)) brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%);
-}
-
-.logo-text {
-    color: var(--neutral-text-color);
-}
-
-.logo.active {
-    border-color: var(--primary-color);
-}
-
-.nav-item {
-    color: var(--muted-text-color);
-    font-weight: 500;
-    font-size: 0.95rem;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    position: relative;
-    letter-spacing: -0.01em;
-    transition: all 0.2s ease;
-}
-
-.nav-item:hover {
-    color: var(--text-color);
-    background-color: var(--primary-color-translucent);
-    transform: translateY(-1px);
-}
-
-.nav-item:active {
-    transform: translateY(0);
-}
-
-/* Theme Toggle Button */
-.theme-toggle-btn {
-    background: var(--panel-bg-color);
-    border: 1px solid var(--panel-border-color);
-    color: var(--text-color);
-    width: 26px;
-    height: 26px;
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.theme-toggle-btn:hover {
-    border-color: #666;
-}
-
-.theme-toggle-btn i {
-    transition: color 0.2s ease;
-}
-
-/* Lightbulb icon color changes based on theme */
-body:not(.light-theme) .theme-toggle-btn i {
-    color: var(--muted-text-color);
-}
-
-body.light-theme .theme-toggle-btn i {
-    color: var(--primary-color);
-}
-
-/* Bootstrap Navbar Theme Integration */
-.nav-center .navbar-nav .nav-link {
-    color: var(--neutral-text-color) !important;
-    transition: all 0.2s ease;
-    font-size: 0.9rem;
-    padding: 0.25rem 0.5rem !important;
-    background: none !important;
-    background-color: transparent !important;
-    border: 1px solid transparent !important;
-    border-radius: 6px !important;
-    margin: 0 0.15rem !important;
-    display: flex !important;
-    align-items: center !important;
+    height: 20px !important;
+    width: 20px !important;
+    filter: brightness(0) invert(1) !important;
     flex-shrink: 0 !important;
 }
 
+.logo-text {
+    color: white !important;
+    font-weight: inherit !important;
+}
+
+/* CRITICAL: Navigation Hover and Active States - Override Everything */
 .nav-center .navbar-nav .nav-link:hover {
-    border-color: #666 !important;
-    background: none !important;
-    background-color: transparent !important;
+    color: var(--text-color) !important;
+    background: var(--surface-elevated) !important;
+    border-color: var(--border-emphasis) !important;
+    transform: translateY(-1px) !important;
+    text-decoration: none !important;
 }
 
 .nav-center .navbar-nav .nav-link.active {
-    color: var(--neutral-text-color) !important;
-    background: none !important;
-    background-color: transparent !important;
+    color: var(--primary-color) !important;
+    background: var(--primary-color-translucent) !important;
     border-color: var(--primary-color) !important;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2) !important;
+    text-decoration: none !important;
 }
 
 .nav-center .navbar-nav .nav-link.disabled {
     color: var(--muted-text-color) !important;
-    opacity: 0.6;
+    opacity: 0.6 !important;
+    pointer-events: none !important;
 }
 
 .nav-center .navbar-nav .nav-link i {
-    color: inherit;
+    color: inherit !important;
+    margin-right: 0.25rem !important;
+    font-size: inherit !important;
 }
 
-/* Force navbar to stay horizontal always - NEVER STACK */
-.nav-center .navbar-nav {
+/* CRITICAL: Enhanced Theme Toggle - Override Existing */
+.theme-toggle-btn {
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-color) !important;
+    width: auto !important;
+    height: auto !important;
+    border-radius: 0 !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    transition: all var(--transition-normal) !important;
+    font-size: 20px !important;
+    cursor: pointer !important;
     display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    scrollbar-width: none !important; /* Firefox */
-    -ms-overflow-style: none !important; /* IE */
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px !important;
 }
 
-.nav-center .navbar-nav::-webkit-scrollbar {
-    display: none !important; /* Chrome, Safari */
-}
-
-.nav-center .navbar-nav .nav-link {
-    white-space: nowrap;
-    flex-shrink: 0 !important;
-    min-width: auto !important;
+.theme-toggle-btn:hover {
+    background: transparent !important;
+    border: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+    color: var(--primary-color) !important;
 }

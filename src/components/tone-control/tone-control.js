@@ -14,15 +14,21 @@ TEMPLATE.innerHTML = `
       font-family: inherit; 
       color: var(--tone-color, #9aa6b2);
       width: 100%; /* Use full available width */
+      box-sizing: border-box;
+      margin-top: 8px;
+      padding: 8px 0;
+      border-top: 1px solid var(--panel-border-color, #333);
+      min-height: 40px;
     }
     
-    .container { 
+    .tone-control-inner { 
       display: grid; 
       grid-template-columns: 1fr auto; 
       gap: 8px; 
       align-items: center; 
       width: 100%;
       box-sizing: border-box;
+      min-width: 0;  /* Allow grid to shrink */
     }
     
     .slider-container { 
@@ -30,6 +36,8 @@ TEMPLATE.innerHTML = `
       width: 100%;
       padding: 0;
       margin: 0;
+      box-sizing: border-box;
+      flex: 1;  /* Take up all available space */
     }
     
     .info-container { 
@@ -125,6 +133,31 @@ TEMPLATE.innerHTML = `
       min-width: 60px;
       text-align: right;
       color: inherit; /* Keep default text color */
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+    }
+    
+    .label:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+      padding: 2px 4px;
+      margin: -2px -4px;
+    }
+    
+    .label-input {
+      font-variant-numeric: tabular-nums; 
+      font-size: 12px;
+      min-width: 60px;
+      text-align: right;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid currentColor;
+      border-radius: 3px;
+      color: inherit;
+      padding: 2px 4px;
+      margin: -2px -4px;
+      outline: none;
     }
     
     /* Apply frequency color only to slider */
@@ -133,12 +166,12 @@ TEMPLATE.innerHTML = `
     }
   </style>
   
-  <div class="container">
+  <div class="tone-control-inner">
     <div class="slider-container">
       <input id="slider" type="range" min="0" max="1" step="0.001" value="0.566" aria-label="Sine frequency (Hz)">
     </div>
     <div class="info-container">
-      <span id="label" class="label">1000 Hz</span>
+      <span id="label" class="label" title="Double-click to edit frequency">1000 Hz</span>
       <button id="toggle" class="btn icon" title="Toggle tone" aria-label="Toggle tone" aria-pressed="false"></button>
     </div>
   </div>
@@ -167,10 +200,19 @@ function freqToSlider(hz) {
 
 // Advanced frequency snapping from original 7band-level-meter implementation
 const SNAP_TARGETS = (() => {
+  // Prevent duplicate declaration if loaded multiple times
+  if (window._TONE_CONTROL_SNAP_TARGETS) {
+    return window._TONE_CONTROL_SNAP_TARGETS;
+  }
+  
   const targets = new Set([20, 25, 31.5, 40, 50, 63, 80]);
   for (let v = 100; v <= 10000; v += 100) targets.add(v);
   for (let v = 11000; v <= 20000; v += 1000) targets.add(v);
-  return Array.from(targets).filter(v => v >= FMIN && v <= FMAX).sort((a,b) => a-b);
+  const result = Array.from(targets).filter(v => v >= FMIN && v <= FMAX).sort((a,b) => a-b);
+  
+  // Cache it globally to prevent redeclaration
+  window._TONE_CONTROL_SNAP_TARGETS = result;
+  return result;
 })();
 
 function snapFrequency(freq) {
@@ -259,6 +301,7 @@ class ToneControl extends HTMLElement {
     this._active = false;
     this._colormap = 'qualia7band'; // Default colormap: 'qualia7band' or 'googleturbo'
     this._colorForFrequency = null; // optional host-injected function(Hz)=>color
+    this._editingLabel = false;
 
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.appendChild(TEMPLATE.content.cloneNode(true));
@@ -277,6 +320,7 @@ class ToneControl extends HTMLElement {
     // Event wiring
     this.$slider.addEventListener('input', this._onSlider);
     this.$toggle.addEventListener('click', this._onToggle);
+    this.$label.addEventListener('dblclick', this._onLabelDoubleClick);
 
     // Ensure 1kHz default and sync slider
     if (!this.hasAttribute('value')) {
@@ -290,6 +334,7 @@ class ToneControl extends HTMLElement {
   disconnectedCallback() {
     this.$slider.removeEventListener('input', this._onSlider);
     this.$toggle.removeEventListener('click', this._onToggle);
+    this.$label.removeEventListener('dblclick', this._onLabelDoubleClick);
   }
 
   attributeChangedCallback(name, oldV, newV) {
@@ -379,6 +424,61 @@ class ToneControl extends HTMLElement {
     this.active = !this._active;
   }
 
+  _onLabelDoubleClick = () => {
+    if (this._editingLabel) return;
+    
+    this._editingLabel = true;
+    const currentFreq = Math.round(this._frequency);
+    
+    // Create input element
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = '20';
+    input.max = '20000';
+    input.step = '1';
+    input.value = currentFreq.toString();
+    input.className = 'label-input';
+    
+    // Replace label with input at exact same position
+    this.$label.style.display = 'none';
+    this.$label.parentNode.insertBefore(input, this.$label.nextSibling);
+    
+    // Focus and select all
+    input.focus();
+    input.select();
+    
+    const finishEdit = (commit = false) => {
+      if (!this._editingLabel) return;
+      
+      if (commit) {
+        const newFreq = parseInt(input.value);
+        if (!isNaN(newFreq) && newFreq >= 20 && newFreq <= 20000) {
+          this.frequency = newFreq;
+        }
+      }
+      
+      // Clean up
+      input.remove();
+      this.$label.style.display = '';
+      this._editingLabel = false;
+    };
+    
+    // Handle input events
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        finishEdit(true);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        finishEdit(false);
+      }
+    });
+    
+    input.addEventListener('blur', () => {
+      finishEdit(true);
+    });
+  }
+
   _updateLabel() {
     if (!this.$label) return;
     this.$label.textContent = this._labelText || toFixedHz(this._frequency);
@@ -438,15 +538,18 @@ class ToneControl extends HTMLElement {
   _emit(type, detail) { this.dispatchEvent(new CustomEvent(type, { bubbles: true, composed: true, detail })); }
 }
 
-customElements.define('tone-control', ToneControl);
+// Only define if not already defined
+if (!customElements.get('tone-control')) {
+  customElements.define('tone-control', ToneControl);
+}
 
 // ES6 Module Exports (Phase 2 - Component System Modernization)
 export { ToneControl };
 export { getColorFromQualia7Band, getColorFromGoogleTurbo };
 export { sliderToFreq, freqToSlider, snapFrequency };
-export const SNAP_TARGETS = SNAP_TARGETS;
-export const QUALIA_7BAND_COLORMAP = QUALIA_7BAND_COLORMAP;
-export const GOOGLE_TURBO_COLORMAP = GOOGLE_TURBO_COLORMAP;
+export { SNAP_TARGETS };  // Export existing const, don't redeclare
+export { QUALIA_7BAND_COLORMAP };
+export { GOOGLE_TURBO_COLORMAP };
 
 // Global Compatibility (maintains existing behavior)
 if (typeof window !== 'undefined') {

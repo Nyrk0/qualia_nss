@@ -1,311 +1,119 @@
 /**
  * Components - Buttons, Forms, Controls, and Interactive Elements
  * Part of the Qualia-NSS modular CSS architecture
+ * ENHANCED BY QODER - 2025-09-01
  */
 
-/* Control Groups */
-.control-group {
-    margin-bottom: 1rem;
-}
-
-.control-group:last-child {
-    margin-bottom: 0;
-}
-
-.control-group label {
-    display: block;
-    font-size: 0.8rem;
-    font-weight: 500;
-    margin-bottom: 0.4rem;
-    color: var(--muted-text-color);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Sidebar Buttons */
-.btn-sidebar {
-    display: block;
-    width: 100%;
-    padding: 0.4rem 0.6rem;
-    margin-bottom: 0.3rem;
-    background: transparent;
-    border: 1px solid var(--panel-border-color);
-    color: var(--neutral-text-color);
-    font-size: 0.8rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: left;
-    display: flex;
-    align-items: center;
-}
-
-.btn-sidebar:hover {
-    border-color: var(--primary-color);
-    background-color: var(--primary-color-translucent);
-}
-
-.btn-sidebar.btn-primary {
-    background-color: transparent;
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-}
-
-.btn-sidebar.btn-success {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-    color: white;
-}
-
-.btn-sidebar.btn-outline-danger {
-    border-color: var(--danger-color, #dc3545);
-    color: var(--danger-color, #dc3545);
-    background: transparent;
-}
-
-.btn-sidebar.btn-outline-danger:hover {
-    background-color: var(--danger-color, #dc3545);
-    color: white;
-}
-
-.btn-sidebar:last-child {
-    margin-bottom: 0;
-}
-
-.btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.btn-primary:hover {
-    background-color: var(--primary-color-hover);
-}
-
-.btn-secondary {
-    background-color: var(--panel-border-color);
-    border-color: var(--panel-border-color);
+/* Professional Form Controls */
+.form-control, .form-select {
+    background: var(--surface-color);
+    border: 1px solid var(--border-subtle);
     color: var(--text-color);
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+    border-radius: 8px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-normal);
 }
 
-.btn-secondary:hover {
-    background-color: var(--button-hover-bg, #444);
+.form-control:focus, .form-select:focus {
+    background: var(--surface-elevated);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-color-translucent);
 }
 
-/* Global Bootstrap button override - enforce theme variables */
-.btn:not(.btn-sidebar):not(.theme-toggle-btn):not(.nav-link) {
+/* SIDEBAR FORM CONTROLS ENHANCEMENT */
+#sidebar .form-control,
+#sidebar .form-select {
+    background: var(--surface-color) !important;
+    border: 1px solid var(--border-subtle) !important;
+    color: var(--text-color) !important;
+    border-radius: 6px !important;
+    font-size: var(--font-size-sm) !important;
+}
+
+#sidebar .form-control:focus,
+#sidebar .form-select:focus {
+    background: var(--surface-elevated) !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 2px var(--primary-color-translucent) !important;
+}
+
+#sidebar .form-check-input:checked {
     background-color: var(--primary-color) !important;
     border-color: var(--primary-color) !important;
-    color: white !important;
-    transition: all 0.2s ease !important;
 }
 
-.btn:not(.btn-sidebar):not(.theme-toggle-btn):not(.nav-link):hover,
-.btn:not(.btn-sidebar):not(.theme-toggle-btn):not(.nav-link):focus {
-    background-color: var(--primary-color-hover) !important;
-    border-color: var(--primary-color-hover) !important;
-    color: white !important;
+#sidebar .form-check-input:focus {
+    box-shadow: 0 0 0 2px var(--primary-color-translucent) !important;
 }
 
-.btn-secondary:not(.btn-sidebar) {
-    background-color: var(--panel-border-color) !important;
-    border-color: var(--panel-border-color) !important;
-    color: var(--text-color) !important;
-}
-
-.btn-secondary:not(.btn-sidebar):hover,
-.btn-secondary:not(.btn-sidebar):focus {
-    background-color: var(--button-hover-bg, #444) !important;
-    border-color: var(--button-hover-bg, #444) !important;
-    color: var(--text-color) !important;
-}
-
-/* Custom Workflow Items */
-.workflow-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
-    font-weight: 500;
-    font-size: 0.95rem;
-    position: relative;
-}
-
-.workflow-item:hover {
-    background-color: var(--primary-color-translucent);
-}
-
-.workflow-item.completed .check-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background-color: var(--primary-color);
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.workflow-item.completed .item-text {
-    color: var(--text-color);
-}
-
-.workflow-item.current .project-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background-color: var(--primary-color);
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.workflow-item.current .item-text {
-    color: var(--primary-color);
-    font-weight: 600;
-}
-
-/* Add connecting lines between items */
-.nav-center {
-    position: relative;
-}
-
-.workflow-item:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: -0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 1.5rem;
-    height: 1px;
-    background-color: var(--primary-color);
-    opacity: 0.3;
-}
-
-/* FFT Display */
-.fft-display {
-    display: flex;
-    align-items: end;
-    height: 40px;
-    gap: 2px;
-    padding: 4px;
-    background: var(--bg-color);
-    border-radius: 4px;
-    border: 1px solid var(--panel-border-color);
-}
-
-.fft-bar {
-    flex: 1;
-    background: linear-gradient(to top, var(--primary-color), var(--primary-color-hover));
-    min-height: 2px;
-    border-radius: 1px 1px 0 0;
-    animation: fft-pulse 2s ease-in-out infinite;
-}
-
-@keyframes fft-pulse {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
-}
-
-/* Status Dots */
-.status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-
-/* Form Controls */
-.filters-controls, .cabinets-controls, .tests-controls {
-    background-color: var(--panel-bg-color);
-    border: 1px solid var(--panel-border-color);
+/* Audio-Specific UI Elements */
+.audio-meter {
+    background: var(--surface-color);
+    border: 1px solid var(--border-subtle);
     border-radius: 8px;
-    padding: 1.5rem;
-    max-width: 600px;
-    margin: 1rem auto;
+    padding: var(--spacing-md);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.filters-controls .control-group,
-.cabinets-controls .control-group,
-.tests-controls .control-group {
-    margin-bottom: 1.5rem;
-}
-
-.filters-controls label,
-.cabinets-controls label,
-.tests-controls label {
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-    display: block;
-}
-
-/* Themed Range Sliders */
-input[type=range] {
-  -webkit-appearance: none;
-  appearance: none;
-  background: transparent;
-  cursor: pointer;
-  width: 100%; /* Ensure all sliders use full width */
-}
-
-/* Track */
-input[type=range]::-webkit-slider-runnable-track {
-  background: var(--slider-track-color);
-  height: 4px;
-  border-radius: 2px;
-}
-input[type=range]::-moz-range-track {
-  background: var(--slider-track-color);
-  height: 4px;
-  border-radius: 2px;
-}
-
-/* Thumb */
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  margin-top: -6px; /* Position thumb correctly */
-  background-color: var(--primary-color);
-  height: 16px;
-  width: 16px;
-  border-radius: 50%;
-  border: 2px solid var(--panel-bg-color);
-}
-
-input[type=range]::-moz-range-thumb {
-  border: none; /* Remove default border */
-  background-color: var(--primary-color);
-  height: 16px;
-  width: 16px;
-  border-radius: 50%;
-  border: 2px solid var(--panel-bg-color);
-}
-
-.filters-controls select,
-.cabinets-controls select,
-.tests-controls select,
-.cabinets-controls input[type="number"] {
-    width: 100%;
-    padding: 0.5rem;
-    background-color: var(--bg-color);
-    border: 1px solid var(--panel-border-color);
-    color: var(--text-color);
+.frequency-display {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    background: var(--surface-elevated);
+    color: var(--frequency-color);
+    padding: var(--spacing-xs) var(--spacing-sm);
     border-radius: 4px;
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+}
+
+.level-indicator {
+    background: linear-gradient(90deg, var(--primary-color) 0%, var(--level-color) 70%, var(--danger-color) 100%);
+    height: 4px;
+    border-radius: 2px;
+    box-shadow: 0 1px 4px rgba(34, 197, 94, 0.3);
+}
+
+/* Professional Status Badges */
+.status-badge {
+    background: var(--surface-elevated);
+    color: var(--text-color-secondary);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: 6px;
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    border: 1px solid var(--border-subtle);
+    display: inline-flex;
+    align-items: center;
+    margin: var(--spacing-xs);
+}
+
+.status-badge.active {
+    background: var(--primary-color-translucent);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Professional Animation Classes */
+.fade-in {
+    animation: fadeIn var(--transition-normal) ease-out;
+}
+
+.slide-up {
+    animation: slideUp var(--transition-normal) ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
 }

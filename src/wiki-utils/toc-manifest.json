@@ -1,0 +1,29 @@
+{
+    "general": [
+        {
+            "name": "Home.md",
+            "path": "Home.md"
+        }
+    ],
+    "userGuide": [
+        {
+            "name": "01-Getting-Started.md",
+            "path": "User-Guide/01-Getting-Started.md"
+        },
+        {
+            "name": "02-Understanding-Filters.md",
+            "path": "User-Guide/02-Understanding-Filters.md"
+        }
+    ],
+    "devDocs": [
+        {
+            "name": "01-Architecture-Overview.md",
+            "path": "Developer-Docs/01-Architecture-Overview.md"
+        },
+        {
+            "name": "Phase-4-Overview.md",
+            "path": "Developer-Docs/Phase-4-Overview.md"
+        }
+    ],
+    "generatedAt": "2025-09-02T06:49:11+00:00"
+}

@@ -1,0 +1,216 @@
+/**
+ * Navigation Styles - Header, Navbar, Theme Toggle, and Logo
+ * Part of the Qualia-NSS modular CSS architecture
+ */
+
+/* Header and Navbar */
+header {
+    background-color: var(--panel-bg-color);
+    border-bottom: 1px solid var(--panel-border-color);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    
+    /* Mobile PWA optimizations - iOS safe area compensation */
+    margin-top: calc(-1 * env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
+}
+
+.main-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 1rem;
+    backdrop-filter: blur(10px);
+}
+
+.nav-left, .nav-center, .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-left {
+    margin-right: auto; /* Push center and right to the right */
+}
+
+.nav-center {
+    flex: 1; /* Take up available space */
+    justify-content: center; /* Center the navigation items */
+}
+
+.nav-right {
+    /* Will naturally align to the right */
+}
+
+/* Style for the Wiki link in the nav-right */
+.nav-right .nav-link {
+    padding: 0.4rem 0.75rem;
+    margin: 0;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.nav-right .nav-link:hover {
+    background-color: var(--hover-bg);
+    text-decoration: none;
+}
+
+.nav-right .nav-link.active {
+    color: var(--primary-color) !important;
+    background-color: var(--active-bg);
+}
+
+.logo {
+    color: white;
+    margin-right: 12px;
+    font-size: 1rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    padding: 0.25rem 0.5rem;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.logo:hover {
+    border-color: #666;
+}
+
+.logo-clover {
+    height: 18px;
+    width: 18px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)) brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%);
+}
+
+.logo-text {
+    color: var(--neutral-text-color);
+}
+
+.logo.active {
+    border-color: var(--primary-color);
+}
+
+.nav-item {
+    color: var(--muted-text-color);
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    position: relative;
+    letter-spacing: -0.01em;
+    transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+    color: var(--text-color);
+    background-color: var(--primary-color-translucent);
+    transform: translateY(-1px);
+}
+
+.nav-item:active {
+    transform: translateY(0);
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+    background: var(--panel-bg-color);
+    border: 1px solid var(--panel-border-color);
+    color: var(--text-color);
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.theme-toggle-btn:hover {
+    border-color: #666;
+}
+
+.theme-toggle-btn i {
+    transition: color 0.2s ease;
+}
+
+/* Lightbulb icon color changes based on theme */
+body:not(.light-theme) .theme-toggle-btn i {
+    color: var(--muted-text-color);
+}
+
+body.light-theme .theme-toggle-btn i {
+    color: var(--primary-color);
+}
+
+/* Bootstrap Navbar Theme Integration */
+.nav-center .navbar-nav .nav-link {
+    color: var(--neutral-text-color) !important;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    padding: 0.25rem 0.5rem !important;
+    background: none !important;
+    background-color: transparent !important;
+    border: 1px solid transparent !important;
+    border-radius: 6px !important;
+    margin: 0 0.15rem !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+}
+
+.nav-center .navbar-nav .nav-link:hover {
+    border-color: #666 !important;
+    background: none !important;
+    background-color: transparent !important;
+}
+
+.nav-center .navbar-nav .nav-link.active {
+    color: var(--neutral-text-color) !important;
+    background: none !important;
+    background-color: transparent !important;
+    border-color: var(--primary-color) !important;
+}
+
+.nav-center .navbar-nav .nav-link.disabled {
+    color: var(--muted-text-color) !important;
+    opacity: 0.6;
+}
+
+.nav-center .navbar-nav .nav-link i {
+    color: inherit;
+}
+
+/* Force navbar to stay horizontal always - NEVER STACK */
+.nav-center .navbar-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important; /* IE */
+}
+
+.nav-center .navbar-nav::-webkit-scrollbar {
+    display: none !important; /* Chrome, Safari */
+}
+
+.nav-center .navbar-nav .nav-link {
+    white-space: nowrap;
+    flex-shrink: 0 !important;
+    min-width: auto !important;
+}

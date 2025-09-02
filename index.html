@@ -3,18 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    
     <!-- Progressive Web App Configuration -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#28a745">
+    <meta name="theme-color" content="#22c55e">
     <link rel="manifest" href="/manifest.json">
-    <title>Qualia-NSS</title>
+    
+    <!-- Enhanced Meta Information -->
+    <title>Qualia-NSS | Professional Audio Analysis Toolkit</title>
+    <meta name="description" content="Professional web-based audio analysis toolkit for precision audio engineering and acoustic measurement applications">
     <meta name="apple-mobile-web-app-title" content="Qualia-NSS">
     <meta name="application-name" content="Qualia-NSS">
+    
+    <!-- Preload Critical Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- External Dependencies -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <!-- Modular CSS Architecture -->
+    
+    <!-- Enhanced Modular CSS Architecture - ORDER MATTERS -->
     <link rel="stylesheet" href="src/styles/theme.css">
     <link rel="stylesheet" href="src/styles/core.css">
     <link rel="stylesheet" href="src/styles/layout.css">
@@ -26,62 +38,65 @@
     <link rel="stylesheet" href="src/styles/modules/speakers-spl.css">
     <link rel="stylesheet" href="src/styles/modules/wiki.css">
     <link rel="stylesheet" href="src/spectrogram/styles.css">
-    <!-- Global dependencies for modules -->
+    
+    <!-- Global Dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <script src="/src/lib/upload-service.js"></script>
-    <!-- Tone control component -->
-    <script src="/src/components/tone-control/tone-control.js"></script>
-    <!-- Debug tool -->
+    <script type="module" src="/src/components/tone-control/tone-control.js"></script>
     <script src="dev/st00-wireframe/windowmeter-module.js"></script>
 </head>
-<body>
+<body class="fade-in">
 
-    <header>
+    <header class="glass-header">
         <nav class="main-navbar">
             <div class="nav-left">
-                <a href="#" class="logo" onclick="showWelcome(); return false;" title="Qualia-NSS Home">
+                <a href="#" class="logo" onclick="showWelcome(); return false;" title="Qualia-NSS Professional Audio Toolkit">
                     <span class="logo-text">QUALIA</span>
-                    <img src="assets/src/four_leaf_clover.svg" alt="Logo" class="logo-clover">
+                    <img src="assets/src/four_leaf_clover.svg" alt="Qualia Logo" class="logo-clover">
                     <span class="logo-text">NSS</span>
                 </a>
             </div>
+            
             <div class="nav-center">
                 <nav class="navbar navbar-expand-lg">
                     <div class="navbar-nav">
-                        <a class="nav-link d-flex align-items-center" href="#" onclick="loadSpeakersSpl(); setActiveNav(this); return false;">
+                        <a class="nav-link d-flex align-items-center" href="#" onclick="loadSpeakersSpl(); setActiveNav(this); return false;" title="SPL Curve Analysis">
                             <i class="bi bi-bullseye me-2"></i>
                             <span>Speakers</span>
                         </a>
-                        <a class="nav-link d-flex align-items-center" href="#" onclick="loadFilters(); setActiveNav(this); return false;">
+                        <a class="nav-link d-flex align-items-center" href="#" onclick="loadFilters(); setActiveNav(this); return false;" title="Audio Filtering Tools">
                             <i class="bi bi-activity me-2"></i>
                             <span>Filters</span>
                         </a>
-                        <a class="nav-link d-flex align-items-center" href="#" onclick="loadCabinets(); setActiveNav(this); return false;">
+                        <a class="nav-link d-flex align-items-center" href="#" onclick="loadCabinets(); setActiveNav(this); return false;" title="Cabinet Modeling">
                             <i class="bi bi-box me-2"></i>
                             <span>Cabinets</span>
                         </a>
-                        <a class="nav-link d-flex align-items-center" href="#" onclick="load7bandLevelmeter(); setActiveNav(this); return false;">
+                        <a class="nav-link d-flex align-items-center" href="#" onclick="load7bandLevelmeter(); setActiveNav(this); return false;" title="7-Band Level Meter">
                             <i class="bi bi-clipboard-check me-2"></i>
-                            <span>7bandmeter</span>
+                            <span>7-Band</span>
                         </a>
-                        <a class="nav-link d-flex align-items-center" href="#" onclick="loadSpectrogram(); setActiveNav(this); return false;">
+                        <a class="nav-link d-flex align-items-center" href="#" onclick="loadSpectrogram(); setActiveNav(this); return false;" title="3D WebGL Spectrogram">
                             <i class="bi bi-reception-4 me-2"></i>
                             <span>Spectrogram</span>
                         </a>
-                        <a class="nav-link d-flex align-items-center" href="standalone-modules/comb-filtering/index.html" target="_blank" title="Comb-Filter Analysis Tool (Standalone)">
+                        <a class="nav-link d-flex align-items-center" href="standalone-modules/comb-filtering/index.html" target="_blank" title="Comb-Filter Analysis Tool">
                             <i class="bi bi-wave-square me-2"></i>
                             <span>Comb-Filter</span>
-                        </a>
-                        <a class="nav-link d-flex align-items-center" href="#" onclick="loadWiki(); setActiveNav(this); return false;">
-                            <i class="bi bi-book me-2"></i>
-                            <span>Wiki</span>
                         </a>
                     </div>
                 </nav>
             </div>
+            
             <div class="nav-right">
-                <button id="theme-toggle" class="theme-toggle-btn" title="Toggle theme">
+                <a class="nav-link d-flex align-items-center" href="#" onclick="loadWiki(); setActiveNav(this); return false;" title="Documentation & Wiki">
+                    <i class="bi bi-book me-2"></i>
+                    <span>Wiki</span>
+                </a>
+                <button id="theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Theme">
                     <i class="bi bi-lightbulb"></i>
                 </button>
             </div>
@@ -90,21 +105,211 @@
 
     <main id="content-wrapper" class="home-page">
         <div id="main-content" class="full-width">
-            <h1>Welcome</h1>
-            <p>QUALIA•NSS blueprint will be loaded here.</p>
+            <div class="welcome-hero">
+                <h1 class="hero-title">
+                    <span class="text-gradient">Qualia-NSS</span>
+                    <small class="text-muted d-block">Professional Audio Analysis Toolkit</small>
+                </h1>
+                
+                <div class="hero-description">
+                    <p class="lead">Precision audio engineering and acoustic measurement applications, powered by modern web technologies.</p>
+                    
+                    <div class="feature-grid mt-4">
+                        <div class="feature-card">
+                            <i class="bi bi-reception-4 feature-icon"></i>
+                            <h6>3D WebGL Spectrogram</h6>
+                            <small class="text-muted">Real-time 3D visualization</small>
+                        </div>
+                        <div class="feature-card">
+                            <i class="bi bi-clipboard-check feature-icon"></i>
+                            <h6>7-Band Level Meter</h6>
+                            <small class="text-muted">Psychoacoustic analysis</small>
+                        </div>
+                        <div class="feature-card">
+                            <i class="bi bi-wave-square feature-icon"></i>
+                            <h6>Comb-Filter Detection</h6>
+                            <small class="text-muted">Acoustic interference</small>
+                        </div>
+                        <div class="feature-card">
+                            <i class="bi bi-bullseye feature-icon"></i>
+                            <h6>SPL Curve Analysis</h6>
+                            <small class="text-muted">Speaker measurements</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="status-dashboard mt-4">
+                    <div class="status-badge active">
+                        <i class="bi bi-wifi me-1"></i>
+                        Web Audio API Ready
+                    </div>
+                    <div class="status-badge" id="webgl-status">
+                        <i class="bi bi-gpu-card me-1"></i>
+                        WebGL Checking...
+                    </div>
+                    <div class="status-badge" id="mic-status">
+                        <i class="bi bi-mic me-1"></i>
+                        Microphone Standby
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
     <footer>
-        <p>&copy; 2025 Qualia-NSS</p>
+        <p>&copy; 2025 Qualia-NSS | Professional Audio Analysis Toolkit | <span class="text-muted">Built with modern web standards</span></p>
     </footer>
 
+    <!-- Enhanced JavaScript Loading -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <!-- Modular App Architecture -->
     <script src="/src/js/app-core.js"></script>
     <script src="/src/js/ui-utils.js"></script>
     <script src="/src/js/sidebar-manager.js"></script>
     <script src="/src/js/module-loader.js"></script>
     <script src="/src/js/navigation.js"></script>
+    
+    <!-- Enhanced UI Initialization -->
+    <script>
+        <!-- Enhanced welcome page with status checks -->
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check WebGL capability - only if we're on the welcome screen
+            const webglStatus = document.getElementById('webgl-status');
+            
+            if (webglStatus) {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+                
+                if (gl) {
+                    webglStatus.innerHTML = '<i class="bi bi-gpu-card me-1"></i>WebGL 2.0 Ready';
+                    webglStatus.classList.add('active');
+                } else {
+                    webglStatus.innerHTML = '<i class="bi bi-gpu-card me-1"></i>WebGL Limited';
+                    webglStatus.style.color = 'var(--danger-color)';
+                }
+            }
+            // Note: webgl-status element only exists on welcome screen, so it's normal if not found when modules are loaded
+            
+            // Add smooth animations to feature cards
+            setTimeout(() => {
+                document.querySelectorAll('.feature-card').forEach((card, index) => {
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, index * 100);
+                });
+            }, 300);
+            
+            // Enhanced microphone status check - only if we're on the welcome screen
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                const micStatus = document.getElementById('mic-status');
+                if (micStatus) {
+                    micStatus.innerHTML = '<i class="bi bi-mic me-1"></i>Microphone Available';
+                    micStatus.classList.add('active');
+                }
+            }
+            
+            // Initialize the app core if available
+            if (typeof window.AppCore !== 'undefined') {
+                window.AppCore.init();
+            }
+        });
+        
+        // Enhanced navigation with audio context awareness
+        window.showWelcome = function() {
+            document.getElementById('main-content').innerHTML = `
+                <div class="welcome-hero fade-in">
+                    <h1 class="hero-title">
+                        <span class="text-gradient">Qualia-NSS</span>
+                        <small class="text-muted d-block">Professional Audio Analysis Toolkit</small>
+                    </h1>
+                    <div class="hero-description">
+                        <p class="lead">Choose an analysis module from the navigation above to begin your audio engineering workflow.</p>
+                        <div class="status-dashboard mt-4">
+                            <div class="status-badge active">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Ready for Analysis
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            // Clear any active navigation states
+            document.querySelectorAll('.nav-link, .logo').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector('.logo').classList.add('active');
+        };
+        
+        // Enhanced theme system compatibility and navigation functions
+        if (typeof window.AppCore !== 'undefined') {
+            window.AppCore.init();
+        }
+        
+        // Ensure navigation functions are available
+        window.setActiveNav = function(activeElement) {
+            document.querySelectorAll('.nav-link, .logo').forEach(item => {
+                item.classList.remove('active');
+            });
+            if (activeElement) {
+                activeElement.classList.add('active');
+            }
+        };
+        
+        // Define module loading functions if not already available
+        window.loadSpeakersSpl = window.loadSpeakersSpl || function() { 
+            console.log('Loading Speakers module...'); 
+            if (typeof window.loadModule === 'function') {
+                window.loadModule('speakers-spl');
+            }
+        };
+        
+        window.loadFilters = window.loadFilters || function() { 
+            console.log('Loading Filters module...'); 
+            if (typeof window.loadModule === 'function') {
+                window.loadModule('filters');
+            }
+        };
+        
+        window.loadCabinets = window.loadCabinets || function() { 
+            console.log('Loading Cabinets module...'); 
+            if (typeof window.loadModule === 'function') {
+                window.loadModule('cabinets');
+            }
+        };
+        
+        window.load7bandLevelmeter = window.load7bandLevelmeter || function() { 
+            console.log('Loading 7-Band Level Meter module...'); 
+            if (typeof window.loadModule === 'function') {
+                window.loadModule('7band-levelmeter');
+            }
+        };
+        
+        window.loadSpectrogram = window.loadSpectrogram || function() { 
+            console.log('Loading Spectrogram module...'); 
+            if (typeof window.loadModule === 'function') {
+                window.loadModule('spectrogram');
+            }
+        };
+        
+        window.loadWiki = window.loadWiki || function() { 
+            console.log('Loading Wiki module...'); 
+            if (typeof window.loadModule === 'function') {
+                window.loadModule('wiki');
+            }
+        };
+    </script>
+    
+    <!-- Load navigation functions if available -->
+    <script>
+        // Fallback for module loading if the main navigation script isn't loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Try to load navigation script if not already loaded
+            if (typeof window.loadModule === 'undefined') {
+                console.warn('Module loader not available. Some navigation functions may not work.');
+            }
+        });
+    </script>
 </body>
 </html>

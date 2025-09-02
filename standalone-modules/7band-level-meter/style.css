@@ -61,6 +61,12 @@ body {
     align-items: center;
 }
 
+/* Make tone control span all 8 columns */
+.generator-grid tone-control {
+    grid-column: 1 / -1;  /* span from first to last column */
+    width: 100%;
+}
+
 .generator-slider-cell {
     grid-column: 1 / span 7; /* under bands 1–7 */
 }

@@ -196,9 +196,10 @@
 
 /* Wiki Content - Following semantic hierarchy H1>H2>H3 as per directive */
 .wiki-content {
-    padding: calc(2 * var(--spacing-lg)) var(--spacing-lg);
-    max-width: 800px;
-    margin: 0 auto;
+    padding: var(--spacing-lg);
+    max-width: none;
+    width: 100%;
+    margin: 0;
     line-height: 1.6;
 }
 
@@ -342,7 +343,38 @@
     height: auto;
     border-radius: var(--spacing-sm);
     margin: var(--spacing-md) 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
+}
+
+/* Minimalist Sidebar TOC: remove shadows, flatten backgrounds */
+#sidebarAccordion,
+#sidebarAccordion .accordion-item,
+#sidebarAccordion .accordion-button,
+#sidebarAccordion .accordion-collapse,
+#sidebarAccordion .accordion-body {
+    box-shadow: none !important;
+    background: transparent;
+}
+
+/* Minimize borders to hairlines */
+#sidebarAccordion .accordion-item,
+#sidebarAccordion .form-check {
+    border: none;
+}
+
+/* Minimalist wiki links */
+.wiki-link {
+    border-left: 2px solid transparent;
+}
+.wiki-link:hover {
+    background: transparent;
+    color: var(--primary-color);
+    border-left-color: var(--primary-color);
+}
+.wiki-link.active {
+    background: transparent;
+    color: var(--primary-color);
+    border-left-color: var(--primary-color);
 }
 
 /* Loading State - Using theme variables only */

@@ -1,7 +1,7 @@
 /* Tests module (7-band level meter) styles */
-.tests-root .container { padding: 8px; }
+.tests-root .container { padding: 0; }
 .tests-root .controls-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
-.tests-root .bands-container { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; align-items: end; height: 360px; padding: 8px 0; }
+.tests-root .bands-container { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; align-items: end; height: 360px; padding: 0; }
 .tests-root .band { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .tests-root .band-meter { position: relative; width: 100%; height: 260px; display: grid; grid-template-columns: 28px 1fr; gap: 6px; }
 .tests-root .band-scale { position: relative; height: 100%; border-right: 1px solid var(--panel-border-color, #333); }
@@ -67,12 +67,7 @@
 .tests-root .icon-button { background: transparent; border: 1px solid var(--panel-border-color, #333); border-radius: 4px; padding: 4px 8px; cursor: pointer; }
 .tests-root .error-box { color: #fff; background: #b74141; padding: 8px; border-radius: 4px; border: 1px solid #8f2f2f; }
 
-/* Tone control container */
-.tests-root .tone-control-container {
-  margin-top: 8px;
-  padding: 8px 0;
-  border-top: 1px solid var(--panel-border-color, #333);
-}
+/* Tone control component uses full width by default via :host styling */
 
 /* Sidebar colormap preview */
 #sidebar .colormap-preview {

@@ -136,29 +136,8 @@
         });
         this._sidebarObserver.observe(sidebarEl, { childList: true, subtree: true });
       }
-      if (this.els.toneControl){
-        this.toneFreqHz = 1000;
-        this.els.toneControl.frequency = this.toneFreqHz;
-        // Set color function for frequency-based coloring
-        this.els.toneControl.colorForFrequency = (freq) => this._colorForFreq(freq);
-        
-        this._on(this.els.toneControl, 'frequencychange', (e) => {
-          const freq = e.detail.frequency;
-          const snapped = this._snapFrequency(freq);
-          if (snapped !== freq) {
-            this.els.toneControl.frequency = snapped;
-          } else {
-            this.toneFreqHz = snapped;
-            if (this.toneOn && this.toneOsc && this.audioContext){ 
-              this.toneOsc.frequency.setTargetAtTime(this.toneFreqHz, this.audioContext.currentTime, 0.01); 
-            }
-          }
-        });
-        
-        this._on(this.els.toneControl, 'toggle', (e) => {
-          e.detail.active ? this._startTone() : this._stopTone();
-        });
-      }
+      // Bind tone control with custom element ready check
+      this._bindToneControl();
 
       // Device change listener (global API)
       if (navigator.mediaDevices && 'ondevicechange' in navigator.mediaDevices){
@@ -198,10 +177,22 @@
       document.head.appendChild(link);
     }
 
-    _inlineFragment(){
+    async _inlineFragment(){
       // The module template already inserted a root. We return the inner fragment for the meter UI.
       // We reuse the same markup as src/7band-levelmeter/index.html
       console.log('Attempting to fetch HTML fragment...');
+      
+      // Tone control component should already be loaded via script tag in index.html
+      try {
+        if (!customElements.get('tone-control')) {
+          console.log('Waiting for tone-control component to be defined...');
+          await customElements.whenDefined('tone-control');
+          console.log('Tone-control component is now defined');
+        }
+      } catch (error) {
+        console.warn('Failed to wait for tone-control component:', error);
+      }
+      
       return fetch('src/7band-levelmeter/index.html').then(r=>r.text()).catch((error)=>{
         console.log('Fetch failed, using inline HTML fallback:', error.message);
         return Promise.resolve(`<div class="container">
@@ -222,9 +213,7 @@
     </div>
     <div id="errorBox" class="error-box" role="alert" style="display:none"></div>
     <div id="bandsContainer" class="bands-container"></div>
-    <div class="tone-control-container" aria-label="Sine tone generator controls">
-      <tone-control id="toneControl" value="0.566" aria-label="Sine frequency control"></tone-control>
-    </div>
+    <tone-control id="toneControl" value="0.566" aria-label="Sine tone generator controls"></tone-control>
   </div>
 </div>`);
       }).then((html) => {
@@ -527,6 +516,51 @@
       return;
     }
     _bandColorForFreq(freq){ return this._colorForFreq(freq); }
+    
+    async _bindToneControl(){
+      const toneControlEl = this.els.toneControl;
+      if (!toneControlEl) {
+        console.log('No tone control element found in 7-band level meter');
+        return;
+      }
+      
+      try {
+        // Wait for tone-control custom element to be defined
+        await customElements.whenDefined('tone-control');
+        
+        // Now set up the tone control binding
+        this.toneFreqHz = 1000;
+        toneControlEl.frequency = this.toneFreqHz;
+        
+        // Set color function for frequency-based coloring
+        toneControlEl.colorForFrequency = (freq) => this._colorForFreq(freq);
+        
+        this._on(toneControlEl, 'frequencychange', (e) => {
+          const freq = e.detail.frequency;
+          const snapped = this._snapFrequency(freq);
+          if (snapped !== freq) {
+            toneControlEl.frequency = snapped;
+          } else {
+            this.toneFreqHz = snapped;
+            if (this.toneOn && this.toneOsc && this.audioContext){ 
+              this.toneOsc.frequency.setTargetAtTime(this.toneFreqHz, this.audioContext.currentTime, 0.01); 
+            }
+          }
+        });
+        
+        this._on(toneControlEl, 'toggle', (e) => {
+          e.detail.active ? this._startTone() : this._stopTone();
+        });
+        
+        console.log('Tone control bound successfully to 7-band level meter');
+        
+      } catch (error) {
+        console.warn('Failed to bind tone control:', error);
+        // Fallback: try again after a delay
+        setTimeout(() => this._bindToneControl(), 1000);
+      }
+    }
+    
     _updateToneUI(freq){
       if (this.els.toneControl){
         // Update frequency and let the component handle color updates via colorForFrequency

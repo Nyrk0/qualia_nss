@@ -1,6 +1,7 @@
 /**
  * Layout Styles - Main Content Area, Sidebar, and Grid Layouts
  * Part of the Qualia-NSS modular CSS architecture
+ * ENHANCED BY QODER - 2025-09-01
  */
 
 /* Main Content Area */
@@ -13,18 +14,21 @@
     overflow: hidden; /* ensure no overflow from content wrapper */
 }
 
+/* Enhanced Sidebar with Glass Effect */
 #sidebar {
-    flex: 0 0 280px;
-    background-color: var(--panel-bg-color);
-    border-right: 1px solid var(--panel-border-color);
-    padding: 0;
+    background: var(--panel-glass-bg);
+    backdrop-filter: var(--glass-backdrop);
+    -webkit-backdrop-filter: var(--glass-backdrop);
+    border-right: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    flex: 0 0 320px;
+    font-size: var(--font-size-sm);
     overflow: hidden; /* Prevent sidebar itself from scrolling */
     min-height: 0; /* participate in flex height without overflow */
     display: flex;
     flex-direction: column;
     position: relative;
-    font-size: 0.8rem; /* Base font size for all sidebar content */
-    color: var(--sidebar-text-color);
+    padding: 9px;
 }
 
 #sidebar-canvas {
@@ -43,245 +47,144 @@
     padding: 0;
 }
 
-/* Theme-consistent accordion styling */
-#sidebar .accordion {
-    background-color: var(--panel-bg-color);
-    --bs-accordion-border-width: 0;
-    --bs-accordion-border-radius: 0;
-}
-
 #sidebar .accordion-item {
     background-color: transparent;
     border: none;
-    border-bottom: 1px solid var(--panel-border-color);
-}
-
-#sidebar .accordion-item:last-child {
-    border-bottom: none;
+    border-radius: 8px;
+    margin-bottom: var(--spacing-xs);
 }
 
 #sidebar .accordion-button {
-    background-color: var(--panel-bg-color);
-    color: var(--sidebar-text-color);
+    background: var(--surface-color);
+    color: var(--text-color);
     border: none;
-    padding: 0.75rem 1rem;
-    font-size: 0.85rem; /* Slightly larger for headers */
-    font-weight: 500;
+    padding: var(--spacing-md);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all var(--transition-normal);
+    width: 100%;
 }
 
 #sidebar .accordion-button:not(.collapsed) {
-    background-color: var(--panel-bg-color);
-    color: var(--sidebar-text-color);
-    box-shadow: none;
-}
-
-#sidebar .accordion-button:focus {
-    box-shadow: 0 0 0 0.2rem rgba(var(--primary-color), 0.25);
+    background: var(--primary-color-translucent);
+    color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
 }
 
 #sidebar .accordion-body {
-    background-color: var(--panel-bg-color);
-    color: var(--sidebar-text-color);
-    padding: 0.75rem 1rem;
-    font-size: 0.8rem;
+    background: transparent !important;
+    padding: var(--spacing-md) !important;
+    color: var(--text-color-secondary) !important;
+    font-size: var(--font-size-sm) !important;
 }
 
-/* Theme-consistent form controls in sidebar */
-#sidebar .form-control,
-#sidebar .form-select {
-    background-color: var(--bg-color); /* Use main bg for inputs for contrast */
-    border: 1px solid var(--border-color);
-    color: var(--sidebar-text-color);
+/* SIDEBAR RADIO BUTTON ALIGNMENT FIX */
+#sidebar .form-check {
+    margin-bottom: 0.5rem !important;
+    padding-left: 1.5rem !important;
+    display: flex !important;
+    align-items: center !important;
 }
 
-#sidebar .form-control:focus,
-#sidebar .form-select:focus {
-    background-color: var(--bg-color);
-    border-color: var(--primary-color);
-    color: var(--text-color); /* Use brighter text color on focus */
-    box-shadow: 0 0 0 0.2rem hsla(var(--primary-color), 0.25);
+#sidebar .form-check-input {
+    margin-left: -1.5rem !important;
+    margin-top: 0 !important;
+    position: static !important;
+    float: none !important;
 }
 
-#sidebar .form-check-input:checked {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-}
-
-/* Sidebar label and helper text colors - theme consistent */
-#sidebar label,
-#sidebar .form-label,
 #sidebar .form-check-label {
-    color: var(--sidebar-text-color);
-    font-size: 0.75rem;
+    margin-left: 0.5rem !important;
+    margin-bottom: 0 !important;
+    line-height: 1.4 !important;
+    font-size: var(--font-size-sm) !important;
+    color: var(--text-color-secondary) !important;
 }
 
-#sidebar .form-text,
-#sidebar .input-group-text,
-#sidebar small,
-#sidebar .text-muted {
-    color: var(--sidebar-text-color) !important;
-    opacity: 0.8;
-}
-
-#sidebar .input-group-text {
-    background-color: var(--panel-bg-color);
-    border: 1px solid var(--panel-border-color);
-}
-
-#sidebar::-webkit-scrollbar { display: none; }
-
-/* Sidebar navigation styling (for future use, e.g., TOC) */
-#sidebar .nav-item,
-#sidebar button,
-#sidebar .btn {
-    color: var(--sidebar-text-color) !important;
-    border: 1px solid transparent;
-    transition: all 0.2s ease;
-}
-
-#sidebar .nav-item:hover,
-#sidebar button:hover,
-#sidebar .btn:hover {
-    color: var(--text-color) !important;
-    background-color: var(--primary-color-translucent) !important;
-}
-
-/* Active items get brighter text and a subtle green border */
-#sidebar .nav-item.active,
-#sidebar button.active,
-#sidebar .btn.active {
-    color: var(--text-color) !important;
-    border-color: var(--primary-color);
-    background-color: var(--primary-color-translucent) !important;
-    font-weight: 600;
-}
-
-/* Sidebar Header (for modules that have one) */
-.sidebar-header {
-    background-color: transparent;
-    padding: 0.5rem 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.sidebar-header h2 {
-    margin: 0;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--sidebar-text-color);
-}
-
-.btn-close-sidebar {
-    background: none;
-    border: none;
-    color: var(--sidebar-text-color);
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    transition: background-color 0.2s ease;
-}
-
-.btn-close-sidebar:hover {
-    background-color: var(--primary-color-translucent);
-}
-
-/* Sidebar Sections */
-.sidebar-section {
-    padding: 1rem;
-    border-bottom: 1px solid var(--panel-border-color);
-}
-
-.sidebar-section:last-child {
-    border-bottom: none;
-}
-
-.sidebar-section h2,
-.sidebar-section h3 {
-    font-weight: 500;
-    margin-bottom: 0.75rem;
-    color: var(--sidebar-text-color);
-    display: flex;
-    align-items: center;
-}
-
-.sidebar-section h2 {
-    font-size: 0.9rem;
-}
-
-.sidebar-section h3 {
-    font-size: 0.85rem;
-}
-
-.sidebar-section h2 i,
-.sidebar-section h3 i {
-    margin-right: 0.5rem;
-    color: var(--sidebar-text-color);
-}
-
+/* Enhanced Content Area */
 #main-content {
     flex: 1 1 auto;
     min-height: 0;
     max-height: 100%;
     display: flex;
     flex-direction: column;
-    padding: 1rem;
     overflow-y: auto; /* Allow vertical scrolling when content exceeds height */
     overflow-x: hidden !important; /* FORCE prevent horizontal scrolling */
     scrollbar-width: none !important; /* Firefox - hide scrollbar */
     -ms-overflow-style: none !important; /* IE/Edge - hide scrollbar */
+    background: var(--surface-color);
+    border-radius: 0;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    border: none;
 }
 
-/* Hide ALL scrollbars for Chrome/Safari/WebKit browsers */
 #main-content::-webkit-scrollbar {
     display: none !important;
-    width: 0 !important;
-    height: 0 !important;
-    background: transparent !important;
 }
 
-#main-content::-webkit-scrollbar-track {
-    display: none !important;
-}
-
-#main-content::-webkit-scrollbar-thumb {
-    display: none !important;
-}
-
-/* Ensure NO horizontal scrollbars anywhere in main content */
-#main-content *::-webkit-scrollbar:horizontal {
-    display: none !important;
-    height: 0 !important;
-}
-
-#main-content * {
-    scrollbar-width: none !important; /* Firefox */
-    -ms-overflow-style: none !important; /* IE/Edge */
-}
-
-/* Main content text color is handled by the `body` style in core.css */
-
-/* Home page specific styles */
-.home-page #main-content.full-width {
-    width: 100%;
-    max-width: none;
-    padding: 2rem;
+/* Welcome Page Specific Styles */
+.welcome-hero {
     text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--spacing-2xl) 0;
 }
 
-.home-page #main-content.full-width h1 {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
+.hero-title {
+    margin-bottom: var(--spacing-xl);
 }
 
-.home-page #main-content.full-width p {
-    font-size: 1.1rem;
-    color: var(--muted-text-color);
+.text-gradient {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    margin: var(--spacing-xl) 0;
+}
+
+.feature-card {
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: var(--spacing-lg);
+    text-align: center;
+    transition: all var(--transition-normal);
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--glass-shadow);
+    border-color: var(--primary-color);
+}
+
+.feature-icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-sm);
+}
+
+.feature-card h6 {
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+}
+
+.status-dashboard {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    margin-top: var(--spacing-lg);
 }

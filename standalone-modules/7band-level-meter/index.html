@@ -51,7 +51,7 @@
               width: 100%;
             }
             
-            .container { 
+            .tone-control-container { 
               display: grid; 
               grid-template-columns: 1fr auto; 
               gap: 8px; 
@@ -154,6 +154,17 @@
               min-width: 60px;
               text-align: right;
               color: inherit;
+              cursor: pointer;
+              user-select: none;
+              transition: all 0.2s;
+            }
+            
+            .label:hover {
+              opacity: 1;
+              background: rgba(255, 255, 255, 0.05);
+              border-radius: 3px;
+              padding: 2px 4px;
+              margin: -2px -4px;
             }
             
             input[type="range"] {
@@ -161,7 +172,7 @@
             }
           </style>
           
-          <div class="container">
+          <div class="tone-control-container">
             <div class="slider-container">
               <input id="slider" type="range" min="0" max="1" step="0.001" value="0.566" aria-label="Sine frequency (Hz)">
             </div>
@@ -216,6 +227,7 @@
             super();
             this._frequency = 1000;
             this._active = false;
+            this._editingLabel = false;
 
             this.attachShadow({ mode: 'open' });
             this.shadowRoot.appendChild(TONE_TEMPLATE.content.cloneNode(true));
@@ -232,6 +244,7 @@
           connectedCallback() {
             this.$slider.addEventListener('input', this._onSlider.bind(this));
             this.$toggle.addEventListener('click', this._onToggle.bind(this));
+            this.$label.addEventListener('dblclick', this._onLabelDoubleClick.bind(this));
 
             if (!this.hasAttribute('value')) {
               this._frequency = 1000;
@@ -244,6 +257,7 @@
           disconnectedCallback() {
             this.$slider.removeEventListener('input', this._onSlider);
             this.$toggle.removeEventListener('click', this._onToggle);
+            this.$label.removeEventListener('dblclick', this._onLabelDoubleClick);
           }
 
           get frequency() { return this._frequency; }
@@ -311,6 +325,73 @@
             this.$toggle.innerHTML = this._active ? onIcon : offIcon;
             this.$toggle.classList.toggle('active', !!this._active);
             this.$toggle.setAttribute('aria-pressed', this._active ? 'true' : 'false');
+          }
+
+          _onLabelDoubleClick() {
+            if (this._editingLabel) return;
+            
+            this._editingLabel = true;
+            const currentFreq = Math.round(this._frequency);
+            
+            // Create input element
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = '20';
+            input.max = '20000';
+            input.step = '1';
+            input.value = currentFreq.toString();
+            input.style.cssText = `
+              font-variant-numeric: tabular-nums; 
+              font-size: 12px;
+              min-width: 60px;
+              text-align: right;
+              background: rgba(0, 0, 0, 0.5);
+              border: 1px solid currentColor;
+              border-radius: 3px;
+              color: inherit;
+              padding: 2px 4px;
+              margin: -2px -4px;
+              outline: none;
+            `;
+            
+            // Replace label with input at exact same position
+            this.$label.style.display = 'none';
+            this.$label.parentNode.insertBefore(input, this.$label.nextSibling);
+            
+            // Focus and select all
+            input.focus();
+            input.select();
+            
+            const finishEdit = (commit = false) => {
+              if (!this._editingLabel) return;
+              
+              if (commit) {
+                const newFreq = parseInt(input.value);
+                if (!isNaN(newFreq) && newFreq >= 20 && newFreq <= 20000) {
+                  this.frequency = newFreq;
+                }
+              }
+              
+              // Clean up
+              input.remove();
+              this.$label.style.display = '';
+              this._editingLabel = false;
+            };
+            
+            // Handle input events
+            input.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                finishEdit(true);
+              } else if (e.key === 'Escape') {
+                e.preventDefault();
+                finishEdit(false);
+              }
+            });
+            
+            input.addEventListener('blur', () => {
+              finishEdit(true);
+            });
           }
 
           _emit(type, detail) { 

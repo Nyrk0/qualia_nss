@@ -121,7 +121,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
     </div>
 </div>`,
-        'wiki': `<div class="module-content" id="wiki-content-container"></div>`
+        'wiki': `<div class="module-content" id="wiki-module-container">
+    <!-- Wiki content loads directly here via WikiModule -->
+</div>`
     };
 
     // Make module templates globally available
@@ -298,6 +300,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Load and initialize module JavaScript (non-spectrogram modules)
                 const scriptSrc = (function(){
                     if (moduleName === '7band-levelmeter') return 'src/7band-levelmeter/7band-level-meter.js';
+                    if (moduleName === 'wiki') return 'src/wiki-utils/index.js';
                     return `src/${moduleName}/index.js`;
                 })();
 
