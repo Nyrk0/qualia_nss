@@ -8,6 +8,35 @@
 
 This document outlines the complete refactored modular architecture of the Qualia-NSS application. This architecture improves maintainability, debugging, collaboration, and performance.
 
+### 1.1. KISS Development Methodology Integration
+
+The architecture is built upon the **Keep It Simple Stable (KISS)** methodology documented in `dev/dev_stages/`. This approach ensures:
+
+**Stage-Based Development Pattern:**
+```
+dev/dev_stages/
+├── st00-wireframe/          # Foundation: UI/UX wireframes and app shell
+├── st01-backend-server/     # Infrastructure: Docker backend, APIs, database
+├── st02-modularization/     # Architecture: Component separation patterns
+├── st03-documentation-system/ # Content: Wiki integration and documentation
+├── st04-spectrogram/        # Feature: Audio visualization implementation
+├── st05-mic-calibration/    # Hardware: Device interface patterns
+├── st06-comb-filtering/     # Processing: Audio algorithm implementation
+├── st07-psychoacoustics/    # Advanced: Psychoacoustic analysis
+└── st08-pwa/               # Enhancement: Progressive web app features
+```
+
+**Core Development Principles:**
+- **Small Functionality Focus**: Each stage targets specific, limited functionality
+- **Iterative Refinement**: Features are revisited and enhanced across stages
+- **Reference Architecture**: Stage documentation provides implementation patterns
+- **Stability Checkpoints**: Each stage maintains working, testable state
+
+**Implementation Reference System:**
+- **Before implementing**: Consult relevant stage documentation for patterns
+- **During development**: Follow stage-specific architectural decisions
+- **After implementation**: Document stage evolution and methodology updates
+
 ## 2. Architecture Structure
 
 ```
@@ -85,5 +114,33 @@ A two-tier system separates visualization colors from UI colors.
 
 ## 7. Development Guidelines
 
+### 7.1. Stage-Driven Development Process
+
+**Before Any Implementation:**
+1. **Consult dev_stages**: Review relevant stage documentation for patterns and methodology
+2. **Reference Implementation**: Study existing stage implementations for architectural consistency
+3. **Small Functionality Focus**: Ensure changes target specific, limited functionality per KISS principles
+
+**Development Pattern:**
 *   **Adding New Modules**: Requires adding templates to `sidebar-manager.js` and `module-loader.js`, creating a module-specific CSS file, and updating `navigation.js`.
 *   **Modifying Existing Modules**: Edits should be made in the file corresponding to the module's responsibility (e.g., theme changes in `app-core.js`, layout changes in `layout.css`).
+*   **Stage Documentation**: Update relevant stage documentation to reflect architectural evolution
+
+### 7.2. KISS Implementation Guidelines
+
+**Iterative Approach Requirements:**
+- Each implementation cycle must be small and focused
+- Features should be revisited and refined across multiple development cycles
+- Maintain working, testable state at each checkpoint
+- Document methodology decisions for future reference
+
+**Stage Reference Integration:**
+- **st00-wireframe**: For UI/UX foundation and layout changes
+- **st01-backend-server**: For Docker backend architecture, API integration, and server-side processing patterns
+- **st02-modularization**: For component architecture and separation patterns  
+- **st03-documentation-system**: For documentation and wiki integration approaches
+- **st04-spectrogram**: For audio visualization implementation patterns
+- **st05-mic-calibration**: For hardware interface and calibration patterns
+- **st06-comb-filtering**: For audio processing and algorithm implementation
+- **st07-psychoacoustics**: For advanced audio analysis and psychoacoustic features
+- **st08-pwa**: For progressive web app and mobile optimization patterns

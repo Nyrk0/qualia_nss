@@ -14,25 +14,67 @@ This document establishes the complete development workflow pipeline for the Qua
 
 This pipeline ensures consistency, quality, and adherence to established directives.
 
-### 2.1. Pre-Development Phase
+### 2.1. CRITICAL: dev_stages Protection Rule
+
+**🚨 ABSOLUTELY FORBIDDEN: Never delete or move the `dev/dev_stages/` directory.**
+
+The `dev_stages` folder is **CRITICAL INFRASTRUCTURE** containing:
+- **KISS Methodology**: Keep It Simple Stable - iterative development approach
+- **Stage-based Development**: Small, focused functionality implementations
+- **Reference Architecture**: Historical decisions and implementation patterns
+- **Human Architect Context**: Essential documentation for project continuity
+- **AI Assistant References**: Critical context for understanding project evolution
+
+**Protection Requirements:**
+- `dev/dev_stages/` and ALL subdirectories are **PROTECTED**
+- Any operation that could delete, move, or restructure `dev_stages` is **STRICTLY PROHIBITED**
+- Stages contain iterative approach documentation that MUST be preserved
+- Each stage (st00-st06) represents critical development methodology steps
+
+**Before ANY git operations that might affect dev_stages:**
+1. Verify `dev/dev_stages/` exists and is intact
+2. If missing, restore from git history immediately
+3. Never proceed with commits that delete stage directories
+
+### 2.2. Pre-Development Phase
 
 #### Requirements Analysis
 1.  **Review Existing Directives**: Check all relevant documents in `dev/RULES/`, including UI/UX standards and architecture guides.
-2.  **Architectural Assessment**: Identify affected modules/components and determine if architectural changes are needed.
-3.  **Impact Analysis**: List all files to be modified and assess potential breaking changes.
+2.  **Consult dev_stages**: Reference relevant stage documentation for methodology and patterns.
+3.  **Architectural Assessment**: Identify affected modules/components and determine if architectural changes are needed.
+4.  **Impact Analysis**: List all files to be modified and assess potential breaking changes.
 
 #### Planning Phase
 1.  **Create Task List**: Use a structured format (e.g., `dev/todos/YYYY-MM-DD-task.md`) to break down the task.
 2.  **Design Alignment Check**: Verify the plan aligns with semantic HTML, CSS variable usage, and existing component patterns.
 
-### 2.2. Development Phase
+### 2.3. Development Phase
 
-#### Staged, Incremental Methodology
-All development should follow a staged approach to minimize risk.
+#### KISS Staged Development Methodology
+All development MUST follow the **Keep It Simple Stable** staged approach documented in `dev/dev_stages/`.
 
-*   **Stage Definition**: Break down large tasks into logical, testable stages.
-*   **Checkpoints**: Each stage should result in a stable, working state.
-*   **Rollback Capability**: Ensure there is always a clear path to revert to a previous known-good state.
+**Core Principles:**
+*   **Small Functionality Focus**: Each development cycle targets one small, specific functionality
+*   **Iterative Approach**: Features are revisited and refined through multiple stages
+*   **Stage Documentation**: Reference existing stages (st00-st08) for methodology patterns
+*   **Stability Checkpoints**: Each stage results in a stable, working state before progression
+
+**Stage Reference System:**
+*   **st00-wireframe**: UI/UX foundation and wireframe patterns
+*   **st01-backend-server**: Docker backend architecture, API integration, and server-side processing patterns
+*   **st02-modularization**: Component separation and modular architecture
+*   **st03-documentation-system**: Documentation and wiki integration patterns
+*   **st04-spectrogram**: Audio visualization implementation patterns
+*   **st05-mic-calibration**: Hardware interface patterns
+*   **st06-comb-filtering**: Audio processing algorithm patterns
+*   **st07-psychoacoustics**: Advanced audio analysis patterns
+*   **st08-pwa**: Progressive web app and mobile optimization patterns
+
+**Implementation Guidelines:**
+*   **Stage Definition**: Break down large tasks into logical, testable stages following dev_stages patterns
+*   **Methodology Consultation**: Always reference relevant stage documentation before implementation
+*   **Checkpoints**: Each stage should result in a stable, working state
+*   **Rollback Capability**: Ensure there is always a clear path to revert to a previous known-good state
 
 #### Safe Code Modification Strategies
 

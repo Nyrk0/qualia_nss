@@ -1,0 +1,73 @@
+/**
+ * Standard Chart Container Pattern for Qualia-NSS
+ * 
+ * This CSS pattern solves common Chart.js + Flexbox resize issues by:
+ * 1. Allowing proper flexbox shrinking/expanding with min-width: 0
+ * 2. Preventing height calculation issues with min-height: 0
+ * 3. Ensuring canvas fills container properly
+ * 
+ * Apply to any chart container in the application for consistent behavior.
+ */
+
+/* Chart Container - Standard Pattern */
+.chart-container {
+  position: relative;
+  flex: 1 1 auto;
+  height: 100%;
+  min-width: 0;  /* Allows proper shrinking/expanding in flex */
+  min-height: 0; /* Allows proper flexbox height calculation */
+  background: var(--bs-body-bg, #ffffff);
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+/* Canvas - Standard Pattern */
+.chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* Module-Specific Variants */
+.spl-viewer .spl-chart-container {
+  /* Extends .chart-container pattern */
+  position: relative;
+  flex: 1 1 auto;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+.spectrum-analyzer .spectrum-container {
+  /* For spectrum analyzer module */
+  position: relative;
+  flex: 1 1 auto;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+/* Usage Notes:
+ * 
+ * 1. Always include min-width: 0 and min-height: 0 on flex children
+ * 2. Use height: 100% to fill parent flex container
+ * 3. Canvas should always be width/height: 100% !important
+ * 4. Chart.js options should include:
+ *    - responsive: true
+ *    - maintainAspectRatio: false
+ * 
+ * This pattern addresses the common flexbox + Chart.js issues:
+ * - Charts not resizing on viewport changes
+ * - Height explosion when layout changes
+ * - Width/height miscalculation on breakpoints
+ * - Retina display scaling problems
+ */

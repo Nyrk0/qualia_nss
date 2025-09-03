@@ -1,0 +1,189 @@
+<!-- 
+  Advanced Sidebar HTML Structure - WIREFRAME SPECIFICATION
+  Status: ✅ IMPLEMENTED in spectrogram module with enhancements
+  
+  This specification has been implemented in the modular architecture:
+  - Location: src/js/sidebar-manager.js (spectrogram sidebar, lines 168+)
+  - Integration: Dynamically loaded by module-loader.js when spectrogram loads
+  - Enhancements: Updated content matching actual spectrogram controls
+  - Scroll-fade: Automatically initialized with proper targeting
+  
+  Original specification details:
+  - Uses Bootstrap 5 Accordion for collapsible sections.
+  - The root container would be the element with `id="sidebar"`.
+  - This structure should be injected into the sidebar container.
+  - The `scroll-fade-container` class is the target for the custom scrolling styles.
+  
+  IMPLEMENTATION ENHANCEMENTS:
+  - Updated sections: Experiment Setup, Signal Generator → Audio Source, 3D Viewport → Camera Controls
+  - Added Calibration section with dBFS offset control
+  - Integrated with actual spectrogram functionality
+  - Real form controls connected to spectrogram JavaScript
+-->
+<div class="accordion scroll-fade-container" id="sidebarAccordion">
+
+    <!-- 1. Experiment Setup -->
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingOne">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                Experiment Setup
+            </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#sidebarAccordion">
+            <div class="accordion-body">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="experimentType" id="expControlled" checked>
+                    <label class="form-check-label" for="expControlled">
+                        Controlled Comb-Filter
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="experimentType" id="expAcoustic">
+                    <label class="form-check-label" for="expAcoustic">
+                        Acoustic Comb-Filter
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="experimentType" id="expAnalysis">
+                    <label class="form-check-label" for="expAnalysis">
+                        Room Acoustics Analysis
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Signal Generator -->
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingTwo">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                Signal Generator
+            </button>
+        </h2>
+        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#sidebarAccordion">
+            <div class="accordion-body">
+                <label for="signalType" class="form-label">Signal Type</label>
+                <select class="form-select mb-3" id="signalType">
+                    <option value="whitenoise" selected>White Noise</option>
+                    <option value="sinesweep">Sine Sweep</option>
+                </select>
+                
+                <label for="digitalDelay" class="form-label">Digital Delay</label>
+                <div class="input-group">
+                    <input type="range" class="form-range" id="digitalDelay" min="0" max="50" step="0.1">
+                    <span class="input-group-text" id="digitalDelayValue">0 ms</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Analysis Source -->
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingThree">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                Analysis Source
+            </button>
+        </h2>
+        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#sidebarAccordion">
+            <div class="accordion-body">
+                <p class="form-label">Source:</p>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="analysisSource" id="sourceDigital" checked>
+                    <label class="form-check-label" for="sourceDigital">Digital Output</label>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="analysisSource" id="sourceMic">
+                    <label class="form-check-label" for="sourceMic">Microphone Input</label>
+                </div>
+
+                <p class="form-label">Microphone DSP:</p>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="micEchoCancellation">
+                    <label class="form-check-label" for="micEchoCancellation">Echo Cancellation</label>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="micNoiseSuppression">
+                    <label class="form-check-label" for="micNoiseSuppression">Noise Suppression</label>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="micAutoGain">
+                    <label class="form-check-label" for="micAutoGain">Auto Gain Control</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 3D Viewport -->
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingFour">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                3D Viewport
+            </button>
+        </h2>
+        <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#sidebarAccordion">
+            <div class="accordion-body">
+                <label for="rotX" class="form-label">Rotate X</label>
+                <input type="range" class="form-range" id="rotX">
+                <label for="rotY" class="form-label">Rotate Y</label>
+                <input type="range" class="form-range" id="rotY">
+                <label for="rotZ" class="form-label">Rotate Z</label>
+                <input type="range" class="form-range" id="rotZ">
+                <label for="zoom" class="form-label">Zoom</label>
+                <input type="range" class="form-range" id="zoom">
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Calibration -->
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingFive">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                Calibration
+            </button>
+        </h2>
+        <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#sidebarAccordion">
+            <div class="accordion-body">
+                <label for="dbfsOffset" class="form-label">dBFS Offset</label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="dbfsOffset" value="0.0" step="0.1">
+                    <span class="input-group-text">dB</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- 
+IMPLEMENTATION STATUS: ✅ COMPLETED with functional enhancements
+
+Current Implementation Comparison:
+1. SECTION UPDATES:
+   - "Experiment Setup" → Implemented as "Audio Source" (wet/dry modes)
+   - "Signal Generator" → Integrated into Audio Source (mic DSP options) 
+   - "Analysis Source" → Merged with Audio Source section
+   - "3D Viewport" → Implemented as "Camera Controls" (rotation, position, zoom)
+   - "Calibration" → Enhanced with dBFS offset and vertical scale
+
+2. FUNCTIONAL INTEGRATION:
+   - All form controls connected to actual spectrogram JavaScript functions
+   - Real-time parameter updates via event listeners
+   - Proper value display spans showing current settings
+   - Working audio source switching (microphone/system audio)
+
+3. TECHNICAL IMPROVEMENTS:
+   - Bootstrap accordion fully functional with collapse/expand
+   - Scroll-fade effects working with viewport height constraints
+   - No browser scrollbars (internal scrolling only)
+   - Professional styling with proper theme integration
+
+4. TESTING STATUS:
+   ✅ Bootstrap accordion expand/collapse working
+   ✅ Scroll-fade effects active on content overflow
+   ✅ All form controls functional and connected
+   ✅ Proper integration with spectrogram 3D visualization
+   ✅ Responsive behavior on different screen sizes
+
+REFERENCE IMPLEMENTATION: src/js/sidebar-manager.js (spectrogram section)
+AUTO-LOADING: module-loader.js initializes when spectrogram module selected
+-->

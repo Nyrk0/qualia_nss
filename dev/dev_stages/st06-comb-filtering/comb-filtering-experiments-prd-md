@@ -1,0 +1,635 @@
+# Comb-Filtering Experiments: Educational and Measurement Tool
+
+**Version:** 2.0  
+**Date:** 2025-09-01  
+**Project:** Qualia-NSS Audio Analysis Suite  
+
+**Research References:**  
+- [Gemini Analysis](https://gemini.google.com/app/cb2997d8d54da144)  
+- [Grok Deep Research](https://grok.com/project/deepsearch?chat=a6e9ef9d-1b38-4b07-a02e-dd8c0f9cc12a)
+
+## Overview
+
+This document outlines the design and implementation of an educational web-based tool for understanding and measuring comb-filtering effects. The tool combines theoretical knowledge with practical real-time analysis, allowing users to visualize how acoustic interference patterns affect audio in controlled and real-world scenarios.
+
+**Core Concept:** Compare predictable digital comb-filtering with real-world acoustic measurements using microphone analysis and visual feedback.
+
+---
+
+## 1. Understanding Comb-Filtering
+
+### What is Comb-Filtering?
+
+Comb-filtering occurs when a sound combines with a delayed copy of itself, creating **constructive and destructive interference** patterns. The resulting frequency response shows evenly spaced peaks and notches that resemble the teeth of a comb.
+
+### Mathematical Foundation
+
+The **feedforward comb filter** model describes this phenomenon:
+
+- **Transfer Function:** `H(z) = 1 + z^(-K)` where `K = τ × fs`
+- **Frequency Response:** `|H(e^(jω))| = 2 |cos(ωK/2)|`
+- **Notch Frequencies:** `fn = (2n+1)/(2τ)` for integer `n ≥ 0`
+- **First Notch:** `f1 = 1/(2τ)` where `τ` is delay in seconds
+- **Notch Spacing:** `Δf = 1/τ`
+
+### Web Audio API Implementation
+
+#### Signal Routing
+- **Dry Path:** Direct connection from source → destination
+- **Wet Path:** Source → DelayNode(τ) → GainNode → destination
+- **Analysis:** AnalyserNode captures the combined spectrum
+- **Control:** Real-time adjustment of delay time (1-50ms)
+
+#### Key Components
+```javascript
+// Pseudocode structure
+const dryGain = audioContext.createGain();
+const delayNode = audioContext.createDelay(0.05); // Max 50ms
+const wetGain = audioContext.createGain();
+const analyser = audioContext.createAnalyser();
+```
+
+---
+
+## 2. Physical Distance and Time Delay Relationship
+
+### Speed of Sound Calculations
+
+**Speed of sound in air:** ~343 m/s at 20°C
+
+**Distance to Delay Conversion:**
+- **Formula:** `τ = d / 343` (delay in seconds)
+- **Examples:**
+  - 1 meter = 2.9 ms delay
+  - 2 meters = 5.8 ms delay  
+  - 3 meters = 8.7 ms delay
+
+### Practical Implications
+
+Small room reflections (1-5 meters) create delays of 2.9-14.6 ms, which fall directly in the audible comb-filtering range. This makes room acoustics a primary source of natural comb-filtering effects.
+
+---
+
+### 3. Experimental Methods
+
+The following three experiments are designed to progressively train your perception and understanding of comb-filtering, moving from a controlled digital environment to a real-world acoustic analysis.
+
+#### Experiment 1: The Controlled Comb-Filter (Dry)
+
+**Goal:** To visualize and hear the ideal, predictable comb-filtering effect.
+
+**Procedure:**
+1.  Use the Web Audio API to create a comb-filter as described above.
+2.  Feed the sound generator with **white noise** to see the static peaks and notches on the spectrum analyzer.
+3.  Also, feed the sound generator with a **sine sweep** to see the tone "blink" or "flutter" as it passes through the fixed notches of the filter. 
+
+#### Experiment 2: The Acoustic Comb-Filter (Wet)
+
+**Goal:** To see and hear how comb-filtering occurs naturally in a real room.
+
+**Procedure:**
+1.  **Turn off the intentional comb-filtering** from the digital generator. The source signal should now be a clean, unfiltered sound (e.g., white noise or music).
+2.  Send this clean signal to a single loudspeaker.
+3.  Connect a second `AnalyserNode` to the **microphone input** to analyze the sound after it has traveled from the speaker to the microphone.
+4.  Move the microphone around the room. You will observe that the frequency spectrum changes, showing new peaks and notches caused by sound reflecting off surfaces like walls, floors, and furniture.
+
+#### Experiment 3: Analyzing Room Acoustics
+
+**Goal:** To infer both comb-filtering and reverberation by comparing the "dry" and "wet" signals simultaneously.
+
+**Procedure:**
+1.  Run a clean, unfiltered signal (e.g., white noise) to the speakers.
+2.  Use two `AnalyserNodes`: one connected to the **digital output** (the "dry" signal) and another connected to the **microphone input** (the "wet" signal).
+3.  The dry signal's spectrum should appear flat, serving as your **baseline**.
+4.  Compare this baseline to the wet signal's spectrum.
+
+**Analysis:**
+* **Comb-filtering** will appear as **sharp, distinct peaks and notches** caused by a few early, strong reflections.
+* **Reverberation** will manifest as a more **complex, jagged frequency response** and a general high-frequency roll-off, caused by a dense multitude of reflections.
+
+## 4. Advanced Comb-Filtering Analysis
+
+### Psychoacoustic Characteristics
+
+**Perceptual Effects:**
+- **Timbre:** "Hollow," "robotic," or "jet-like" coloration
+- **Frequency Dependency:** More pronounced in high frequencies (shorter wavelengths)
+- **Audibility Threshold:** Most noticeable with delays < 20-25 ms
+- **Masking:** Effect diminishes with amplitude differences > 10 dB
+
+### QUALIA-NSS Design Considerations
+
+**Optimal Delay Range:** 2.9-5.8 ms (1-2 meter distances)
+- Maintains precedence effect for immersion
+- Minimizes audible comb-filtering
+- Works with limited rear speaker bandwidth (1-2 kHz)
+
+**Mitigation Strategies:**
+- Spectral separation between front/rear speakers
+- Amplitude differences between direct/reflected signals  
+- Delays within psychoacoustic comfort zone
+
+### Mathematical Model Overview
+
+**Feedforward Comb Filter Model:**
+- **Transfer Function:** `H(z) = 1 + z^(-τfs)` (unit gain)
+- **Magnitude Response:** `|H(e^(jω))| = 2 |cos(ωτ/2)|`
+- **Phase Shift:** Notches occur at 180° phase shift
+- **Notch Formula:** `fn = (2n+1)/(2τ)` for n ≥ 0
+
+### JavaScript Implementation Feasibility
+
+**Web Audio API Capabilities:**
+- DelayNode + GainNode mixing for basic comb filtering
+- Real-time parameter control via AudioParam
+- Tone.js provides ready-made FeedbackCombFilter class
+- Custom modules available for advanced control
+
+**Performance Considerations:**
+- No major computational barriers for real-time processing
+- Browser performance may limit complex multi-filter simulations
+- AudioWorkletNode enables sub-block delays (<128 samples)
+
+### QUALIA-NSS Implementation Strategy
+
+**Frequency Domain Approach:**
+- Rear speakers limited to 1-2 kHz reduces high-frequency interference
+- Front speakers handle full-range (20 Hz - 20 kHz)
+- Spectral separation minimizes audible comb effects
+
+**Delay Calculations:**
+- **3 ms delay:** First notch ~167 Hz, spacing 333 Hz
+- **6 ms delay:** First notch ~83 Hz, spacing 167 Hz
+- **Impact:** Primarily affects low/mid frequencies (<2 kHz)
+
+Comb filtering represents a key challenge in audio system design, arising from the interference of identical signals arriving with small time delays. This phenomenon, often described as producing a "hollow," "robotic," or "jet-like" sound, is particularly undesirable in permanent listening setups due to its alteration of timbre and clarity, with stronger effects in high frequencies where shorter wavelengths amplify perceptual discrepancies. Below, we explore the mathematical predictive models for comb filtering at specific frequencies and delays, its feasibility for modeling in JavaScript, and tailored analysis for the QUALIA•NSS design, incorporating web-sourced citations in APA format.
+The core model stems from digital signal processing principles, treating comb filtering as a type of finite impulse response (FIR) filter. For two identical signals—one direct and one delayed by time $\tau$ (in seconds)—the combined output exhibits constructive interference (peaks) and destructive interference (notches) at predictable frequencies. The feedforward comb filter is the standard predictive model here, defined by the difference equation $ y[n] = x[n] + x[n - K] $, where $ K = \tau \cdot f_s $ (delay in samples, $ f_s $ being the sampling frequency, typically 44.1 kHz for audio). The z-domain transfer function is $ H(z) = 1 + z^{-K} $, assuming equal amplitude (gain = 1 for both signals).
+The frequency response, crucial for prediction, is derived as $ H(e^{j\omega}) = 1 + e^{-j\omega K} $, with magnitude $ |H(e^{j\omega})| = \sqrt{2 + 2\cos(\omega K)} = 2 |\cos(\omega K / 2)| $, where $ \omega = 2\pi f / f_s $ (angular frequency). Peaks occur when $ \cos(\omega K / 2) = \pm 1 $ (constructive interference), and notches (cancellations) when $ \cos(\omega K / 2) = 0 $, i.e., at $ \omega K / 2 = \pi/2 + m\pi $ for integer $ m \geq 0 $. Simplifying, the first notch frequency is $ f_1 = 1/(2\tau) $, with subsequent notches at odd multiples: $ f_n = (2n + 1)/(2\tau) $. The spacing between notches is $ \Delta f = 1/\tau $.
+For example, with $\tau = 1$ ms (0.001 s), the first notch is at 500 Hz, with notches at 500 Hz, 1500 Hz, 2500 Hz, etc., and peaks at 0 Hz, 1000 Hz, 2000 Hz. This model assumes identical signals; if amplitudes differ (e.g., scaling factor $\alpha < 1$ for the delayed signal), the response becomes $ |H(e^{j\omega})| = \sqrt{1 + \alpha^2 + 2\alpha \cos(\omega K)} $, reducing notch depth. Perceptually, comb filtering is audible for delays <20–25 ms, transitioning to discrete echoes beyond this; high frequencies are more affected as their shorter wavelengths (e.g., λ = c/f, c ≈343 m/s) lead to finer interference patterns, making timbre changes more evident.
+This model can indeed be implemented in JavaScript, leveraging the Web Audio API for real-time audio processing. A basic setup involves creating an AudioContext, a DelayNode for $\tau$, and mixing via GainNodes. For instance, a feedforward comb can be coded as: connect source to direct gain (1) and delay node ($\tau$), then sum outputs. Advanced implementations, like lowpass-filtered variants, add a BiquadFilterNode in the feedback path to simulate damping. Libraries such as Tone.js provide ready classes (e.g., FeedbackCombFilter), allowing sub-block delays (<128 samples) via AudioWorkletNode. Custom modules on GitHub demonstrate this with parameters for delay (seconds), feedback (0–1), damping (gain), and cutoff (Hz), enabling predictive simulations of frequency responses via FFT or plotting tools like Chart.js.
+In the QUALIA•NSS context, the design mitigates comb filtering by limiting rear/lateral speakers to a flat response up to 1–2 kHz with subsequent decay, ensuring highs (>2 kHz) are handled solely by frontals (with 1st-order tweeter crossover at 6–12 kHz). This spectral mismatch reduces interference in highs, as combing requires overlapping frequencies between direct (front) and delayed (rear) signals. For delays of 2.9 ms/m (sound speed ≈343 m/s), 1–2 m distances yield $\tau \approx 2.9–5.8$ ms—sufficient for precedence-driven immersion (first wavefront dominance) but below the 15–25 ms echo threshold.
+Mathematically, for $\tau = 3$ ms (mid-range), first notch $ f_1 = 1/(2 \times 0.003) \approx 167$ Hz, spacing $ \Delta f = 1/0.003 \approx 333$ Hz, so notches at 167 Hz, 500 Hz, 833 Hz, etc. For $\tau = 6$ ms, $ f_1 \approx 83$ Hz, spacing 167 Hz. Since rears contribute minimally above 2 kHz, comb effects are confined to lows/mids (<2 kHz), potentially inaudible if rear levels are 10–15 dB lower or masked. If rears emit some highs (e.g., via decay roll-off), comb in highs could emerge, but keeping $\tau < 10$ ms and amplitudes mismatched (e.g., fronts slightly more sensitive) prevents this. Simulations suggest thresholds: comb weakens with $\tau > 15$ ms or level differences >10 dB; for highs, perception peaks at 0.5–3 ms delays.
+
+Delay $\tau$ (ms)First Notch $ f_1 $ (Hz)Notch Spacing $\Delta f$ (Hz)Potential QUALIA•NSS Impact (Assuming Rear Limit 1–2 kHz)15001000Strong in mids/highs; avoid for immersion—too short for precedence.3167333Affects lows/mids; minimal in highs if rears decay early.683167Low-frequency focus; immersion good, comb negligible in highs.1050100Borderline echo; comb weak if levels differ by >10 dB.202550Perceived as echo; comb disappears, but immersion may suffer.
+This analysis underscores a balance: delays of 3–6 ms optimize QUALIA•NSS for "natural envelopment" without pronounced combing, especially in highs, by leveraging spectral separation.
+
+---
+
+## 5. **COMPUTATIONAL ANALYSIS FRAMEWORK - ADVANCED FEATURES**
+
+### 5.1 **Dual-Path Analysis System**
+
+The Perfect Logic Framework implementation provides unprecedented access to both **dry reference signals** (`analyzers.reference`) and **wet processed signals** (`analyzers.input`), enabling sophisticated **real-time computational analysis** that complements visual/auditory assessment.
+
+#### **Signal Flow for Analysis:**
+```
+Reference Signal Source → speakerBus.input ←── analyzers.reference (DRY PATH)
+                                ↓
+                         [Speaker Processing]
+                                ↓
+                        combFilter.input ←── analyzers.input (WET PATH)
+```
+
+### 5.2 **Real-Time Comb-Filtering Quantification**
+
+**Compare dry vs wet frequency spectra to measure actual comb filtering:**
+
+```javascript
+function analyzeCombFiltering() {
+    const dryFFT = getAnalyzerData('reference');  // Raw reference
+    const wetFFT = getAnalyzerData('input');      // Mixed delayed output
+    
+    // Calculate magnitude difference
+    const combPattern = wetFFT.map((wet, i) => wet - dryFFT[i]);
+    
+    // Detect notch frequencies
+    const notches = findSpectralNotches(combPattern);
+    const peaks = findSpectralPeaks(combPattern);
+    
+    return {
+        notchFrequencies: notches,
+        peakFrequencies: peaks,
+        combDepth: calculateCombDepth(combPattern),
+        notchSpacing: calculateNotchSpacing(notches),
+        theoreticalMatch: compareWithPredicted(notches, speakerDelays)
+    };
+}
+```
+
+### 5.3 **Delay Time Verification & Cross-Correlation**
+
+**Measure actual vs theoretical delays using signal correlation:**
+
+```javascript
+function verifyDelayAccuracy() {
+    const crossCorrelation = calculateCrossCorrelation(drySignal, wetSignal);
+    const measuredDelay = findPeakDelay(crossCorrelation);
+    const theoreticalDelay = computeTheoreticalDelay(listenerPosition);
+    
+    return {
+        measuredDelay: measuredDelay,
+        theoreticalDelay: theoreticalDelay,
+        accuracy: Math.abs(measuredDelay - theoreticalDelay),
+        correlationCoefficient: calculateCorrelation(drySignal, wetSignal),
+        delaySpread: calculateDelaySpread(crossCorrelation)
+    };
+}
+```
+
+### 5.4 **Phase Relationship Analysis**
+
+**Quantify constructive/destructive interference patterns:**
+
+```javascript
+function analyzePhaseInterference() {
+    const dryPhase = calculatePhaseSpectrum(dryFFT);
+    const wetPhase = calculatePhaseSpectrum(wetFFT);
+    const phaseDifference = wetPhase.map((wet, i) => wet - dryPhase[i]);
+    
+    return {
+        phaseShift: phaseDifference,
+        constructiveFreqs: findConstructiveInterference(phaseDifference),
+        destructiveFreqs: findDestructiveInterference(phaseDifference),
+        coherence: calculateCoherence(dryFFT, wetFFT),
+        phaseCoherence: calculatePhaseCoherence(dryPhase, wetPhase)
+    };
+}
+```
+
+### 5.5 **Impulse Response & Transient Analysis**
+
+**Analyze system response to transient events (related to attack/onset velocity):**
+
+```javascript
+function analyzeTransientResponse() {
+    const dryTransient = extractTransient(referenceSignal);   // Pure attack
+    const wetTransient = extractTransient(processedSignal);   // After speaker delays
+    
+    return {
+        attackTime: measureAttackTime(wetTransient),
+        decayTime: measureDecayTime(wetTransient),
+        transientPreservation: compareTransients(dryTransient, wetTransient),
+        echoPattern: detectEchoes(wetTransient),
+        temporalSmearing: calculateTemporalSmearing(dryTransient, wetTransient),
+        attackVelocity: calculateAttackRate(wetTransient),
+        perceivedPunch: calculatePerceivedTransient(wetTransient)
+    };
+}
+```
+
+### 5.6 **Room Acoustics Simulation Validation**
+
+**Compare predicted vs actual acoustic behavior:**
+
+```javascript
+function validateAcousticModel() {
+    const predictedResponse = calculateTheoreticalResponse(
+        listenerPosition, 
+        speakerPositions, 
+        roomGeometry
+    );
+    
+    const measuredResponse = getAnalyzerData('input');
+    
+    return {
+        modelAccuracy: calculateRMSE(predictedResponse, measuredResponse),
+        frequencyResponseMatch: compareFRcurves(predictedResponse, measuredResponse),
+        roomModeDetection: detectRoomModes(measuredResponse),
+        reflectionPattern: analyzeReflectionStructure(measuredResponse)
+    };
+}
+```
+
+### 5.7 **Real-Time Audio Quality Metrics**
+
+**Comprehensive signal quality assessment:**
+
+```javascript
+function calculateAudioMetrics() {
+    return {
+        // Signal Quality
+        SNR: calculateSNR(drySignal, wetSignal),
+        THD: calculateTHD(wetSignal),
+        dynamicRange: calculateDynamicRange(wetSignal),
+        
+        // Spectral Characteristics
+        spectralCentroid: calculateSpectralCentroid(wetFFT),
+        spectralRolloff: calculateSpectralRolloff(wetFFT),
+        spectralFlatness: calculateSpectralFlatness(wetFFT),
+        
+        // Temporal Characteristics
+        zeroCrossingRate: calculateZCR(wetSignal),
+        temporalCentroid: calculateTemporalCentroid(wetSignal),
+        
+        // Psychoacoustic Metrics
+        loudness: calculateLoudness(wetFFT),
+        sharpness: calculateSharpness(wetFFT),
+        roughness: calculateRoughness(wetFFT)
+    };
+}
+```
+
+### 5.8 **Educational Feedback & Learning Analytics**
+
+**Automated learning assistance and progress tracking:**
+
+```javascript
+function generateEducationalFeedback() {
+    const analysis = analyzeCombFiltering();
+    
+    return {
+        // Quantitative Feedback
+        firstNotchFrequency: analysis.notchFrequencies[0],
+        notchSpacingConsistency: evaluateNotchSpacing(analysis.notches),
+        combingEffectiveness: rateCombingStrength(analysis.combDepth),
+        theoreticalMatch: compareWithTheory(analysis, theoreticalPredictions),
+        
+        // Learning Assessment
+        conceptUnderstanding: assessConceptGrasp(userActions, results),
+        learningProgress: trackLearningObjectives(sessionData),
+        difficultyLevel: adaptDifficultyLevel(performanceMetrics),
+        
+        // Contextual Tips
+        learningTips: generateContextualTips(analysis),
+        nextExperiment: suggestNextExperiment(currentLevel),
+        commonMistakes: identifyCommonErrors(userBehavior)
+    };
+}
+```
+
+### 5.9 **Advanced Analysis Capabilities**
+
+#### **Multi-Speaker Coherence Analysis**
+```javascript
+function analyzeMultiSpeakerCoherence() {
+    return {
+        speakerCorrelation: calculateSpeakerCorrelation(),
+        phasingIssues: detectPhasingProblems(),
+        spatialCoherence: calculateSpatialCoherence(),
+        imagingAccuracy: assessStereoImaging()
+    };
+}
+```
+
+#### **Psychoacoustic Analysis**
+```javascript
+function analyzePsychoacoustics() {
+    return {
+        maskingThreshold: calculateMaskingThreshold(wetFFT),
+        auditorySceneAnalysis: performASA(wetSignal),
+        precedenceEffect: measurePrecedenceEffect(multiChannelSignals),
+        localizationCues: analyzeLocalizationCues(binauralSignals)
+    };
+}
+```
+
+### 5.10 **Implementation Opportunities**
+
+#### **Real-Time Metrics Dashboard**
+- Display computed values alongside visualizations
+- Live updating numerical analysis results
+- Color-coded indicators for optimal/problematic conditions
+
+#### **Automated Detection Systems**
+- Highlight predicted vs actual notch frequencies  
+- Phase correlation meters showing interference levels
+- Model validation scores rating theoretical match
+
+#### **Educational Progress Tracking**
+- Quantify learning objectives achievement
+- Adaptive difficulty adjustment based on performance
+- Personalized learning path recommendations
+
+#### **Advanced Research Features**
+- **Room Transfer Function Estimation**
+- **Reverberation Time Calculation** (RT60, EDT)
+- **Speaker Distance Verification** via time-of-flight
+- **Binaural Analysis** for spatial perception studies
+- **Spectral Masking Analysis** for psychoacoustic research
+
+### 5.11 **Educational Value Enhancement**
+
+This computational framework transforms the tool from purely **qualitative** (visual/auditory) to **quantitative** (measurable/comparable) analysis:
+
+1. **Objective Validation:** Students can verify theoretical predictions with measured results
+2. **Scientific Method:** Hypothesis → Prediction → Measurement → Analysis
+3. **Advanced Learning:** Bridge gap between basic concepts and professional acoustics
+4. **Research Applications:** Tool becomes suitable for academic research projects
+
+The dual-path analysis system (dry reference vs wet processed) enables unprecedented educational insight into how acoustic processing affects audio signals in measurable, quantifiable ways.
+
+---
+
+## 6. **PHASE 4: REAL-WORLD AUDIO INPUT ANALYSIS LAYER**
+
+### 6.1 **Multi-Input Audio Configuration System**
+
+**Phase 4 introduces comprehensive real-world audio input analysis**, enabling comparison between digital simulations and actual acoustic measurements using various audio input configurations.
+
+#### **Supported Audio Input Types:**
+- **Internal Microphone** (Raw/Calibrated)
+- **External Microphone** (Raw/Calibrated)  
+- **Audio Line-In** (Analog input)
+- **USB Audio Interfaces** (Professional sound interfaces)
+
+#### **Triple-Path Analysis Architecture:**
+```
+Reference Signal (Digital) → analyzers.reference (SIMULATION INPUT)
+                     ↓
+            Speaker Processing → analyzers.input (SIMULATION OUTPUT)
+                     ↓
+Real-World Microphone Input → analyzers.microphone (MEASURED REALITY)
+```
+
+### 6.2 **Real vs Simulated Acoustic Analysis**
+
+**Complete acoustic measurement validation system:**
+
+```javascript
+function analyzeRealVsSimulated() {
+    const simulatedDry = getAnalyzerData('reference');      // Digital reference
+    const simulatedWet = getAnalyzerData('input');          // Digital processed
+    const measuredReal = getAnalyzerData('microphone');     // Real acoustic measurement
+    
+    return {
+        // Simulation Validation
+        simulationAccuracy: compareSimulationToReality(simulatedWet, measuredReal),
+        roomCharacteristics: extractRoomProperties(measuredReal, simulatedWet),
+        
+        // Real-World Analysis
+        actualCombFiltering: detectRealCombPatterns(measuredReal),
+        roomReverberation: analyzeReverberation(measuredReal, simulatedDry),
+        acousticTransferFunction: calculateRoomTransferFunction(simulatedDry, measuredReal),
+        
+        // Educational Insights
+        theoryVsReality: compareTheoreticalWithMeasured(predicted, measuredReal),
+        roomModeDetection: identifyRoomModes(measuredReal),
+        reflectionAnalysis: analyzeReflectionPatterns(measuredReal)
+    };
+}
+```
+
+### 6.3 **Microphone Calibration System**
+
+**Professional-grade calibration for educational accuracy:**
+
+```javascript
+class MicrophoneCalibration {
+    calibrateInput(inputType, calibrationData) {
+        return {
+            // Frequency Response Correction
+            frequencyCalibration: this.correctFrequencyResponse(calibrationData),
+            
+            // Sensitivity Adjustment
+            sensitivityCorrection: this.adjustSensitivity(inputType),
+            
+            // Environmental Compensation
+            roomCompensation: this.compensateForRoom(calibrationData),
+            
+            // Signal Chain Correction
+            preampGainCorrection: this.correctPreampGain(inputType),
+            
+            // Noise Floor Measurement
+            noiseFloorCharacterization: this.measureNoiseFloor(inputType)
+        };
+    }
+}
+```
+
+### 6.4 **Advanced Real-World Experiments**
+
+#### **Experiment 4: Digital vs Acoustic Validation**
+- **Goal:** Validate digital simulation accuracy against real acoustic measurements
+- **Method:** Compare simulated comb patterns with microphone-measured patterns
+- **Learning:** Understand limitations and accuracy of digital acoustic modeling
+
+#### **Experiment 5: Room Characterization**
+- **Goal:** Measure and characterize real room acoustic properties
+- **Method:** Use reference signals + microphone to create room acoustic fingerprint
+- **Learning:** Room modes, reverberation time, reflection patterns
+
+#### **Experiment 6: Multi-Position Analysis**
+- **Goal:** Create acoustic maps of real spaces
+- **Method:** Move microphone through space while maintaining speaker positions
+- **Learning:** Spatial variation of acoustic properties, sweet spot identification
+
+### 6.5 **Professional Audio Interface Integration**
+
+#### **USB Audio Interface Support:**
+```javascript
+class USBAudioInterface {
+    detectAudioInterfaces() {
+        return {
+            // Interface Detection
+            availableInterfaces: this.scanUSBAudioDevices(),
+            
+            // Capability Analysis  
+            inputChannels: this.getInputChannelCount(),
+            sampleRates: this.getSupportedSampleRates(),
+            bitDepths: this.getSupportedBitDepths(),
+            
+            // Professional Features
+            phantomPower: this.checkPhantomPowerSupport(),
+            preampGain: this.getPreampGainRange(),
+            directMonitoring: this.checkDirectMonitoringCapability()
+        };
+    }
+}
+```
+
+#### **Multi-Channel Analysis:**
+- **Stereo Field Analysis** (Left/Right channel correlation)
+- **Multi-Microphone Arrays** (Spatial coherence measurement)
+- **Binaural Recording** (HRTF analysis capabilities)
+- **Ambisonic Capture** (3D spatial audio analysis)
+
+### 6.6 **Educational Value of Real-World Analysis**
+
+#### **Theory to Practice Bridge:**
+1. **Validation Learning:** Students verify theoretical predictions with real measurements
+2. **Real-World Complexity:** Experience how actual rooms differ from ideal simulations
+3. **Professional Skills:** Learn professional acoustic measurement techniques
+4. **Critical Thinking:** Analyze discrepancies between theory and reality
+
+#### **Advanced Learning Objectives:**
+- **Acoustic Measurement Techniques**
+- **Room Acoustic Characterization** 
+- **Audio Equipment Usage**
+- **Scientific Method Application**
+- **Professional Workflow Development**
+
+### 6.7 **Implementation Requirements**
+
+#### **Audio Input Management:**
+```javascript
+class AudioInputManager {
+    async initializeInputs() {
+        return {
+            // Input Source Selection
+            internalMic: await this.accessInternalMicrophone(),
+            externalMic: await this.accessExternalMicrophone(),
+            lineIn: await this.accessLineInput(),
+            usbInterface: await this.accessUSBAudioInterface(),
+            
+            // Calibration Data
+            calibrationProfiles: this.loadCalibrationProfiles(),
+            
+            // Real-time Processing
+            realtimeAnalyzers: this.setupRealtimeAnalyzers(),
+            
+            // Recording Capabilities
+            recordingEngine: this.initializeRecordingEngine()
+        };
+    }
+}
+```
+
+#### **Measurement Accuracy Features:**
+- **Latency Compensation** (Account for input/output delays)
+- **Clock Synchronization** (Align digital and analog timing)
+- **Noise Reduction** (Filter environmental noise)
+- **Dynamic Range Optimization** (Maximize measurement precision)
+
+This Phase 4 implementation transforms the tool into a **complete acoustic measurement and analysis platform**, bridging the gap between educational simulation and professional acoustic measurement practices.
+
+Key Citations
+
+Bosi, M., & Goldberg, R. E. (2003). Introduction to digital audio coding and standards. Kluwer Academic Publishers. (For comb filter equations; via DSPRelated.com).
+Cycling '74. (n.d.). MSP Delay Tutorial 6: Comb Filter. Max 8 Documentation. https://docs.cycling74.com/max8/tutorials/15_delaychapter06
+Dobrian, C. (n.d.). Comb filtering. Max Cookbook. University of California, Irvine. https://music.arts.uci.edu/dobrian/maxcookbook/comb-filtering
+DPA Microphones. (n.d.). The basics about comb filtering (and how to avoid it). https://www.dpamicrophones.com/mic-university/audio-production/the-basics-about-comb-filtering-and-how-to-avoid-it/
+iZotope. (2022, June 24). What is comb filtering? https://www.izotope.com/en/learn/what-is-comb-filtering
+Pratt, S., & Dobrian, C. (n.d.). Digital sound & music. https://digitalsoundandmusic.com/4-3-5-the-mathematics-of-delays-comb-filtering-and-room-modes/
+QSC. (2021, June 23). What is comb filtering and how to avoid it. Live Sound Blog. https://blogs.qsc.com/live-sound/what-is-comb-filtering-and-how-to-avoid-it/
+Smith, J. O. (2010). Physical audio signal processing. https://www.dsprelated.com/freebooks/pasp/Comb_Filters.html
+Sweetwater. (2022, July 10). Comb filtering: What is it and why does it matter? InSync. https://www.sweetwater.com/insync/what-is-it-comb-filtering/
+web-audio-components. (n.d.). Comb: A lowpass comb filter effect module for the Web Audio API. GitHub. https://github.com/web-audio-components/comb
+Wikipedia contributors. (2024). Comb filter. Wikipedia. https://en.wikipedia.org/wiki/Comb_filter
+### Distance-to-Delay Reference Table
+
+**Complete Analysis: 0.5m to 6.0m (2.9ms to 20ms delay)**
+
+| Distance (m) | Delay τ (ms) | First Notch f₁ (Hz) | Notch Spacing Δf (Hz) | QUALIA-NSS Impact Assessment |
+|--------------|-------------|--------------------|--------------------|------------------------------|
+| 0.5          | 1.5         | 333                | 667                | **Too short** - Strong comb in mids/highs, insufficient for precedence |
+| 0.6          | 1.7         | 294                | 588                | **Too short** - Significant coloration, not recommended |
+| 0.7          | 2.0         | 250                | 500                | **Marginal** - Noticeable comb, minimal precedence benefit |
+| 0.8          | 2.3         | 217                | 435                | **Borderline** - Moderate comb effect, some precedence |
+| 0.9          | 2.6         | 192                | 385                | **Acceptable** - Reduced comb impact, decent precedence |
+| **1.0**      | **2.9**     | **172**            | **345**            | **✓ OPTIMAL** - Good precedence, manageable comb in lows only |
+| 1.1          | 3.2         | 156                | 313                | **✓ OPTIMAL** - Excellent balance of precedence and low comb |
+| 1.2          | 3.5         | 143                | 286                | **✓ OPTIMAL** - Strong precedence, minimal perceived comb |
+| 1.3          | 3.8         | 132                | 263                | **✓ OPTIMAL** - Very good for immersion, low comb risk |
+| 1.4          | 4.1         | 122                | 244                | **✓ OPTIMAL** - Excellent precedence, comb mostly in bass |
+| **1.5**      | **4.4**     | **114**            | **227**            | **✓ OPTIMAL** - Maximum recommended, excellent precedence |
+| 1.6          | 4.7         | 106                | 213                | **Good** - Strong precedence, very low audible comb |
+| 1.7          | 5.0         | 100                | 200                | **Good** - Excellent for large rooms, minimal comb |
+| 1.8          | 5.2         | 96                 | 192                | **Good** - Very natural, comb limited to deep bass |
+| 1.9          | 5.5         | 91                 | 182                | **Good** - Natural precedence, comb negligible |
+| 2.0          | 5.8         | 86                 | 172                | **Good** - Maximum QUALIA-NSS distance, excellent results |
+| 2.5          | 7.3         | 68                 | 137                | **Acceptable** - Good precedence, no audible comb |
+| 3.0          | 8.7         | 57                 | 115                | **Large Room** - Excellent precedence, no comb issues |
+| 4.0          | 11.7        | 43                 | 85                 | **Very Large** - Strong precedence, potential for slight echo |
+| 5.0          | 14.6        | 34                 | 68                 | **Maximum** - Approaching echo threshold |
+| 6.0          | 17.5        | 29                 | 57                 | **Echo Risk** - May be perceived as discrete echo |
+| 7.0          | 20.4        | 25                 | 49                 | **Echo Territory** - Exceeds psychoacoustic comfort zone |
