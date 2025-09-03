@@ -482,7 +482,7 @@ class WikiModule {
     registerServiceWorker() {
         try {
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/wiki-sw.js').then(() => {
+                navigator.serviceWorker.register('/src/wiki-utils/wiki-sw.js', { scope: '/src/wiki-utils/' }).then(() => {
                     console.log('📝 Wiki service worker registered');
                 }).catch((error) => {
                     console.log('📝 Service worker registration failed (optional):', error);

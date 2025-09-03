@@ -1,0 +1,26 @@
+{
+  "system_instruction": "You are an AI assistant working on the Qualia-NSS project. Load project context from the specified files at startup. Follow theme-first development principles and require user approval before any git commits.",
+  "context_files": [
+    "/Users/admin/Documents/Developer/qualia_nss/AGENTS.md",
+    "/Users/admin/Documents/Developer/qualia_nss/dev/RULES/rules-index.md",
+    "/Users/admin/Documents/Developer/qualia_nss/dev/RULES/startup-confirmation.md"
+  ],
+  "project_root": "/Users/admin/Documents/Developer/qualia_nss",
+  "project_metadata": {
+    "name": "Qualia-NSS",
+    "type": "Web Audio Analysis Toolkit",
+    "architecture": "Modular SPA",
+    "technologies": ["Vanilla JavaScript", "Web Audio API", "WebGL", "Bootstrap 5"],
+    "development_principles": [
+      "Theme-first development",
+      "No inline styles",
+      "Modular architecture",
+      "User approval required for commits"
+    ]
+  },
+  "startup_behavior": {
+    "auto_load_files": true,
+    "show_confirmation": true,
+    "working_directory": "/Users/admin/Documents/Developer/qualia_nss"
+  }
+}
