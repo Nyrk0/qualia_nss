@@ -21,15 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const showTopFade = container.scrollTop > 0;
             const showBottomFade = container.scrollTop < (container.scrollHeight - container.clientHeight - scrollEndTolerance);
             
-            // Debug: Check if classes are being applied
-            console.log('Fade Debug:', {
-                selector: containerSelector,
-                scrollTop: container.scrollTop,
-                showTopFade,
-                showBottomFade,
-                topFadeClass: container.classList.contains('show-top-fade'),
-                bottomFadeClass: container.classList.contains('show-bottom-fade')
-            });
             
             container.classList.toggle('show-top-fade', showTopFade);
             container.classList.toggle('show-bottom-fade', showBottomFade);
@@ -61,14 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const showTopFade = scrollContainer.scrollTop > 0;
             const showBottomFade = scrollContainer.scrollTop < (scrollContainer.scrollHeight - scrollContainer.clientHeight - scrollEndTolerance);
             
-            // Debug: Check if classes are being applied
-            console.log('Fixed Fade Debug:', {
-                scrollSelector: scrollContainerSelector,
-                targetSelector: targetContainerSelector,
-                scrollTop: scrollContainer.scrollTop,
-                showTopFade,
-                showBottomFade
-            });
             
             // Apply fade classes to target container (sidebar), not scroll container
             targetContainer.classList.toggle('show-top-fade', showTopFade);

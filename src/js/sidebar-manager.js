@@ -183,21 +183,38 @@ document.addEventListener('DOMContentLoaded', () => {
                         <label class="form-check-label">Dynamic Range (dBFS)</label>
                         <div class="range-slider-wrapper">
                             <div class="range-slider-values">
-                                <span id="range-min-value">-100</span>
+                                <span id="range-min-value">-120</span>
                                 <span id="range-max-value">0</span>
                             </div>
                             <div class="range-slider-track"></div>
-                            <input type="range" class="form-range" min="-120" max="0" value="-100" id="spectro-min-db">
+                            <input type="range" class="form-range" min="-120" max="0" value="-120" id="spectro-min-db">
                             <input type="range" class="form-range" min="-120" max="0" value="0" id="spectro-max-db">
                         </div>
                         <div class="colormap-spectrum" id="dynamic-range-colormap">
+                            <div id="colormap-left-extension" class="colormap-extension"></div>
                             <canvas id="colormap-canvas" width="200" height="20"></canvas>
+                            <div id="colormap-right-extension" class="colormap-extension"></div>
                             <div class="colormap-labels">
                                 <span class="colormap-label-left">Min</span>
                                 <span class="colormap-label-right">Max</span>
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Test Tone Control -->
+                    <div class="analysis-mode-controls" style="border-top: 1px solid var(--border-color); margin-top: 10px; padding-top: 10px;">
+                        <div class="d-flex align-items-center" style="gap: 12px;">
+                            <span class="tone-label" style="font-size: 0.85rem; color: var(--text-color); min-width: 80px;"></span>
+                            <tone-control id="spectrogramToneControl" value="0.566" aria-label="Spectrogram test tone frequency control" style="flex: 1; max-width: 300px;"></tone-control>
+                        </div>
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" role="switch" id="frequencyLines">
+                            <label class="form-check-label" for="frequencyLines" style="color: white; font-size: 0.85rem;">
+                                Lines
+                            </label>
+                        </div>
+                    </div>
+                    
                     <div class="accordion" id="sidebarAccordion">
                 <!-- 1. Experiment Setup -->
                 <div class="accordion-item">
@@ -299,52 +316,68 @@ document.addEventListener('DOMContentLoaded', () => {
                     </h2>
                     <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#sidebarAccordion">
                         <div class="accordion-body">
+                            <!-- Viewport Presets -->
+                            <div class="mb-3">
+                                <label class="form-label" style="font-size: 0.9rem; margin-bottom: 8px;">Viewport Presets</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="viewportPreset" id="preset-front" checked>
+                                    <label class="form-check-label" for="preset-front" style="color: white; font-size: 0.85rem;">
+                                        Front
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="viewportPreset" id="preset-upper">
+                                    <label class="form-check-label" for="preset-upper" style="color: white; font-size: 0.85rem;">
+                                        Upper
+                                    </label>
+                                </div>
+                            </div>
                             <label for="rotX" class="form-label">Rotate X</label>
-                            <input type="range" class="form-range" id="rotX" min="-360" max="360" value="-90">
+                            <input type="range" class="form-range" id="rotX" min="-360" max="360" value="-90" step="15">
                             <div class="d-flex justify-content-between">
-                                <small class="text-muted">-360°</small>
-                                <small class="text-muted" id="rotX-value">-90°</small>
-                                <small class="text-muted">360°</small>
+                                <small style="color: white;">-360°</small>
+                                <small style="color: white;" id="rotX-value">-90°</small>
+                                <small style="color: white;">360°</small>
                             </div>
                             
                             <label for="rotY" class="form-label mt-3">Rotate Y</label>
-                            <input type="range" class="form-range" id="rotY" min="-360" max="360" value="0">
+                            <input type="range" class="form-range" id="rotY" min="-360" max="360" value="0" step="15">
                             <div class="d-flex justify-content-between">
-                                <small class="text-muted">-360°</small>
-                                <small class="text-muted" id="rotY-value">0°</small>
-                                <small class="text-muted">360°</small>
+                                <small style="color: white;">-360°</small>
+                                <small style="color: white;" id="rotY-value">0°</small>
+                                <small style="color: white;">360°</small>
                             </div>
                             
                             <label for="rotZ" class="form-label mt-3">Rotate Z</label>
-                            <input type="range" class="form-range" id="rotZ" min="-360" max="360" value="90">
+                            <input type="range" class="form-range" id="rotZ" min="-360" max="360" value="270" step="15">
                             <div class="d-flex justify-content-between">
-                                <small class="text-muted">-360°</small>
-                                <small class="text-muted" id="rotZ-value">90°</small>
-                                <small class="text-muted">360°</small>
+                                <small style="color: white;">-360°</small>
+                                <small style="color: white;" id="rotZ-value">270°</small>
+                                <small style="color: white;">360°</small>
                             </div>
 
                             <label for="posY" class="form-label mt-3">Position Y</label>
                             <input type="range" class="form-range" id="posY" min="-10" max="10" value="-3.5" step="0.1">
                             <div class="d-flex justify-content-between">
-                                <small class="text-muted">-10</small>
-                                <small class="text-muted" id="posY-value">-3.5</small>
-                                <small class="text-muted">10</small>
+                                <small style="color: white;">-10</small>
+                                <small style="color: white;" id="posY-value">-3.5</small>
+                                <small style="color: white;">10</small>
                             </div>
 
                             <label for="posZ" class="form-label mt-3">Zoom (Position Z)</label>
                             <input type="range" class="form-range" id="posZ" min="-20" max="0" value="-7.5" step="0.1">
                             <div class="d-flex justify-content-between">
-                                <small class="text-muted">-20</small>
-                                <small class="text-muted" id="posZ-value">-7.5</small>
-                                <small class="text-muted">0</small>
+                                <small style="color: white;">-20</small>
+                                <small style="color: white;" id="posZ-value">-7.5</small>
+                                <small style="color: white;">0</small>
                             </div>
 
                             <label for="vScale" class="form-label mt-3">Vertical Scale</label>
                             <input type="range" class="form-range" id="vScale" min="0.1" max="6" value="3.5" step="0.1">
                             <div class="d-flex justify-content-between">
-                                <small class="text-muted">0.1</small>
-                                <small class="text-muted" id="vScale-value">3.5</small>
-                                <small class="text-muted">6.0</small>
+                                <small style="color: white;">0.1</small>
+                                <small style="color: white;" id="vScale-value">3.5</small>
+                                <small style="color: white;">6.0</small>
                             </div>
                         </div>
                     </div>

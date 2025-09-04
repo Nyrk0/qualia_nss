@@ -46,6 +46,7 @@ const sonogramVertexShader = `
   uniform float dbfsOffset;   // calibration offset in dB
   uniform float u_minDb;
   uniform float u_maxDb;
+  uniform float u_sampleRate;
   varying vec2 texCoord;
   varying vec3 color;
 
@@ -77,7 +78,11 @@ const sonogramVertexShader = `
   }
 
   void main() {
-    float x = pow(256.0, gTexCoord0.x - 1.0);
+    // Convert visual x-coordinate (logarithmic) to frequency, then to linear texture coordinate
+    float visualPos = gTexCoord0.x;
+    float freq = 20.0 * pow(1000.0, visualPos); // 20Hz to 20kHz
+    float nyquist = u_sampleRate / 2.0;
+    float x = freq / nyquist;
     vec4 sample = texture2D(vertexFrequencyData, vec2(x, gTexCoord0.y + vertexYOffset));
     // sample.a in [0,1] corresponds to -100..0 dBFS when analyser range is set to [-100, 0]
     float db = -100.0 + sample.a * 100.0;
@@ -105,9 +110,14 @@ const sonogramFragmentShader = `
   uniform float u_minDb;
   uniform float u_maxDb;
   uniform float dbfsOffset;
+  uniform float u_sampleRate;
 
   void main() {
-    float x = pow(256.0, texCoord.x - 1.0);
+    // Convert visual x-coordinate (logarithmic) to frequency, then to linear texture coordinate
+    float visualPos = texCoord.x;
+    float freq = 20.0 * pow(1000.0, visualPos); // 20Hz to 20kHz
+    float nyquist = u_sampleRate / 2.0;
+    float x = freq / nyquist;
     float y = texCoord.y + yoffset;
     vec4 sample = texture2D(frequencyData, vec2(x, y));
 
@@ -485,6 +495,7 @@ class AnalyserView {
         this.hBase = 3.0; // base Y extent of cube/axis before verticalScale
         this.fadeEnabled = false;  // Start with fade OFF
         this.gateEnabled = true;
+        this.frequencyLinesEnabled = false;
         this.minDb = -100.0;
         this.maxDb = 0.0;
         // Initialize tick-related state BEFORE GL creates buffers that depend on it
@@ -568,6 +579,9 @@ class AnalyserView {
                 vertices[3 * (sonogram3DWidth * z + x) + 0] = sonogram3DGeometrySize * (x - sonogram3DWidth / 2) / sonogram3DWidth;
                 vertices[3 * (sonogram3DWidth * z + x) + 1] = 0;
                 vertices[3 * (sonogram3DWidth * z + x) + 2] = sonogram3DGeometrySize * (z - sonogram3DHeight / 2) / sonogram3DHeight;
+                
+                // Use simple linear texture coordinates 
+                // The logarithmic frequency distribution will be handled by the visual positioning
                 texCoords[2 * (sonogram3DWidth * z + x) + 0] = x / (sonogram3DWidth - 1);
                 texCoords[2 * (sonogram3DWidth * z + x) + 1] = z / (sonogram3DHeight - 1);
             }
@@ -702,7 +716,7 @@ class AnalyserView {
             { key: 'pres',  name: 'Presence',   f1: 4000, f2: 6000 },
             { key: 'brill', name: 'Brilliance', f1: 6000, f2: 20000 }
         ];
-        const boundaries = [20,60,250,500,2000,4000,6000,20000];
+        const boundaries = [20,60,100,250,500,1000,2000,4000,6000,10000,15000,20000];
         const centers = this.bandDefs.map(b => Math.sqrt(b.f1*b.f2));
         this.xTickDefs = [];
         // Boundary ticks (numeric labels)
@@ -750,15 +764,16 @@ class AnalyserView {
     }
 
     _freqToU(freqHz) {
-        // Map frequency to normalized bin position [0..1]
-        const nyquist = this.sampleRate / 2;
-        const f = Math.max(1e-9, Math.min(freqHz, nyquist));
-        const fNorm = f / nyquist;
-        // In the shader we sample with: x = pow(256.0, u - 1.0)
-        // So u = 1 + log(fNorm)/log(256)
-        const u = 1 + (Math.log(fNorm) / Math.log(256.0));
-        // clamp to [0,1]
-        return Math.max(0, Math.min(1, u));
+        // Map frequency to visual position coordinate (matches geometry texture coordinate logic)
+        const minFreq = 20, maxFreq = 20000;
+        const f = Math.max(minFreq, Math.min(freqHz, maxFreq));
+        
+        // Convert frequency to logarithmic visual position [0..1]
+        // This matches the geometry generation: visual position maps to frequency logarithmically
+        const logMin = Math.log10(minFreq), logMax = Math.log10(maxFreq);
+        const visualPos = (Math.log10(f) - logMin) / (logMax - logMin);
+        
+        return Math.max(0, Math.min(1, visualPos));
     }
 
     _rebuildTicks() {
@@ -773,24 +788,38 @@ class AnalyserView {
         const h = this.hBase * this.verticalScale;
         const verts = [];
 
-        // X-axis ticks at the front edge (z = -d/2), from y=0 to small height
+        // X-axis ticks at the back edge (z = +d/2), extending outward from the graph
+        const zBack = d * 0.5;
         const zFront = -d * 0.5;
         const tickH = 0.2;
         for (const t of this.xTickDefs) {
             const u = this._freqToU(t.hz);
             const x = (u - 0.5) * w;
             const hX = t.kind === 'center' ? tickH*1.7 : tickH;
-            verts.push(x, 0, zFront,  x, hX, zFront);
+            // Extend outward from the back edge (present time)
+            verts.push(x, 0, zBack,  x, 0, zBack + hX);
         }
 
-        // Y-axis ticks (left-front edge at x=-w/2, z=zFront), values in dBFS
+        // Frequency lines from present-time to past-time (if enabled)
+        if (this.frequencyLinesEnabled) {
+            for (const t of this.xTickDefs) {
+                if (t.kind === 'boundary') { // Only draw lines for labeled boundaries
+                    const u = this._freqToU(t.hz);
+                    const x = (u - 0.5) * w;
+                    // Draw line from bottom to top (amplitude direction) on the front plane
+                    verts.push(x, 0, zBack,  x, h, zBack);
+                }
+            }
+        }
+
+        // Y-axis ticks (left-front edge at x=-w/2, z=zBack), values in dBFS
         const xLeft = -w * 0.5;
         const yMax = h; // visual box height scales with VS
         const minDb = -100, maxDb = 0;
         for (const db of this.yTicksDb) {
             const t = (db - minDb) / (maxDb - minDb);
             const y = t * yMax;
-            verts.push(xLeft, y, zFront,  xLeft + 0.25, y, zFront);
+            verts.push(xLeft, y, zBack,  xLeft + 0.25, y, zBack);
         }
 
         // Z-axis ticks (center line at x=0), time in seconds from oldest (front) to now (back)
@@ -847,6 +876,7 @@ class AnalyserView {
         program.u_enableGateLoc = gl.getUniformLocation(program, 'u_enableGate');
         program.u_minDbLoc = gl.getUniformLocation(program, 'u_minDb');
         program.u_maxDbLoc = gl.getUniformLocation(program, 'u_maxDb');
+        program.u_sampleRateLoc = gl.getUniformLocation(program, 'u_sampleRate');
         return program;
     }
 
@@ -946,6 +976,7 @@ class AnalyserView {
         gl.uniform1i(shader.u_enableGateLoc, this.gateEnabled);
         gl.uniform1f(shader.u_minDbLoc, this.minDb);
         gl.uniform1f(shader.u_maxDbLoc, this.maxDb);
+        if (shader.u_sampleRateLoc) gl.uniform1f(shader.u_sampleRateLoc, this.sampleRate);
         if (shader.hBaseLoc) gl.uniform1f(shader.hBaseLoc, this.hBase);
 
         let projection = new Matrix4x4();
@@ -1060,19 +1091,19 @@ class AnalyserView {
         if (!this.labelContainer) return;
         const w = this.sonogram3DGeometrySize;
         const d = this.sonogram3DGeometrySize;
-        const zFront = -d * 0.5;
+        const zBack = d * 0.5;  // Changed to back edge (present time)
         const xLeft = -w * 0.5;
 
-        // X labels: position only those ticks that have label elements
+        // X labels: position only those ticks that have label elements at back edge
         for (let i = 0; i < this.xTickDefs.length; i++) {
             const t = this.xTickDefs[i];
             if (!t.labelEl) continue;
             const u = this._freqToU(t.hz);
             const x = (u - 0.5) * w;
-            const p = this._projectToScreen(x, 0.0, zFront);
+            const p = this._projectToScreen(x, 0.0, zBack);  // Project to back edge
             if (p) {
                 t.labelEl.style.left = `${p[0]}px`;
-                t.labelEl.style.top = `${p[1] + 10}px`;
+                t.labelEl.style.top = `${p[1] + 15}px`;  // Increased offset for outward ticks
                 t.labelEl.style.display = 'block';
             }
         }
@@ -1084,7 +1115,7 @@ class AnalyserView {
             const db = this.yTicksDb[i];
             const t = (db - minDb) / (maxDb - minDb);
             const yv = t * yMax;
-            const p = this._projectToScreen(xLeft, yv, zFront);
+            const p = this._projectToScreen(xLeft, yv, zBack);  // Use zBack for consistency
             if (p) {
                 const el = this.tickLabels.y[i];
                 el.textContent = `${db}`;
@@ -1252,6 +1283,7 @@ function initializeSpectrogram() {
     const micAutoGainControl = document.getElementById('micAutoGainControl');
     const fadeToggle = document.getElementById('spectro-fade-toggle');
     const brightToggle = document.getElementById('spectro-bright-toggle');
+    const frequencyLinesToggle = document.getElementById('frequencyLines');
     const minDbSlider = document.getElementById('spectro-min-db');
     const maxDbSlider = document.getElementById('spectro-max-db');
     const minDbValue = document.getElementById('range-min-value');
@@ -1309,6 +1341,169 @@ function initializeSpectrogram() {
         });
     }
 
+    // Viewport preset functionality
+    const presetFront = document.getElementById('preset-front');
+    const presetUpper = document.getElementById('preset-upper');
+    
+    function applyFrontPreset() {
+        // Front preset values based on the image
+        const presetValues = {
+            rotX: 0,      // Rotate X = 0°
+            rotY: 0,      // Rotate Y = 0°  
+            rotZ: 360,    // Rotate Z = 360° (same as 0°)
+            posY: -2.7,   // Position Y = -2.7
+            posZ: -11.4,  // Zoom (Position Z) = -11.4
+            vScale: 2.0   // Vertical Scale = 2.0
+        };
+        
+        // Apply values to camera controller and sliders
+        if (spectrogramAnalyserView) {
+            spectrogramAnalyserView.cameraController.xRot = presetValues.rotX;
+            spectrogramAnalyserView.cameraController.yRot = presetValues.rotY;
+            spectrogramAnalyserView.cameraController.zRot = presetValues.rotZ;
+            spectrogramAnalyserView.cameraController.yT = presetValues.posY;
+            spectrogramAnalyserView.cameraController.zT = presetValues.posZ;
+            spectrogramAnalyserView.verticalScale = presetValues.vScale;
+            
+            // Update slider values and display
+            const rotXSlider = document.getElementById('rotX');
+            const rotYSlider = document.getElementById('rotY');
+            const rotZSlider = document.getElementById('rotZ');
+            const posYSlider = document.getElementById('posY');
+            const posZSlider = document.getElementById('posZ');
+            const vScaleSlider = document.getElementById('vScale');
+            
+            if (rotXSlider) {
+                rotXSlider.value = presetValues.rotX;
+                const valSpan = document.getElementById('rotX-value');
+                if (valSpan) valSpan.textContent = presetValues.rotX + '°';
+            }
+            
+            if (rotYSlider) {
+                rotYSlider.value = presetValues.rotY;
+                const valSpan = document.getElementById('rotY-value');
+                if (valSpan) valSpan.textContent = presetValues.rotY + '°';
+            }
+            
+            if (rotZSlider) {
+                rotZSlider.value = presetValues.rotZ;
+                const valSpan = document.getElementById('rotZ-value');
+                if (valSpan) valSpan.textContent = presetValues.rotZ + '°';
+            }
+            
+            if (posYSlider) {
+                posYSlider.value = presetValues.posY;
+                const valSpan = document.getElementById('posY-value');
+                if (valSpan) valSpan.textContent = presetValues.posY.toString();
+            }
+            
+            if (posZSlider) {
+                posZSlider.value = presetValues.posZ;
+                const valSpan = document.getElementById('posZ-value');
+                if (valSpan) valSpan.textContent = presetValues.posZ.toString();
+            }
+            
+            if (vScaleSlider) {
+                vScaleSlider.value = presetValues.vScale;
+                const valSpan = document.getElementById('vScale-value');
+                if (valSpan) valSpan.textContent = presetValues.vScale.toFixed(1);
+            }
+            
+            // Rebuild to apply changes
+            spectrogramAnalyserView._rebuildAxesBox();
+            spectrogramAnalyserView._rebuildTicks();
+        }
+    }
+    
+    function applyUpperPreset() {
+        // Upper preset values based on the image
+        const presetValues = {
+            rotX: -90,    // Rotate X = -90°
+            rotY: 0,      // Rotate Y = 0°  
+            rotZ: 270,    // Rotate Z = 270°
+            posY: -2.7,   // Position Y = -2.7
+            posZ: -8.1,   // Zoom (Position Z) = -8.1
+            vScale: 2.0   // Vertical Scale = 2.0
+        };
+        
+        // Apply values to camera controller and sliders
+        if (spectrogramAnalyserView) {
+            spectrogramAnalyserView.cameraController.xRot = presetValues.rotX;
+            spectrogramAnalyserView.cameraController.yRot = presetValues.rotY;
+            spectrogramAnalyserView.cameraController.zRot = presetValues.rotZ;
+            spectrogramAnalyserView.cameraController.yT = presetValues.posY;
+            spectrogramAnalyserView.cameraController.zT = presetValues.posZ;
+            spectrogramAnalyserView.verticalScale = presetValues.vScale;
+            
+            // Update slider values and display
+            const rotXSlider = document.getElementById('rotX');
+            const rotYSlider = document.getElementById('rotY');
+            const rotZSlider = document.getElementById('rotZ');
+            const posYSlider = document.getElementById('posY');
+            const posZSlider = document.getElementById('posZ');
+            const vScaleSlider = document.getElementById('vScale');
+            
+            if (rotXSlider) {
+                rotXSlider.value = presetValues.rotX;
+                const valSpan = document.getElementById('rotX-value');
+                if (valSpan) valSpan.textContent = presetValues.rotX + '°';
+            }
+            
+            if (rotYSlider) {
+                rotYSlider.value = presetValues.rotY;
+                const valSpan = document.getElementById('rotY-value');
+                if (valSpan) valSpan.textContent = presetValues.rotY + '°';
+            }
+            
+            if (rotZSlider) {
+                rotZSlider.value = presetValues.rotZ;
+                const valSpan = document.getElementById('rotZ-value');
+                if (valSpan) valSpan.textContent = presetValues.rotZ + '°';
+            }
+            
+            if (posYSlider) {
+                posYSlider.value = presetValues.posY;
+                const valSpan = document.getElementById('posY-value');
+                if (valSpan) valSpan.textContent = presetValues.posY.toString();
+            }
+            
+            if (posZSlider) {
+                posZSlider.value = presetValues.posZ;
+                const valSpan = document.getElementById('posZ-value');
+                if (valSpan) valSpan.textContent = presetValues.posZ.toString();
+            }
+            
+            if (vScaleSlider) {
+                vScaleSlider.value = presetValues.vScale;
+                const valSpan = document.getElementById('vScale-value');
+                if (valSpan) valSpan.textContent = presetValues.vScale.toFixed(1);
+            }
+            
+            // Rebuild to apply changes
+            spectrogramAnalyserView._rebuildAxesBox();
+            spectrogramAnalyserView._rebuildTicks();
+        }
+    }
+    
+    if (presetFront) {
+        presetFront.addEventListener('change', () => {
+            if (presetFront.checked) {
+                applyFrontPreset();
+            }
+        });
+        
+        // Apply front preset by default since it's checked
+        setTimeout(applyFrontPreset, 100); // Small delay to ensure everything is initialized
+    }
+    
+    if (presetUpper) {
+        presetUpper.addEventListener('change', () => {
+            if (presetUpper.checked) {
+                applyUpperPreset();
+            }
+        });
+    }
+
     if (dbfsOffset) {
         dbfsOffset.addEventListener('input', () => {
             const v = parseFloat(dbfsOffset.value);
@@ -1353,56 +1548,123 @@ function initializeSpectrogram() {
     if (brightToggle) brightToggle.addEventListener('change', e => {
         spectrogramAnalyserView.setGateEnabled(e.target.checked);
     });
+    if (frequencyLinesToggle) frequencyLinesToggle.addEventListener('change', e => {
+        spectrogramAnalyserView.frequencyLinesEnabled = e.target.checked;
+        spectrogramAnalyserView._rebuildTicks(); // Rebuild ticks to add/remove lines
+    });
 
-    // Two-thumb slider logic
+    // Store previous values to detect which thumb moved
+    let lastMinValue = -120;
+    let lastMaxValue = 0;
+
+    // Two-thumb slider logic with 20dB minimum distance limit
     function updateRange() {
-        const min = parseInt(minDbSlider.value);
-        const max = parseInt(maxDbSlider.value);
+        let min = parseInt(minDbSlider.value);
+        let max = parseInt(maxDbSlider.value);
 
-        if (min > max) {
-            // Swap them if they cross
-            minDbSlider.value = max;
-            maxDbSlider.value = min;
+        // Enforce minimum 20dB range
+        const minRange = 20;
+        
+        if (max - min < minRange) {
+            // Determine which thumb was moved by comparing to stored values
+            if (min !== lastMinValue) {
+                // Min thumb was moved, adjust max to maintain 20dB range
+                max = min + minRange;
+                if (max > 0) {
+                    max = 0;
+                    min = max - minRange;
+                }
+                maxDbSlider.value = max;
+            } else if (max !== lastMaxValue) {
+                // Max thumb was moved, adjust min to maintain 20dB range
+                min = max - minRange;
+                if (min < -120) {
+                    min = -120;
+                    max = min + minRange;
+                }
+                minDbSlider.value = min;
+            }
         }
 
-        minDbValue.textContent = minDbSlider.value;
-        maxDbValue.textContent = maxDbSlider.value;
+        // Update stored values
+        lastMinValue = min;
+        lastMaxValue = max;
 
-        spectrogramAnalyserView.setDbRange(parseFloat(minDbSlider.value), parseFloat(maxDbSlider.value));
+        minDbValue.textContent = min;
+        maxDbValue.textContent = max;
+
+        spectrogramAnalyserView.setDbRange(parseFloat(min), parseFloat(max));
         
         // Update colormap spectrum
-        updateColormapSpectrum(parseFloat(minDbSlider.value), parseFloat(maxDbSlider.value));
+        updateColormapSpectrum();
     }
 
-    // MusicLab Colormap generation with dynamic range compression
-    function updateColormapSpectrum(minDb, maxDb) {
+    // MusicLab Colormap generation with compressed container width and extensions
+    function updateColormapSpectrum() {
         const canvas = document.getElementById('colormap-canvas');
-        if (!canvas) return;
+        const container = document.getElementById('dynamic-range-colormap');
+        const leftExtension = document.getElementById('colormap-left-extension');
+        const rightExtension = document.getElementById('colormap-right-extension');
         
+        if (!canvas || !container || !leftExtension || !rightExtension) return;
+        
+        // Get slider positions to calculate compressed width
+        const minSlider = document.getElementById('spectro-min-db');
+        const maxSlider = document.getElementById('spectro-max-db');
+        const sliderWrapper = document.querySelector('.range-slider-wrapper');
+        
+        if (!minSlider || !maxSlider || !sliderWrapper) return;
+        
+        // Calculate thumb positions as percentage of slider width
+        const minValue = parseFloat(minSlider.min);
+        const maxValue = parseFloat(minSlider.max);
+        const minCurrentValue = parseFloat(minSlider.value);
+        const maxCurrentValue = parseFloat(maxSlider.value);
+        
+        const minThumbPercent = (minCurrentValue - minValue) / (maxValue - minValue);
+        const maxThumbPercent = (maxCurrentValue - minValue) / (maxValue - minValue);
+        
+        // Calculate compressed width and horizontal position based on thumb positions
+        const sliderWidth = sliderWrapper.offsetWidth;
+        const thumbDistance = maxThumbPercent - minThumbPercent;
+        const compressedWidth = Math.max(50, Math.round(sliderWidth * thumbDistance)); // Minimum 50px for visibility
+        const leftOffset = Math.round(minThumbPercent * sliderWidth);
+        
+        // Set container to full slider width (for extension background)
+        container.style.width = `${sliderWidth}px`;
+        container.style.marginLeft = '0px';
+        
+        // Position and size the extension divs
+        leftExtension.style.width = `${leftOffset}px`;
+        leftExtension.style.display = leftOffset > 0 ? 'block' : 'none';
+        
+        const rightOffset = sliderWidth - (leftOffset + compressedWidth);
+        rightExtension.style.width = `${rightOffset}px`;
+        rightExtension.style.display = rightOffset > 0 ? 'block' : 'none';
+        
+        // Set canvas size and position
         const ctx = canvas.getContext('2d');
-        const width = canvas.width = canvas.offsetWidth;
+        const width = canvas.width = compressedWidth;
         const height = canvas.height = 20;
         
-        // Create gradient with MusicLab colormap (HSV-based)
+        // Position canvas between extensions
+        canvas.style.left = `${leftOffset}px`;
+        canvas.style.width = `${compressedWidth}px`;
+        canvas.style.height = '20px';
+        
+        // Clear canvas first
+        ctx.clearRect(0, 0, width, height);
+        
+        // Create gradient with FULL MusicLab spectrum (always blue to red)
         const imageData = ctx.createImageData(width, height);
         const data = imageData.data;
         
-        // Full range is -120dB to 0dB, user range is minDb to maxDb
-        const fullRangeDb = 120; // Total -120 to 0
-        const userRangeDb = maxDb - minDb;
-        
         for (let x = 0; x < width; x++) {
-            // Calculate position in user's compressed range
-            const userPosition = x / (width - 1); // 0 to 1 across slider width
-            
-            // Map to the actual dB value within user's range
-            const actualDb = minDb + (userPosition * userRangeDb);
-            
-            // Convert to full spectrum position (0 to 1 across full -120 to 0 range)
-            const fullSpectrumPosition = (actualDb + 120) / fullRangeDb;
+            // Always map across FULL spectrum (0 to 1) regardless of dB range
+            const fullSpectrumPosition = width > 1 ? x / (width - 1) : 0; // 0 to 1 across full spectrum
             
             // MusicLab HSV colormap: hue from 240° (blue) to 0° (red)
-            const hue = (1.0 - Math.max(0, Math.min(1, fullSpectrumPosition))) * 240;
+            const hue = (1.0 - fullSpectrumPosition) * 240;
             const saturation = 0.8;
             const value = 1.0;
             
@@ -1490,7 +1752,6 @@ function initializeSpectrogram() {
             ray_world[2] /= ray_world[3];
         }
 
-        const cameraPos = [0, 0, 0]; // Simplified camera position in view space
         let invView = new Matrix4x4();
         invView.multiply(spectrogramAnalyserView.model);
         invView.multiply(spectrogramAnalyserView.view);
@@ -1526,6 +1787,12 @@ function initializeSpectrogram() {
             toneGainNode = null;
         }
     };
+    
+
+    // Initialize colormap spectrum on load
+    if (minDbSlider && maxDbSlider) {
+        updateColormapSpectrum();
+    }
     
     // Register cleanup for module destruction
     if (window.currentModule) {
