@@ -19,6 +19,20 @@ After reviewing the suggested alternatives, the **DOM-Based TOC Generation** app
 
 ## 3. Implementation Plan
 
+### Mermaid Diagram: Implementation Flowchart
+
+```mermaid
+graph TD
+    A[Start] --> B{Phase 1: Core Functionality};
+    B --> C[Rewrite loadContent()];
+    C --> D[Create generateTOCFromContent()];
+    D --> E[Create wiki/styles.css];
+    E --> F{Phase 2: UX Enhancements};
+    F --> G[Implement Smooth Scrolling];
+    G --> H[Implement Active State Highlighting];
+    H --> I[Done];
+```
+
 The implementation will be a two-phase process: first, build the core functionality, then add enhancements for a polished user experience.
 
 ### Phase 1: Core TOC Functionality
@@ -30,6 +44,28 @@ The implementation will be a two-phase process: first, build the core functional
    - **New Step:** Immediately after injecting the HTML, it will call a new function: `this.generateTOCFromContent()`.
 
 **2. Create `wiki/index.js` - `generateTOCFromContent()` Function:**
+
+#### Mermaid Diagram: `generateTOCFromContent()` Sequence
+
+```mermaid
+sequenceDiagram
+    participant generateTOC
+    participant DOM
+
+    generateTOC->>DOM: querySelectorAll('h1, h2, h3, h4')
+    DOM-->>generateTOC: List of heading elements
+
+    generateTOC->>DOM: Clear #wiki-toc-container
+
+    loop For each heading
+        generateTOC->>DOM: Set unique id on heading
+        generateTOC->>DOM: Create <a> element
+        generateTOC->>DOM: Set href and text
+        generateTOC->>DOM: Add CSS class for level
+        generateTOC->>DOM: Append link to #wiki-toc-container
+    end
+```
+
    - This new function will be the core of the fix.
    - It will query the content container for all heading elements: `this.contentContainer.querySelectorAll('h1, h2, h3, h4')`.
    - It will clear the existing sidebar TOC container (`#wiki-toc-container`).
@@ -54,6 +90,21 @@ The implementation will be a two-phase process: first, build the core functional
    - It will then find the target heading element by its ID and use `element.scrollIntoView({ behavior: 'smooth' })` to create a pleasant scrolling animation.
 
 **5. Implement Active State Highlighting (Scroll-Spying):**
+
+#### Mermaid Diagram: `IntersectionObserver` Sequence
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant IntersectionObserver
+    participant DOM
+
+    User->>DOM: Scrolls content
+    IntersectionObserver->>IntersectionObserver: Observes headings entering viewport
+    IntersectionObserver->>DOM: Remove .active class from all TOC links
+    IntersectionObserver->>DOM: Add .active class to corresponding TOC link
+```
+
    - An `IntersectionObserver` will be implemented to monitor when heading elements in the main content area scroll into the viewport.
    - When a new heading becomes the topmost visible section, the observer's callback will fire.
    - This callback will find the corresponding link in the TOC and apply an `.active` class to it, while removing the class from all others. This provides clear, real-time feedback to the user about their position in the document.

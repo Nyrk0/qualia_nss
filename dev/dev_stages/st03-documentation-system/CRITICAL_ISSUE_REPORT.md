@@ -25,6 +25,21 @@ The wiki Table of Contents (TOC) system is not functioning as intended. Multiple
 
 ## 🖼️ Visual Evidence
 
+### Mermaid Diagram: Expected vs. Actual TOC
+
+```mermaid
+graph TD
+    subgraph "Actual (Broken)"
+        A[Architecture Overview] --> B(No Headings)
+    end
+
+    subgraph "Expected (Hierarchical)"
+        C[Architecture Overview] --> D{Design Philosophy}
+        C --> E{High-Level Architecture}
+        E --> F[Directory Structure]
+    end
+```
+
 From user screenshot showing Architecture Overview document:
 
 **Sidebar TOC (Actual - WRONG)**:
@@ -116,7 +131,45 @@ try {
 
 ## 💡 Potential Alternative Approaches
 
+### Mermaid Diagram: Alternative Solutions Flowchart
+
+```mermaid
+graph TD
+    A[Start] --> B{Choose Approach};
+    B -->|DOM-Based| C[Post-render DOM parsing];
+    B -->|Plugin| D[Use external library];
+    B -->|Server-Side| E[Pre-process TOC on server];
+
+    C --> F[Simple, no dependencies];
+    D --> G[Robust, handles edge cases];
+    E --> H[Decoupled, good for static content];
+```
+
+
 ### Approach 1: DOM-Based TOC Generation
+
+#### Mermaid Diagram: DOM-Based TOC Generation Sequence
+
+```mermaid
+sequenceDiagram
+    participant wiki.js
+    participant DOM
+    participant User
+
+    wiki.js->>DOM: Render markdown to HTML in #main-content
+    wiki.js->>DOM: Query all h1, h2, h3 tags in #main-content
+    DOM-->>wiki.js: Return heading elements
+
+    loop For each heading
+        wiki.js->>DOM: Create <a> element
+        wiki.js->>DOM: Set text and href
+        wiki.js->>DOM: Append to #toc container
+    end
+
+    User->>DOM: Clicks TOC link
+    DOM->>DOM: Scrolls to heading
+```
+
 **Instead of**: Template literal string interpolation  
 **Use**: Direct DOM manipulation after content is loaded
 

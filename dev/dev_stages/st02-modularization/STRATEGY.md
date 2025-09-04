@@ -32,6 +32,22 @@ This document defines the conventions and steps for migrating standalone tools u
 - Keep event listeners scoped and cleaned up on destroy.
 
 ## File Structure
+
+### Mermaid Diagram: Module File Structure
+
+```mermaid
+graph TD
+    subgraph src
+        subgraph module-name
+            A[index.html] -- Fragment --> B((index.js))
+            C[styles.css] -- Scoped Styles --> B
+        end
+    end
+    subgraph lib
+        D[upload-service.js] -- Shared Util --> B
+    end
+```
+
 - `src/<module-name>/index.html` — Fragment HTML only (no head/body).
 - `src/<module-name>/index.js` — Exposes `window.<PascalCase>Module` class with `init/destroy`.
 - `src/<module-name>/styles.css` — Scoped stylesheet for the module.
@@ -54,6 +70,16 @@ Example for SPL:
   - Redirect legacy names (e.g., `'speakers'` → `'speakers-spl'`).
 
 ## Module API
+
+### Mermaid Diagram: Module Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> Inactive
+    Inactive --> Active: init()
+    Active --> Inactive: destroy()
+```
+
 ```js
 class ModuleNameModule {
   async init() { /* inject fragment, ensure styles, wire events, init charts */ }
@@ -138,6 +164,20 @@ function readThemeVars() {
 - In dev, treat missing backend as stub-success.
 
 ## Local Development and CORS
+
+### Mermaid Diagram: CORS Handling Logic
+
+```mermaid
+graph TD
+    A[Start init()] --> B{location.protocol === 'file:'};
+    B -->|Yes| C[Load inline fragment];
+    B -->|No| D{fetch() successful?};
+    D -->|Yes| E[Inject fetched HTML];
+    D -->|No| C;
+    C --> F[Continue init()];
+    E --> F;
+```
+
 - When opening the app via the `file://` protocol, browsers block `fetch()` to local files, causing CORS errors for fragment loads (origin `null`).
 - Modules should gracefully handle this by inlining their fragment HTML when `fetch()` is blocked or when running under `file://`.
 
@@ -183,6 +223,21 @@ async init() {
 - **navigation.js**: Navigation state, routing, active states (~120 lines)
 
 ### Modular CSS Architecture (`src/styles/`)
+
+#### Mermaid Diagram: CSS Architecture
+
+```mermaid
+graph TD
+    subgraph src/styles
+        A[core.css] --> B[layout.css]
+        A --> C[navigation.css]
+        A --> D[components.css]
+        A --> E[utilities.css]
+        A --> F[responsive.css]
+        A --> G[modules/]
+    end
+```
+
 - **core.css**: CSS variables, fonts, typography (~70 lines)
 - **layout.css**: Main content, sidebar, grid layouts (~120 lines)
 - **navigation.css**: Header, navbar, theme toggle (~180 lines)

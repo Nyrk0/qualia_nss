@@ -28,6 +28,24 @@ The visualizer must support the following audio sources:
 To ensure a correct and consistent implementation, this project will adhere to the following canonical rendering model, which defines both the final on-screen visual layout and the underlying 3D data model.
 
 #### **Part A: On-Screen Visual Layout (The User's View)**
+
+##### Mermaid Diagram: Visual Layout
+
+```mermaid
+graph TD
+    subgraph "2D Mode"
+        A[Canvas] -- Y-axis --> B(Frequency)
+        A -- X-axis --> C(Time)
+        A -- Color --> D(Amplitude)
+    end
+
+    subgraph "3D Mode"
+        E[Canvas] -- Y-axis --> F(Frequency)
+        E -- X-axis --> G(Time)
+        E -- Height & Color --> H(Amplitude)
+    end
+```
+
 This describes what the user sees on the 2D canvas for both modes.
 
 - **Vertical Axis (Screen Y):** Represents **Frequency**. The scale is logarithmic, with a default range of 20Hz to 20kHz. The actual maximum frequency will be dynamically capped at the audio source's Nyquist frequency (`sampleRate / 2`) if it is lower than 20kHz, ensuring the visualization is always accurate. Top-of-canvas frequency is `min(20 kHz, Nyquist)`. If Nyquist < 20 kHz, labels and grid cap at Nyquist to avoid misleading empty bands. **3D terrain display places frequency on the vertical axis with 20Hz at bottom and 20kHz at top using logarithmic scaling.**
@@ -38,6 +56,18 @@ This describes what the user sees on the 2D canvas for both modes.
 - **Frequency Grid Specification:** Render grid/labels at `[20, 50, 100, 200, 500, 1k, 2k, 5k, 10k, 20k]` Hz using the same log mapping as the shader; skip >Nyquist labels.
 
 #### **Part B: Underlying 3D Data Model (The Technical Implementation)**
+
+##### Mermaid Diagram: 3D Data Model
+
+```mermaid
+graph TD
+    subgraph "3D Model Axes"
+        A[Model X-axis] --> B(Frequency)
+        C[Model Z-axis] --> D(Time)
+        E[Model Y-axis] --> F(Amplitude/Height)
+    end
+```
+
 To produce the visual layout described above, the underlying 3D model and camera will be configured as follows, matching the original Google implementation:
 
 - **Model Axes (Definitive):**
@@ -157,6 +187,19 @@ The refactored application should be built with modern web standards, ensuring p
 - **Zero-Padding:** Support zero-padding for frequency interpolation when needed.
 
 #### **Audio Graph Architecture**
+
+##### Mermaid Diagram: Audio Pipeline
+
+```mermaid
+graph TD
+    A[Input] --> B[GainNode (Calibration)];
+    B --> C[ScriptProcessor/AudioWorklet (Custom FFT)];
+    C --> D[AnalyserNode (Backup)];
+    D --> E[AudioContext.destination];
+    C --> F[FFT Data];
+    F --> G[Texture Update];
+```
+
 ```
 Input → GainNode (calibration) → ScriptProcessor/AudioWorklet (custom FFT) → AnalyserNode (backup) → AudioContext.destination
                                                 ↓
@@ -363,6 +406,21 @@ The colormaps are primarily sequential and designed to be perceptually uniform�
 - **Performance Guide:** Optimization tips and troubleshooting
 
 ## 8. Implementation Roadmap
+
+### Mermaid Diagram: Project Gantt Chart
+
+```mermaid
+gantt
+    title Spectrogram Implementation Roadmap
+    dateFormat  YYYY-MM-DD
+    section Phase 1
+    Critical Fixes      :done, 2025-09-01, 7d
+    section Phase 2
+    Architecture & Perf :active, 2025-09-08, 14d
+    section Phase 3
+    Feature Completion  :2025-09-22, 14d
+```
+
 
 ### Phase 1: Critical Fixes (Week 1)
 - Fix DOM element access errors and HTML-JavaScript mismatches

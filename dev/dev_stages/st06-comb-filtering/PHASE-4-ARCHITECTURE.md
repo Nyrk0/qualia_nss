@@ -248,6 +248,19 @@ graph LR
 
 ### Phase 4C: Advanced Experiments (2-3 weeks)
 
+#### Mermaid Diagram: AudioInputManager Class
+
+```mermaid
+classDiagram
+    class AudioInputManager {
+        +inputSources
+        +calibrationData
+        +activeInput
+        +detectAvailableInputs()
+        +initializeInput(inputType, deviceId)
+    }
+```
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        PHASE 4C EXPERIMENTS                        │
@@ -288,7 +301,24 @@ graph LR
 
 ---
 
-## Success Metrics
+### Success Metrics
+
+#### Mermaid Diagram: calibrateInput Sequence
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant CalibrationSystem
+    participant AudioEngine
+
+    User->>CalibrationSystem: startCalibration()
+    CalibrationSystem->>AudioEngine: generateCalibrationTone()
+    AudioEngine-->>CalibrationSystem: testTone
+    CalibrationSystem->>AudioEngine: measureInputResponse(testTone)
+    AudioEngine-->>CalibrationSystem: inputResponse
+    CalibrationSystem->>CalibrationSystem: calculateCorrection(inputResponse)
+    CalibrationSystem-->>User: calibrationProfile
+```
 
 ### Technical Performance Targets
 

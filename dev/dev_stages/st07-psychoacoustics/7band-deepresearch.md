@@ -14,6 +14,22 @@ The concept of equalization began in the early days of telecommunications and ci
 
 ### 2.1. The Inventor: Art Davis
 
+#### Mermaid Diagram: EQ Development Timeline
+
+```mermaid
+gantt
+    title EQ Development Timeline
+    dateFormat  YYYY
+    section Early Development
+    Bernard Tellegen (Gyrator) : 1948, 1y
+    Art Davis (Type 7080)      : 1950, 1y
+    section 7-Band Emergence
+    Langevin EQ-252-A         : 1961, 1y
+    Altec Lansing 9062A       : 1960, 1y
+    section Constant Q
+    Ken Gundry (Dolby)        : 1970, 1y
+```
+
 The invention of the first true graphic equalizer is widely credited to **Art Davis**. While working at **Cinema Engineering** in the 1950s, Davis developed the **Type 7080**, a 6-band EQ that used slide switches to boost or cut frequencies in 1dB steps. This was a significant step towards the user-friendly format we know today.
 
 Davis was also instrumental in designing its precursors, like the **Langevin Model EQ-251A**, which was the first equalizer to feature slide controls.
@@ -30,6 +46,17 @@ These early units established the 7-band layout as a professional standard, whic
 ---
 
 ## 3. The Psychoacoustic Foundation
+
+### Mermaid Diagram: Psychoacoustic Principles
+
+```mermaid
+graph TD
+    subgraph "Psychoacoustic Principles"
+        A[Logarithmic Spacing] --> B(7-Band EQ)
+        C[Equal-Loudness Contours] --> B
+        D[Critical Bands] --> B
+    end
+```
 
 The choice of the seven specific frequency bands is not arbitrary; it is a deliberate design based on the science of human sound perception (psychoacoustics). The goal is to divide the audible spectrum into bands that are most meaningful to our ears.
 
@@ -62,6 +89,14 @@ The standard center frequencies of a 7-band EQ each correspond to a distinct per
 ---
 
 ## 4. Technological Evolution
+
+### Mermaid Diagram: EQ Technology Evolution
+
+```mermaid
+graph TD
+    A[Inductor-based EQs] --> B[Gyrator Circuit];
+    B --> C[Constant Q Equalizers];
+```
 
 The popularization of the graphic EQ was also driven by key technological innovations.
 

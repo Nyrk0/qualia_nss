@@ -9,6 +9,23 @@ This document summarizes the successful UI/UX refactoring effort for the Qualia-
 
 ## 2. Initial Audit Findings
 
+### Mermaid Diagram: Before & After UI State
+
+```mermaid
+graph TD
+    subgraph Before
+        A[Component A] -- "color: #0088ff" --> B(Hardcoded Blue)
+        C[Component B] -- "font-family: Inter" --> D(Inconsistent Font)
+        E[Component C] -- "style='padding: 10px'" --> F(Inline Styles)
+    end
+
+    subgraph After
+        G[Component A] -- "color: var(--primary-color)" --> H(Theme Green)
+        I[Component B] -- "font-family: var(--font-family-base)" --> J(Theme Font)
+        K[Component C] -- "class='component-c'" --> L(Centralized CSS)
+    end
+```
+
 The initial audit of the `src` directory revealed several key areas for improvement:
 
 -   **Inconsistent Color Palette:** The primary accent color was blue (`#0088ff`), which conflicted with the green of the brand logo. Numerous components used hardcoded colors, ignoring the central theme variables.
@@ -20,6 +37,16 @@ The initial audit of the `src` directory revealed several key areas for improvem
 The inconsistencies were resolved by creating and implementing a centralized design system.
 
 ### 3.1. Centralized Theme: `theme.css`
+
+#### Mermaid Diagram: CSS Architecture
+
+```mermaid
+graph TD
+    A[theme.css] --> B[core.css]
+    A --> C[layout.css]
+    A --> D[components.css]
+    A --> E[navigation.css]
+```
 
 A new file was created at `src/styles/theme.css` to act as the single source of truth for all visual styling. This file defines a comprehensive set of CSS variables for the entire application.
 

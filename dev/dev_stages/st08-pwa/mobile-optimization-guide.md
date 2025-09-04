@@ -6,6 +6,25 @@ https://claude.ai/chat/98b2b43d-a207-482d-91d1-1a5082b1c500
 
 ### 1.1 JavaScript Device Detection
 
+#### Mermaid Diagram: Device Detection Logic
+
+```mermaid
+graph TD
+    A[Start] --> B{isMobileDevice()};
+    B -->|Yes| C[Add 'mobile' class];
+    B -->|No| D{isTabletDevice()};
+    D -->|Yes| E[Add 'tablet' class];
+    D -->|No| F[Add 'desktop' class];
+    C --> G{isiOS()};
+    E --> G;
+    G -->|Yes| H[Add 'ios' class];
+    G -->|No| I{isAndroid()};
+    I -->|Yes| J[Add 'android' class];
+    H --> K[Load Responsive Styles];
+    J --> K;
+    F --> K;
+```
+
 Create a comprehensive device detection system that loads appropriate styles:
 
 ```javascript
@@ -577,6 +596,18 @@ body {
 
 ## Part 2: Converting QUALIA•NSS to a Mobile App (PWA)
 
+### Mermaid Diagram: PWA Architecture
+
+```mermaid
+graph TD
+    subgraph PWA
+        A[manifest.json] --> B(App Shell)
+        C[sw.js] --> B
+        B --> D[UI]
+    end
+```
+
+
 ### 2.1 Web App Manifest (manifest.json)
 
 ```json
@@ -802,6 +833,18 @@ self.addEventListener('fetch', event => {
 });
 
 // Cache strategies
+
+#### Mermaid Diagram: Service Worker Caching Strategies
+
+```mermaid
+graph TD
+    A[Request] --> B{Request Type?};
+    B -->|Static Asset| C[Cache First];
+    B -->|Dynamic Resource| D[Stale While Revalidate];
+    B -->|HTML Page| E[Network First];
+    B -->|Other| E;
+```
+
 async function cacheFirstStrategy(request) {
     const cached = await caches.match(request);
     return cached || fetchAndCache(request, STATIC_CACHE_NAME);

@@ -128,6 +128,57 @@ graph TD
 ## 2. Audio File Processing Patterns
 
 ### 2.1. Audio Analysis Service
+
+#### 2.1.1. ASCII Diagram: `processAudioFile` Workflow
+
+```
+┌──────────────────┐      ┌───────────────────┐      ┌───────────────────┐      ┌───────────────────┐
+│  processAudio()  │─────▶│ validateAudio()   │─────▶│  extractMetadata()│─────▶│  genSpectrogram() │
+└──────────────────┘      └───────────────────┘      └───────────────────┘      └───────────────────┘
+         │                      │                      │                      │
+         │                      │                      │                      │
+         ▼                      ▼                      ▼                      ▼
+┌──────────────────┐      ┌───────────────────┐      ┌───────────────────┐      ┌───────────────────┐
+│   (Exception?)   │◀─────│   (Exception?)    │◀─────│      (null)       │◀─────│   (placeholder)   │
+└──────────────────┘      └───────────────────┘      └───────────────────┘      └───────────────────┘
+         │
+         │
+         ▼
+┌──────────────────┐
+│     cleanup()    │
+└──────────────────┘
+```
+
+#### 2.1.2. Mermaid Diagram: `processAudioFile` Sequence
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant AudioProcessor
+    participant FileSystem
+
+    Client->>AudioProcessor: processAudioFile(filePath, name)
+    activate AudioProcessor
+
+    AudioProcessor->>AudioProcessor: validateAudioFile(filePath)
+    alt File is invalid
+        AudioProcessor-->>Client: Exception
+    end
+
+    AudioProcessor->>AudioProcessor: extractMetadata(filePath)
+    AudioProcessor-->>FileSystem: Read file info
+    FileSystem-->>AudioProcessor: File metadata
+
+    AudioProcessor->>AudioProcessor: generateSpectrogramData(filePath)
+    Note right of AudioProcessor: Placeholder implementation
+
+    AudioProcessor->>AudioProcessor: cleanup(filePath)
+    AudioProcessor-->>FileSystem: unlink(tempFile)
+
+    AudioProcessor-->>Client: {status: 'success', ...}
+    deactivate AudioProcessor
+```
+
 ```php
 <?php
 // config/audio-processor.php
@@ -321,6 +372,64 @@ try {
 ## 3. Wiki Processing Patterns
 
 ### 3.1. Wiki TOC Processor
+
+#### 3.1.1. ASCII Diagram: `generateTOC` Workflow
+
+```
+                                 ┌───────────────────┐
+                                 │   Cache Check     │
+                                 └───────────────────┘
+                                         │
+                                         ▼
+                                 ┌───────────────────┐
+                                 │ {Is Cache Valid?} │
+                                 └───────────────────┘
+                                  │               │
+                        [Yes]     │               │     [No]
+                                  ▼               ▼
+┌───────────────────┐      ┌───────────────────┐      ┌───────────────────┐
+│  Return from Cache│◀─────│  Return TOC       │      │  Generate TOC     │
+└───────────────────┘      └───────────────────┘      └───────────────────┘
+                                                          │
+                                                          ▼
+                                                 ┌───────────────────┐
+                                                 │   Store in Cache  │
+                                                 └───────────────────┘
+                                                          │
+                                                          ▼
+                                                 ┌───────────────────┐
+                                                 │   Return TOC      │
+                                                 └───────────────────┘
+```
+
+#### 3.1.2. Mermaid Diagram: `generateTOC` Sequence
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant WikiProcessor
+    participant Cache
+    participant Database
+
+    Client->>WikiProcessor: generateTOC(markdownContent)
+    activate WikiProcessor
+
+    WikiProcessor->>Cache: isCacheValid(cacheFile)
+    alt Cache is valid
+        Cache-->>WikiProcessor: true
+        WikiProcessor->>Cache: get(cacheFile)
+        Cache-->>WikiProcessor: TOC Data
+        WikiProcessor-->>Client: TOC Data
+    else
+        Cache-->>WikiProcessor: false
+        WikiProcessor->>WikiProcessor: parseTOCFromMarkdown(content)
+        WikiProcessor->>Cache: set(cacheFile, toc)
+        WikiProcessor->>Database: storeTOCInDatabase(hash, toc)
+        WikiProcessor-->>Client: TOC Data
+    end
+    deactivate WikiProcessor
+```
+
 ```php
 <?php
 // config/wiki-processor.php
@@ -551,6 +660,65 @@ class MarkdownProcessor {
 ## 4. File Processing Queue System
 
 ### 4.1. Simple Processing Queue
+
+#### 4.1.1. ASCII Diagram: Job State Lifecycle
+
+```
+┌─────────┐       ┌───────────┐       ┌───────────┐
+│ Pending │──────▶│ Processing│──────▶│ Completed │
+└─────────┘       └───────────┘       └───────────┘
+     │                 │
+     │                 ▼
+     │            ┌────────┐
+     └────────────▶│ Failed │
+                  └────────┘
+```
+
+#### 4.1.2. Mermaid Diagram: Job State Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pending
+    Pending --> Processing: processJob()
+    Processing --> Completed: Success
+    Processing --> Pending: Retry
+    Processing --> Failed: Max retries reached
+    Completed --> [*]
+    Failed --> [*]
+```
+
+#### 4.1.3. Mermaid Diagram: `processQueue` Sequence
+
+```mermaid
+sequenceDiagram
+    participant CronJob
+    participant ProcessingQueue
+    participant JobHandler
+
+    CronJob->>ProcessingQueue: processQueue()
+    activate ProcessingQueue
+
+    ProcessingQueue->>ProcessingQueue: lockQueue()
+    ProcessingQueue->>ProcessingQueue: loadQueue()
+
+    loop For each pending job
+        ProcessingQueue->>JobHandler: processJob(job)
+        alt Job succeeds
+            JobHandler-->>ProcessingQueue: {success: true}
+            ProcessingQueue->>ProcessingQueue: Update job status to 'completed'
+        else Job fails
+            JobHandler-->>ProcessingQueue: {success: false}
+            ProcessingQueue->>ProcessingQueue: Increment retry count or set status to 'failed'
+        end
+    end
+
+    ProcessingQueue->>ProcessingQueue: saveQueue()
+    ProcessingQueue->>ProcessingQueue: unlockQueue()
+
+    ProcessingQueue-->>CronJob: {processed: X, remaining: Y}
+    deactivate ProcessingQueue
+```
+
 ```php
 <?php
 // config/processing-queue.php
@@ -728,6 +896,26 @@ class ProcessingQueue {
 ```
 
 ### 4.2. Queue Management API
+
+#### 4.2.1. ASCII Diagram: Queue Status
+
+```
+Queue Status:
+  - Pending:   [|||||     ] 50%
+  - Completed: [|||       ] 30%
+  - Failed:    [||        ] 20%
+```
+
+#### 4.2.2. Mermaid Diagram: Queue Status Pie Chart
+
+```mermaid
+pie
+    title Queue Status
+    "Pending" : 50
+    "Completed" : 30
+    "Failed" : 20
+```
+
 ```php
 <?php
 // api/queue/status.php - Processing Queue Status
@@ -801,6 +989,61 @@ try {
 ## 5. Caching and Performance Patterns
 
 ### 5.1. Response Caching Service
+
+#### 5.1.1. ASCII Diagram: Cache `get` Logic
+
+```
+┌───────────┐      ┌──────────────┐      ┌──────────────┐      ┌───────────┐
+│ App Logic │─────▶│ CacheManager │─────▶│  FileSystem  │─────▶│ App Logic │
+└───────────┘      └──────────────┘      └──────────────┘      └───────────┘
+      │                  │                     │                     │
+      │ Get(key)         │                     │                     │
+      │─────────────────▶│                     │                     │
+      │                  │ Read(file)          │                     │
+      │                  │────────────────────▶│                     │
+      │                  │                     │ {File Exists?}      │
+      │                  │                     │        │            │
+      │                  │◀────────────────────│       [No]          │
+      │                  │                     │        │            │
+      │◀─────────────────│ null                │        ▼            │
+      │                  │                     │  ┌───────────┐      │
+      │                  │                     │  │ Return null │      │
+      │                  │                     │  └───────────┘      │
+      │                  │                     │                     │
+      │                  │◀────────────────────│       [Yes]         │
+      │                  │ {Is Expired?}       │                     │
+      │                  │        │            │                     │
+      │                  │       [No]          │                     │
+      │◀─────────────────│ Data                │                     │
+      │                  │                     │                     │
+      │                  │       [Yes]         │                     │
+      │◀─────────────────│ null                │                     │
+```
+
+#### 5.1.2. Mermaid Diagram: Cache `get`/`set` Sequence
+
+```mermaid
+sequenceDiagram
+    participant App
+    participant CacheManager
+    participant FileSystem
+
+    App->>CacheManager: get(key)
+    activate CacheManager
+    CacheManager->>FileSystem: Read cache file
+
+    alt Cache Miss (File not found or expired)
+        FileSystem-->>CacheManager: null or expired data
+        CacheManager-->>App: null
+        App->>CacheManager: set(key, data, ttl)
+        CacheManager->>FileSystem: Write cache file
+    else Cache Hit
+        FileSystem-->>CacheManager: Cached data
+        CacheManager-->>App: Cached data
+    end
+    deactivate CacheManager
+```
+
 ```php
 <?php
 // config/cache-manager.php
@@ -902,6 +1145,59 @@ class CacheManager {
 ```
 
 ### 5.2. Performance Monitoring
+
+#### 5.2.1. ASCII Diagram: Performance Monitoring Workflow
+
+```
+┌───────────────┐      ┌────────────────────┐      ┌────────────────┐
+│   App Code    │─────▶│ PerformanceMonitor │─────▶│    Log File    │
+└───────────────┘      └────────────────────┘      └────────────────┘
+        │                      │                           │
+        │ checkpoint("A")      │                           │
+        │─────────────────────▶│                           │
+        │                      │                           │
+        │ ... some work ...    │                           │
+        │                      │                           │
+        │ checkpoint("B")      │                           │
+        │─────────────────────▶│                           │
+        │                      │                           │
+        │ getReport()          │                           │
+        │─────────────────────▶│                           │
+        │◀─────────────────────│ Report Data               │
+        │                      │                           │
+        │ logPerformance()     │                           │
+        │─────────────────────▶│                           │
+        │                      │ write(report)             │
+        │                      │──────────────────────────▶│
+```
+
+#### 5.2.2. Mermaid Diagram: PerformanceMonitor Sequence
+
+```mermaid
+sequenceDiagram
+    participant App
+    participant PerformanceMonitor
+    participant Log
+
+    App->>PerformanceMonitor: new()
+    App->>PerformanceMonitor: checkpoint('start')
+
+    loop Heavy Operations
+        App->>App: Do work()
+        App->>PerformanceMonitor: checkpoint('after work')
+    end
+
+    App->>PerformanceMonitor: getReport()
+    activate PerformanceMonitor
+    PerformanceMonitor-->>App: reportData
+    deactivate PerformanceMonitor
+
+    App->>PerformanceMonitor: logPerformance()
+    activate PerformanceMonitor
+    PerformanceMonitor->>Log: Write report
+    deactivate PerformanceMonitor
+```
+
 ```php
 <?php
 // config/performance-monitor.php

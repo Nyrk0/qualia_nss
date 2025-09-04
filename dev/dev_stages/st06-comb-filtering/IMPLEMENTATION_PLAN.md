@@ -51,6 +51,26 @@ if (no_speakers_active) {
 ```
 
 #### **🔀 SIGNAL FLOW ARCHITECTURE - REFERENCE SIGNAL EMBEDDING**
+
+##### Mermaid Diagram: Signal Flow
+
+```mermaid
+graph TD
+    A[Reference Signal Source] --> B(speakerBus.input);
+    B --> C{4x Speaker Chains};
+    C --> D(speakerBus.output);
+    D --> E[combFilter.input];
+    E --> F[combFilter.output];
+    F --> G[masterGain];
+    G --> H[Audio Output];
+
+    subgraph "Analysis Points"
+        B -- analyzers.reference --> B
+        E -- analyzers.input --> E
+        F -- analyzers.wet --> F
+    end
+```
+
 ```
 Reference Signal Source (white noise, tone, etc.)
          ↓
@@ -89,6 +109,15 @@ KEY FACTS:
 ## 📚 **EDUCATIONAL EXPERIMENT FRAMEWORK**
 
 ### **Three-Phase Learning Progression:**
+
+#### Mermaid Diagram: Learning Progression
+
+```mermaid
+graph TD
+    A[Experiment 1: Controlled Comb-Filter] --> B[Experiment 2: Acoustic Comb-Filter];
+    B --> C[Experiment 3: Comparative Analysis];
+```
+
 
 #### **Experiment 1: Controlled Comb-Filter (Digital/Dry)** 🎯
 - **Goal:** Visualize and hear ideal, predictable comb-filtering effects
@@ -336,6 +365,33 @@ class MasterTimingController {
 ---
 
 ## 4. **IMPLEMENTATION ROADMAP - UPDATED STATUS**
+
+### Mermaid Diagram: Project Gantt Chart
+
+```mermaid
+gantt
+    title Comb-Filtering Tool Roadmap
+    dateFormat  YYYY-MM-DD
+    section Phase 2A
+    Audio Engine Integration :done, 2025-09-01, 1d
+    section Phase 2B
+    Enhanced UI Implementation :active, 2025-09-02, 3d
+    section Phase 2C
+    Advanced Analysis Features :2025-09-05, 3d
+    section Phase 3A
+    Core Computational Analysis :2025-09-10, 14d
+    section Phase 3B
+    Advanced Analysis :2025-09-24, 14d
+    section Phase 3C
+    Research Features :2025-10-08, 21d
+    section Phase 4A
+    Basic Audio Input :2025-10-29, 14d
+    section Phase 4B
+    Professional Features :2025-11-12, 21d
+    section Phase 4C
+    Advanced Experiments :2025-12-03, 14d
+```
+
 
 ### ✅ **Phase 2A: Audio Engine Integration** - **COMPLETED**
 **Actual Timeline:** 2-3 hours (much faster than estimated due to existing sophisticated audio engine)
@@ -622,6 +678,18 @@ This framework ensures the tool remains true to its educational mission and prov
 The Perfect Logic Framework implementation provides unprecedented access to both **dry reference signals** and **wet processed signals**, enabling sophisticated **real-time computational analysis** that transforms the tool from qualitative to quantitative analysis.
 
 #### **Available Analysis Paths:**
+
+##### Mermaid Diagram: Analysis Paths
+
+```mermaid
+graph TD
+    subgraph "Analysis Paths"
+        A[analyzers.reference] -- Raw (DRY) --> B(speakerBus.input)
+        C[analyzers.input] -- Transformed (WET) --> D(combFilter.input)
+        E[analyzers.wet] -- Post-processed --> F(combFilter.output)
+    end
+```
+
 - **`analyzers.reference`** → Raw reference signals at `speakerBus.input` (DRY)
 - **`analyzers.input`** → Transformed signals at `combFilter.input` (WET)  
 - **`analyzers.wet`** → Final processed output (POST-PROCESSING)
@@ -859,6 +927,18 @@ This computational analysis framework will transform the comb-filtering tool fro
 **Phase 4 introduces comprehensive real-world acoustic measurement capabilities**, enabling complete validation of digital simulations against actual acoustic measurements.
 
 #### **Triple-Path Analysis System:**
+
+##### Mermaid Diagram: Triple-Path Analysis
+
+```mermaid
+graph TD
+    subgraph "Triple-Path Analysis"
+        A[Reference Signal] -- DIGITAL --> B(analyzers.reference)
+        A --> C{Simulation} --> D(analyzers.input)
+        A --> E{Acoustic Measurement} --> F(analyzers.microphone)
+    end
+```
+
 ```javascript
 // Current: Dual-path (reference + processed)
 analyzers.reference  → Raw reference signals (speakerBus.input)

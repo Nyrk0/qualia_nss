@@ -129,6 +129,28 @@ This layout is designed for sophisticated modules like the Spectrogram and Comb-
 
 ### Container Hierarchy for Complex Sidebar:
 
+#### ASCII Diagram: Container Hierarchy
+```
+#content-wrapper
+  #sidebar
+    #sidebar-canvas
+      #sidebar-content
+        .accordion
+  #main-content
+```
+
+#### Mermaid Diagram: DOM Hierarchy
+```mermaid
+graph TD
+    subgraph AppShell
+        A[#content-wrapper] --> B[#sidebar]
+        A --> C[#main-content]
+        B --> D[#sidebar-canvas]
+        D --> E[#sidebar-content]
+        E --> F[.accordion]
+    end
+```
+
 **Container Hierarchy Created:**
 ```
 #content-wrapper (flexbox container)
@@ -150,6 +172,26 @@ This layout is designed for sophisticated modules like the Spectrogram and Comb-
 ## 2. Core Architectural Patterns
 
 ### 2.1. Module Loading & Layout Logic
+
+#### Mermaid Diagram: `loadModule()` Sequence
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Navigation
+    participant app.js
+    participant DOM
+
+    User->>Navigation: Clicks 'Speakers'
+    Navigation->>app.js: loadModule('speakers-spl')
+    activate app.js
+
+    app.js->>DOM: Inject sidebar HTML into #sidebar
+    app.js->>DOM: Inject main view HTML into #main-content
+    app.js->>DOM: Load module's JavaScript
+
+    deactivate app.js
+```
 
 The application functions as an SPA, loading modules into the main content area without page reloads.
 

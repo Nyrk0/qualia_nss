@@ -36,6 +36,18 @@ This PRD formalizes v4 scope: display controls (Dynamic Display Range, Smoothing
 - Controls UX: Need rotation steps (±90°, ±5°/±10° steps) and clearer Start button labeling per mode.
 
 ## 4. v4 Scope
+
+### Mermaid Diagram: v4 Scope
+
+```mermaid
+graph TD
+    A[v4 Scope] --> B[Display Controls];
+    B --> C[Dynamic Display Range];
+    B --> D[Smoothing];
+    A --> E[Documentation (This PRD)];
+    A --> F[Self-contained Demo];
+```
+
 - Display Controls
   - Dynamic Display Range: compress visible dB dynamic range (e.g., 40–80 dB window), optional Auto Level normalization by per-frame percentile (e.g., P95). User controls: Range (dB), Floor lift (optional), Auto Level toggle.
   - Smoothing: expose `AnalyserNode.smoothingTimeConstant` (0.0–0.9) to improve temporal stability.
@@ -44,12 +56,44 @@ This PRD formalizes v4 scope: display controls (Dynamic Display Range, Smoothing
 
 ## 5. Future Scope (post-v4)
 - Dry Test Signal Engine (no loopback):
+
+#### Mermaid Diagram: Dry Test Signal Engine Architecture
+
+```mermaid
+graph TD
+    subgraph "Dry Test Signal Engine"
+        A[Signal Generators] --> B(masterBus);
+        B --> C[Analyser];
+        B --> D[Monitor Gain];
+        D --> E[Speakers];
+
+        subgraph "Signal Generators"
+            F[Sine]
+            G[Log Sweep]
+            H[Noise]
+            I[Educational Demos]
+        end
+    end
+```
+
   - Core bus: `masterBus` feeding analyser and optional monitor-to-speakers gain.
   - Signals: Fixed Sine (20–20k), Log Sweep (chirp 20–20k, duration, repeat), White/Pink/Brown noise, Educational Demos (comb filtering with delay and polarity, cancellation demo, multi-tone).
   - UI: Signal selector + parameter controls (freq, level dBFS, duration, bandwidth, delay, phase invert, mix%).
   - Scheduling: Web Audio ramps for sweep; AudioWorklet for noise when available; fallback to ScriptProcessor when necessary.
   - Calibration: level mapping to approximate dBFS; integrate with `dBFS Offset` for user calibration.
 - Wet Detectors:
+
+#### Mermaid Diagram: Wet Detectors
+
+```mermaid
+graph TD
+    subgraph "Wet Detectors"
+        A[Level Meter] --> B[RMS/Peak, Clip Indicator]
+        C[Comb Filtering Estimator] --> D[Path Delay, f0, Confidence]
+        E[Polarity/Cancellation] --> F[Cross-correlation]
+    end
+```
+
   - Level Meter: RMS/Peak, clip indicator (near ±1.0 over N frames).
   - Comb Filtering Delay Estimator: leverage `modules/comb-filtering/` code to estimate path delay, report f0≈1/Δt and confidence.
   - Polarity/Cancellation: cross-correlation around zero lag; flag strong negative correlation.

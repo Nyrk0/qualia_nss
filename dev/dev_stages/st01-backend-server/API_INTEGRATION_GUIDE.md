@@ -97,6 +97,76 @@ sequenceDiagram
 ## 2. API Client Architecture
 
 ### 2.1. KISS API Client Pattern
+
+#### 2.1.1. ASCII Diagram: `_request` Workflow
+
+```
+┌───────────┐      ┌───────────┐      ┌───────────┐
+│  _request │─────▶│   fetch   │─────▶│  Backend  │
+└───────────┘      └───────────┘      └───────────┘
+      │                  │                  │
+      │ {Attempt < 3}    │                  │
+      │       │          │                  │
+      │       ▼          │                  │
+      │  ┌───────────┐   │                  │
+      │  │  Success? │   │                  │
+      │  └───────────┘   │                  │
+      │       │ [No]     │                  │
+      │       │          │                  │
+      │       ▼          │                  │
+      │  ┌───────────┐   │                  │
+      │  │  _sleep   │   │                  │
+      │  └───────────┘   │                  │
+      │       │          │                  │
+      │       ▼          │                  │
+      │  ┌───────────┐   │                  │
+      │  │ Retry     │   │                  │
+      │  └───────────┘   │                  │
+      │       │          │                  │
+      │       ▼          │                  │
+      │  ┌───────────┐   │                  │
+      │  │ {Attempt=3}│   │                  │
+      │  └───────────┘   │                  │
+      │       │          │                  │
+      │       ▼          │                  │
+      │  ┌───────────┐   │                  │
+      │  │ Return Err│   │                  │
+      │  └───────────┘   │                  │
+      │                  │                  │
+      │       │ [Yes]    │                  │
+      │       ▼          │                  │
+      │  ┌───────────┐   │                  │
+      │  │ Return OK │   │                  │
+      │  └───────────┘   │                  │
+```
+
+#### 2.1.2. Mermaid Diagram: `_request` Sequence with Retry Logic
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant QualiaBackendAPI
+    participant fetch
+
+    Client->>QualiaBackendAPI: someRequest()
+    activate QualiaBackendAPI
+
+    loop Retries
+        QualiaBackendAPI->>fetch: fetch(url, options)
+        alt Request Fails
+            fetch-->>QualiaBackendAPI: Error
+            QualiaBackendAPI->>QualiaBackendAPI: _sleep(backoff_duration)
+        else Request Succeeds
+            fetch-->>QualiaBackendAPI: Response
+            QualiaBackendAPI-->>Client: {success: true, data}
+            break
+        end
+    end
+
+    QualiaBackendAPI-->>Client: {success: false, error}
+    deactivate QualiaBackendAPI
+```
+
 ```javascript
 // src/js/backend-api.js
 // KISS Backend API Client for Qualia-NSS
@@ -492,6 +562,26 @@ try {
 
 ## 4. Integration Testing Patterns
 
+### 4.0. Mermaid Diagram: API Test Execution Gantt Chart
+
+```mermaid
+gantt
+    title API Test Execution
+    dateFormat  HH:mm:ss
+    axisFormat  %H:%M:%S
+
+    section Frontend Tests
+    Health Check    :done, 00:00:00, 1s
+    Wiki TOC        :done, 00:00:01, 2s
+    File Upload     :done, 00:00:03, 3s
+
+    section Backend Tests
+    Health Check    :done, 00:00:00, 1s
+    Wiki TOC        :done, 00:00:01, 1s
+    Audio Upload    :done, 00:00:02, 2s
+```
+
+
 ### 4.1. Frontend Integration Test
 ```javascript
 // tests/integration/backend-api-test.js
@@ -648,6 +738,32 @@ echo "Backend API testing complete."
 ```
 
 ## 5. Error Handling Patterns
+
+### 5.0. Mermaid Diagram: End-to-End Error Handling Sequence
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Backend
+    participant Database
+
+    User->>Frontend: Performs action
+    Frontend->>Backend: API Request
+
+    alt Backend Error
+        Backend->>Database: Query fails
+        Database-->>Backend: Exception
+        Backend->>Backend: APIErrorHandler.handleException()
+        Backend-->>Frontend: JSON Error Response (e.g., 500)
+        Frontend->>Frontend: BackendErrorHandler.handle()
+        Frontend->>User: Show user-friendly notification
+    else Success
+        Backend-->>Frontend: JSON Success Response (200)
+        Frontend->>User: Display result
+    end
+```
+
 
 ### 5.1. Frontend Error Handling
 ```javascript

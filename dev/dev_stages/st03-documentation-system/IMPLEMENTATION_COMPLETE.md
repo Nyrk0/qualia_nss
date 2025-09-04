@@ -115,6 +115,25 @@ The complex Architecture Overview document (570+ lines, multiple heading levels)
 ## 🔄 How It Works
 
 ### **Execution Flow**
+
+#### Mermaid Diagram: End-to-End Execution Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Wiki
+    participant marked.js
+    participant DOM
+
+    User->>Wiki: Clicks document link
+    Wiki->>marked.js: Renders markdown to HTML
+    marked.js-->>Wiki: Returns HTML string
+    Wiki->>DOM: Injects HTML into #wiki-content-container
+    Wiki->>DOM: Queries for h1-h4 headings
+    DOM-->>Wiki: Returns heading elements
+    Wiki->>DOM: Generates and injects TOC into #wiki-toc-container
+```
+
 1. **Content Loading**: User clicks document link → `loadContent()` called
 2. **Markdown Rendering**: `marked.js` converts markdown → HTML
 3. **Content Injection**: HTML inserted into `#wiki-content-container`
@@ -143,6 +162,19 @@ All styling uses CSS variables from `src/styles/core.css`:
 - `--primary-color-translucent`: Hover effects
 
 ### **Hierarchical Visual Design**
+
+#### Mermaid Diagram: TOC Styling Hierarchy
+
+```mermaid
+graph TD
+    subgraph TOC Styling
+        A[Level 1] -- H1 --> B(Bold, Primary Color, Thick Border)
+        C[Level 2] -- H2 --> D(Medium, Text Color, Secondary Border)
+        E[Level 3] -- H3 --> F(Normal, Neutral Text, Subtle Border)
+        G[Level 4] -- H4 --> H(Italic, Muted Text, Dotted Border)
+    end
+```
+
 ```css
 .toc-level-1 { /* H1: Main sections */
     font-weight: 600;
@@ -173,6 +205,20 @@ All styling uses CSS variables from `src/styles/core.css`:
 ## 🏆 Results vs. Original Issues
 
 ### **❌ Original Problems → ✅ Solutions**
+
+#### Mermaid Diagram: Problem vs. Solution
+
+```mermaid
+graph TD
+    subgraph "Before (Broken)"
+        A[Markdown with special chars] --> B{Template Literal Parsing} --> C(Error! Raw JS in sidebar)
+    end
+
+    subgraph "After (Fixed)"
+        D[Markdown with special chars] --> E{marked.js} --> F[Rendered HTML]
+        F --> G{DOM-based TOC Generation} --> H(Success! Hierarchical TOC)
+    end
+```
 
 | Original Issue | Root Cause | Solution Implemented |
 |----------------|------------|----------------------|

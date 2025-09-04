@@ -14,6 +14,20 @@ Last updated: 2025-08-24
 - Typical audible τ for rooms/paths: ~0.2 ms to 20 ms (Δf ≈ 50 Hz to 5 kHz).
 
 ## Detection approach (runtime, per spectrogram column)
+
+### Mermaid Diagram: Cepstrum Detection Flowchart
+
+```mermaid
+graph TD
+    A[Get FFT Data] --> B[Preprocess (Detrend, etc.)];
+    B --> C{Compute Real Cepstrum};
+    C --> D[Search for Dominant Peak];
+    D --> E{Peak Found?};
+    E -->|Yes| F[Estimate Delay & Confidence];
+    E -->|No| G[No Comb Filtering];
+    F --> H[Stabilize & Alert];
+```
+
 1. **Magnitude spectrum**: use existing FFT data (`AnalyserNode.getFloatFrequencyData`) → dB.
 2. **Preprocess**: select 200 Hz–8 kHz, convert to linear frequency grid, detrend log‑magnitude (remove slope via high‑pass or polynomial fit).
 3. **Cepstrum method (recommended)**
@@ -27,6 +41,17 @@ Last updated: 2025-08-24
    - Smooth τ̂ over ~0.5 s (median/EMA) and only alert when confidence persists over N frames.
 
 ## UI/overlay behavior
+
+### Mermaid Diagram: UI Overlay
+
+```mermaid
+graph TD
+    subgraph Spectrogram UI
+        A[Banner: "Comb filtering detected: τ ≈ 2.8 ms"] --> B[Confidence Bar]
+        A --> C[Vertical Notch Rulers]
+    end
+```
+
 - **Banner**: “Comb filtering detected: τ ≈ 2.8 ms (Δf ≈ 357 Hz)” with confidence bar.
 - **Guides**: draw faint vertical notch rulers at f = k·Δf across the view, limited to 200 Hz–8 kHz.
 - **Gating**: bypass detection when source is tonal/narrowband (e.g., sine); auto‑hide banner when confidence drops.
@@ -49,6 +74,23 @@ Last updated: 2025-08-24
 - Add a UI toggle “Comb Detect” to enable/disable detection and overlay.
 
 ## Validation workflow
+
+### Mermaid Diagram: Validation Sequence
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant System
+    participant Room
+
+    User->>System: Play pink noise
+    System->>Room: Emit sound
+    Room->>System: Record reflected sound
+    System->>System: Analyze for comb filtering
+    System->>User: Display detected τ and notches
+    User->>User: Verify against room acoustics
+```
+
 - Play pink noise via speakers in a reflective room; observe detected τ and notch overlay.
 - Cross‑check Δf spacing against visible stripe distance; verify τ ≈ path length / speed of sound.
 - Run swept sine; ensure detector gates off for narrowband content.

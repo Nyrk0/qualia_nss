@@ -97,6 +97,51 @@ graph TD
 ## 2. Development Workflow Patterns
 
 ### 2.1. Container Lifecycle Management
+
+#### 2.1.1. ASCII Diagram: Dev Workflow
+
+```
+┌───────────┐      ┌───────────┐      ┌───────────┐
+│ Developer │─────▶│  `build`  │─────▶│  `run`    │
+└───────────┘      └───────────┘      └───────────┘
+      │                                    │
+      │                                    ▼
+      │                             ┌───────────┐
+      │                             │  `logs`   │
+      │                             └───────────┘
+      │                                    │
+      │                                    ▼
+      │                             ┌───────────┐
+      └────────────────────────────▶│ `stop/rm` │
+                                    └───────────┘
+```
+
+#### 2.1.2. Mermaid Diagram: Development Workflow Sequence
+
+```mermaid
+sequenceDiagram
+    participant Developer
+    participant DockerCLI
+    participant DockerDaemon
+
+    Developer->>DockerCLI: docker build -t qualia-nss-backend .
+    DockerCLI->>DockerDaemon: Build image from Dockerfile
+    DockerDaemon-->>Developer: Image built
+
+    Developer->>DockerCLI: docker run -d --name qualia-dev ...
+    DockerCLI->>DockerDaemon: Create and start container
+    DockerDaemon-->>Developer: Container started
+
+    Developer->>DockerCLI: docker logs -f qualia-dev
+    DockerCLI->>DockerDaemon: Stream container logs
+    DockerDaemon-->>Developer: Log output
+
+    Developer->>DockerCLI: docker stop qualia-dev
+    DockerCLI->>DockerDaemon: Stop container
+    Developer->>DockerCLI: docker rm qualia-dev
+    DockerCLI->>DockerDaemon: Remove container
+```
+
 ```bash
 # KISS Pattern: Simple container management commands
 
@@ -122,6 +167,58 @@ docker stop qualia-dev && docker rm qualia-dev
 ```
 
 ### 2.2. Development vs Production Patterns
+
+#### 2.2.1. ASCII Diagram: Dev vs. Prod
+
+```
+                  ┌───────────────────┐
+                  │ Dockerfile Logic  │
+                  └───────────────────┘
+                           │
+                           ▼
+                  ┌───────────────────┐
+                  │ {Env = Prod?}     │
+                  └───────────────────┘
+                   │               │
+         [No]      │               │      [Yes]
+                   ▼               ▼
+        ┌───────────────────┐      ┌───────────────────┐
+        │   Dev Pattern     │      │   Prod Pattern    │
+        └───────────────────┘      └───────────────────┘
+                │                      │
+                ▼                      ▼
+        ┌───────────────────┐      ┌───────────────────┐
+        │ - Volume Mount    │      │ - COPY Files      │
+        │ - Expose Ports    │      │ - Expose Port 80  │
+        │ - Debugging On    │      │ - Opcache On      │
+        └───────────────────┘      └───────────────────┘
+```
+
+#### 2.2.2. Mermaid Diagram: Dev vs. Prod Flowchart
+
+```mermaid
+graph TD
+    A[Start] --> B{Environment?};
+    B -->|Development| C[Development Build];
+    B -->|Production| D[Production Build];
+
+    subgraph Development Build
+        C1[Volume Mount Code]
+        C2[Expose Dev Ports]
+        C3[Enable Debugging]
+    end
+
+    subgraph Production Build
+        D1[COPY Code]
+        D2[Expose Web Port]
+        D3[Disable Debugging]
+        D4[Enable Opcache]
+    end
+
+    C --> E[Container Ready];
+    D --> E;
+```
+
 
 **Development Pattern (Current):**
 ```dockerfile
@@ -343,6 +440,39 @@ CREATE TABLE wiki_cache (
 ```
 
 ### 6.2. Database Initialization Pattern
+
+#### 6.2.1. ASCII Diagram: DB Init
+
+```
+┌───────────┐      ┌──────────────┐      ┌────────────────┐
+│ Developer │─────▶│ `docker exec`│─────▶│     `mysql`    │
+└───────────┘      └──────────────┘      └────────────────┘
+      │                  │                       │
+      │                  │  SOURCE schema.sql    │
+      │                  │──────────────────────▶│
+      │                  │                       │
+      │                  │  SHOW TABLES          │
+      │                  │──────────────────────▶│
+      │                  │                       │
+      │◀─────────────────│  Table List           │
+```
+
+#### 6.2.2. Mermaid Diagram: Database Initialization Sequence
+
+```mermaid
+sequenceDiagram
+    participant Developer
+    participant DockerCLI
+    participant Container
+    participant MySQL
+
+    Developer->>DockerCLI: docker exec qualia-dev mysql ...
+    DockerCLI->>Container: Execute command
+    Container->>MySQL: SOURCE /path/to/schema.sql
+    MySQL-->>Container: Schema created
+    Container-->>Developer: Output
+```
+
 ```bash
 # Database setup in container
 docker exec qualia-dev mysql -u root -e "SOURCE /var/www/html/migrations/001_initial_schema.sql"

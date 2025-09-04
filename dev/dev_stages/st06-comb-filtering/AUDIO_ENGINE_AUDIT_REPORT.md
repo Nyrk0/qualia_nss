@@ -18,6 +18,26 @@ The current audio engine already contains a sophisticated multi-speaker delay si
 ### **✅ IMPLEMENTED FEATURES**
 
 #### **1. Multi-Speaker Architecture**
+
+##### Mermaid Diagram: Audio Engine Architecture
+
+```mermaid
+graph TD
+    subgraph "Audio Engine"
+        A[Test Signal] --> B(speakerBus.input);
+        B --> C{4x Speaker Chains};
+        C --> D(speakerBus.output);
+        D --> E[Comb Filter Input];
+
+        subgraph "Speaker Chains"
+            F[A_left]
+            G[A_right]
+            H[B_left]
+            I[B_right]
+        end
+    end
+```
+
 ```javascript
 // FOUND: Complete 4-speaker system
 this.speakerBus = {
@@ -65,6 +85,23 @@ setSetEnabled(setName, enabled)  // Enable/disable Set A or Set B
 ---
 
 ## ⚠️ **MISSING CONNECTIONS**
+
+### Mermaid Diagram: Missing Connections
+
+```mermaid
+graph TD
+    subgraph "UI"
+        A[Floor Plan] -.-> B(Audio Engine);
+        C[UI Controls] -.-> B;
+    end
+
+    B -.-> D[Status Display];
+
+    style A fill:#fdd
+    style C fill:#fdd
+    style D fill:#fdd
+```
+
 
 ### **1. Floor Plan Integration**
 **Status:** ❌ **NOT CONNECTED**
@@ -166,6 +203,21 @@ function updateSpeakerStatus() {
 ---
 
 ## 🏁 **IMPLEMENTATION STRATEGY**
+
+### Mermaid Diagram: Implementation Gantt Chart
+
+```mermaid
+gantt
+    title Audio Engine Integration Plan
+    dateFormat  YYYY-MM-DD
+    section Phase 2A
+    Connect Floor Plan Events :done, 2025-09-01, 1d
+    Connect UI Controls       :done, 2025-09-02, 1d
+    Add Missing Methods       :active, 2025-09-03, 1d
+    section Phase 2B
+    Enhanced UI               :2025-09-04, 2d
+```
+
 
 ### **Phase 2A: Integration (1-2 days)**
 Rather than rebuilding the audio engine, we need to:

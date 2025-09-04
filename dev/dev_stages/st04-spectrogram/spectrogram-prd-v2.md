@@ -29,6 +29,18 @@
 ## 2. Audio Processing
 
 ### 2.1 Audio Graph
+
+#### Mermaid Diagram: Audio Graph
+
+```mermaid
+graph TD
+    A[Microphone] --> B[GainNode];
+    B --> C[AnalyserNode];
+    C --> D[Web Audio Destination];
+    B -- Gain Control --> B;
+    C -- FFT Data --> E[Texture Update Logic];
+```
+
 ```
 Microphone → GainNode → AnalyserNode → Web Audio Destination
                     ↓
@@ -104,6 +116,27 @@ void main() {
 4. Update time offset for scrolling effect
 
 ### 4.2 Implementation
+
+#### Mermaid Diagram: `updateTexture` Sequence
+
+```mermaid
+sequenceDiagram
+    participant updateTexture
+    participant AnalyserNode
+    participant WebGL
+
+    updateTexture->>AnalyserNode: getByteFrequencyData()
+    AnalyserNode-->>updateTexture: frequencyData
+
+    loop For each pixel in column
+        updateTexture->>updateTexture: Resample frequency data (log scale)
+        updateTexture->>updateTexture: Store in columnData buffer
+    end
+
+    updateTexture->>WebGL: texSubImage2D(columnData)
+    updateTexture->>updateTexture: Update currentColumn and timeOffset
+```
+
 ```javascript
 updateTexture() {
     if (!this.analyser || !this.frequencyData) return;
@@ -210,6 +243,18 @@ function validateTexture(gl, texture, width, height) {
 ## 7. Browser Compatibility
 
 ### 7.1 Feature Detection
+
+#### Mermaid Diagram: Compatibility Check Flowchart
+
+```mermaid
+graph TD
+    A[Start] --> B{WebGL Supported?};
+    B -->|No| C[Return {supported: false}];
+    B -->|Yes| D{Required Extensions Supported?};
+    D -->|No| E[Return {supported: false, missing: [...] }];
+    D -->|Yes| F[Return {supported: true}];
+```
+
 ```javascript
 function checkBrowserCompatibility() {
     const canvas = document.createElement('canvas');
@@ -255,6 +300,24 @@ const spectrogram = new SpectrogramVisualizer({
 ```
 
 ### 8.2 Public API
+
+#### Mermaid Diagram: `SpectrogramVisualizer` Class
+
+```mermaid
+classDiagram
+    class SpectrogramVisualizer {
+        +start()
+        +stop()
+        +setFFTSize(size)
+        +setSmoothing(value)
+        +setHeightScale(scale)
+        +setDecibelRange(min, max)
+        +setGain(gain)
+        +setMute(muted)
+        +dispose()
+    }
+```
+
 ```javascript
 class SpectrogramVisualizer {
     // Start/stop visualization

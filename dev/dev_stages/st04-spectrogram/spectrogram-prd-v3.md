@@ -37,6 +37,23 @@ This specification refactors v2 to adopt a staged iterations approach for develo
 
 ## 2. Staged Iterations
 
+### Mermaid Diagram: Staged Iterations Gantt Chart
+
+```mermaid
+gantt
+    title Spectrogram Development Stages
+    dateFormat  YYYY-MM-DD
+    section Stage 1
+    Minimal Implementation  :done, 2025-09-01, 7d
+    section Stage 2
+    Basic Enhancements      :active, 2025-09-08, 7d
+    section Stage 3
+    Advanced Features       :2025-09-15, 14d
+    section Stage 4
+    Optimization & Polish   :2025-09-29, 7d
+```
+
+
 ### 2.1 Stage 1: Minimal Implementation
 Focus on core functionality with hard-coded parameters for simplicity.
 - **Audio Source**: Microphone only (via Web Audio API).
@@ -73,6 +90,18 @@ Focus on core functionality with hard-coded parameters for simplicity.
 - Finalize integration guide.
 
 ## 3. Core Architecture (Stage 1)
+
+### Mermaid Diagram: Stage 1 Core Architecture
+
+```mermaid
+graph TD
+    A[Microphone] --> B[AnalyserNode];
+    B --> C[getByteFrequencyData()];
+    C --> D[Texture Update Logic];
+    D --> E[WebGL Rendering];
+    E --> F[3D Spectrogram on Canvas];
+```
+
 - **WebGL Version**: 1.0 (no experimental fallback needed).
 - **Context Creation**:
   ```javascript
@@ -143,6 +172,25 @@ void main() {
     gl_FragColor = vec4(rgb, 1.0);
 }
 6. Texture Update Logic (Stage 1)
+
+### Mermaid Diagram: Stage 1 Texture Update Sequence
+
+```mermaid
+sequenceDiagram
+    participant GameLoop
+    participant TextureUpdater
+    participant AnalyserNode
+    participant WebGL
+
+    GameLoop->>TextureUpdater: update(deltaTime)
+    alt if deltaTime > interval
+        TextureUpdater->>AnalyserNode: getByteFrequencyData()
+        AnalyserNode-->>TextureUpdater: frequencyData
+        TextureUpdater->>TextureUpdater: Resample data (log scale)
+        TextureUpdater->>WebGL: texSubImage2D(columnData)
+        TextureUpdater->>TextureUpdater: Update currentColumn and timeOffset
+    end
+```
 
 Get frequency data.
 Resample to 128 height with exponential log mapping (20Hz bottom to 20kHz top).

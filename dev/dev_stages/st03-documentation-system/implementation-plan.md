@@ -12,9 +12,31 @@ To integrate the project's GitHub Wiki directly into the Qualia-NSS web applicat
 
 ## 2. Technical Approach: "Live Fetch" Module
 
+### Mermaid Diagram: Live Fetch Architecture
+
+```mermaid
+graph TD
+    A[Qualia-NSS App] -- "scans" --> B(qualia_nss.wiki Repo)
+    B -- "reads .md files" --> A
+    A -- "renders as HTML" --> C[User]
+```
+
 This project will use a "Live Fetch" approach, where the application dynamically reads the content of the separate `qualia_nss.wiki` repository at runtime. This ensures the documentation is always synchronized without requiring complex symlinks, submodules, or build steps.
 
 ## 3. Wiki Repository Structure
+
+### Mermaid Diagram: Wiki Directory Structure
+
+```mermaid
+graph TD
+    subgraph qualia_nss.wiki
+        A[User-Guide] --> B[00-Introduction.md]
+        A --> C[01-Speakers-Analysis.md]
+        D[Developer-Docs] --> E[Architecture-Overview.md]
+        D --> F[Module-API.md]
+        G[Home.md]
+    end
+```
 
 To facilitate the dual-purpose documentation, the `qualia_nss.wiki` repository will be organized with the following directory structure:
 
@@ -39,6 +61,28 @@ qualia_nss.wiki/
 -   **Routing:** Add a `loadWiki()` function in `navigation.js`.
 
 ### Step 2: Implement Dynamic Table of Contents
+
+#### Mermaid Diagram: Wiki Module Loading Sequence
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant App
+    participant WikiModule
+    participant FileSystem
+
+    User->>App: Clicks "Wiki"
+    App->>WikiModule: loadModule()
+    WikiModule->>FileSystem: glob('qualia_nss.wiki/**/*.md')
+    FileSystem-->>WikiModule: List of .md files
+    WikiModule->>App: Generate and inject TOC into sidebar
+
+    User->>WikiModule: Clicks TOC link
+    WikiModule->>FileSystem: read_file(path/to/file.md)
+    FileSystem-->>WikiModule: Markdown content
+    WikiModule->>WikiModule: Convert markdown to HTML
+    WikiModule->>App: Inject HTML into #main-content
+```
 
 -   When the `wiki` module is loaded, its JavaScript will perform the following:
     1.  Use the `glob` tool to scan the `qualia_nss.wiki/` directory.

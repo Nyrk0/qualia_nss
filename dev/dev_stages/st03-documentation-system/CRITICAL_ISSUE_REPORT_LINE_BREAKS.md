@@ -10,7 +10,17 @@
 The Wiki Module continues to render literal `\n` characters in the displayed content instead of proper line breaks, despite implementing the DOM-based TOC fix. The issue persists at the same line locations consistently, indicating a systematic problem with markdown parsing or content processing.
 
 ### Visual Evidence
+
+#### Mermaid Diagram: Line Break Rendering Issue
+
+```mermaid
+graph TD
+    A[Markdown Source\n"Hello\nWorld"] --> B{marked.js parsing};
+    B --> C["HTML Output<p>Hello\\nWorld</p>"];
+```
+
 - Literal `\n\n` characters appear in the rendered text
+
 - Affects the "### Loading Order (Critical)" section specifically
 - Text displays as: "### Loading Order (Critical)\n\nThe core JavaScript modules must load in this exact or"
 - Should display as proper formatted markdown with line breaks
@@ -37,7 +47,39 @@ The problem likely stems from one of these areas:
 
 ## 4. Proposed Alternative Approaches
 
+### Mermaid Diagram: Alternative Solutions Flowchart
+
+```mermaid
+graph TD
+    A[Start] --> B{Choose Approach};
+    B -->|Pre-processed HTML| C[Build step converts .md to .html];
+    B -->|Alternative Library| D[Replace marked.js with another library];
+    B -->|Server-Side| E[Process markdown on server];
+
+    C --> F[Reliable, fast client-side];
+    D --> G[Might fix parsing, but could have own issues];
+    E --> H[Decoupled, but adds complexity];
+```
+
+
 ### Option A: Pre-processed HTML Documents
+
+#### Mermaid Diagram: Pre-processed HTML Workflow
+
+```mermaid
+sequenceDiagram
+    participant BuildProcess
+    participant FileSystem
+    participant WebApp
+
+    BuildProcess->>FileSystem: Read .md file
+    BuildProcess->>BuildProcess: Convert .md to .html
+    BuildProcess->>FileSystem: Save .html file
+
+    WebApp->>FileSystem: Fetch .html file
+    WebApp->>WebApp: Inject directly into DOM
+```
+
 - **Concept**: Generate wiki content as HTML files instead of markdown
 - **Process**: 
   1. Use a build step to convert .md → .html using a reliable markdown processor

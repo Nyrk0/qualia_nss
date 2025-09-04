@@ -31,6 +31,20 @@ The 7-band frequency axis model and the associated `tone-control` web component'
 
 ### 3.1. Audio Processing & Input
 
+#### Mermaid Diagram: Audio Graph
+
+```mermaid
+graph TD
+    subgraph "Wet Mode"
+        A[Microphone] --> B[GainNode];
+        B --> C[AnalyserNode];
+    end
+
+    subgraph "Dry Mode"
+        D[Tab/System Audio] --> B;
+    end
+```
+
 The `Player` class manages all audio operations using the Web Audio API.
 
 -   **Audio Graph:** A source node is connected to a single `GainNode` (mix), which feeds a single `AnalyserNode`. The output is not routed to the context destination, preventing audio loopback.
@@ -55,6 +69,18 @@ The `AnalyserView` class handles all WebGL rendering.
 
 -   **Rendering Context:** WebGL 1.0 with a fallback to `experimental-webgl`.
 -   **3D Model & Axes:**
+
+##### Mermaid Diagram: 3D Data Model
+
+```mermaid
+graph TD
+    subgraph "3D Model Axes"
+        A[X-axis] --> B(Frequency)
+        C[Y-axis] --> D(Amplitude/Height)
+        E[Z-axis] --> F(Time)
+    end
+```
+
     -   **Frequency (X-axis):** Represents frequency, logarithmically scaled.
     -   **Amplitude (Y-axis):** Represents magnitude in dBFS.
     -   **Time (Z-axis):** Represents time, with the newest data at the back, scrolling forward.
@@ -79,6 +105,21 @@ The `AnalyserView` class handles all WebGL rendering.
 
 ### 3.4. User Interface & Controls
 
+#### Mermaid Diagram: UI Components
+
+```mermaid
+graph TD
+    subgraph UI
+        A[Main View] --> B[Spectrogram Canvas]
+        A --> C[Start Button]
+        A --> D[Tone Control]
+        E[Sidebar] --> F[Camera Controls]
+        E --> G[Display Controls]
+        E --> H[Audio Source Controls]
+        E --> I[Microphone DSP Controls]
+    end
+```
+
 The UI is composed of the main canvas and sidebar controls.
 
 -   **Main View:**
@@ -95,6 +136,22 @@ The UI is composed of the main canvas and sidebar controls.
 ---
 
 ## 4. Technical Specification
+
+### Mermaid Diagram: Data Flow
+
+```mermaid
+sequenceDiagram
+    participant Player
+    participant AnalyserNode
+    participant AnalyserView
+
+    loop Animation Loop
+        Player->>AnalyserNode: getByteFrequencyData()
+        AnalyserNode-->>Player: frequencyData
+        Player->>AnalyserView: updateTexture(frequencyData)
+        AnalyserView->>AnalyserView: render()
+    end
+```
 
 -   **Language:** Vanilla JavaScript (ES6+).
 -   **Dependencies:** The module is self-contained with no external runtime libraries.
