@@ -90,6 +90,12 @@ All development MUST follow the **Keep It Simple Stable** staged approach docume
 3.  **Develop in Isolation**: All new work occurs in the `v2` files.
 4.  **Preserve Fallback**: The `v1` files are never touched and remain a stable fallback.
 
+**Strategy 3: Iterative Bugfix Workflow (MANDATORY)**
+1.  **Fix and Verify**: After a bug is reported, implement the fix. Once the user confirms the fix is working, proceed to the next step.
+2.  **Create Numbered Backup**: Create a numbered backup of the file(s) just fixed (e.g., `filename.js.bckp_1`, `filename.js.bckp_2`).
+3.  **Final Cleanup**: When the overall task is complete and all bugs are resolved, ask for final approval.
+4.  **Execute Cleanup**: After approval, search for and remove all `.bckp*` files created during the task, then proceed with the final `git commit` and `git push`.
+
 #### ES6+ Compliance Requirements (MANDATORY)
 
 **⚠️ EXCEPTION: `/standalone-modules/` directory is EXEMPT from ES6 requirements**

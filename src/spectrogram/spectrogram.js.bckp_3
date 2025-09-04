@@ -483,7 +483,7 @@ class AnalyserView {
         this.foregroundColor = [0, 0.7, 0, 1];
         this.isRendering = false;
         this.hBase = 3.0; // base Y extent of cube/axis before verticalScale
-        this.fadeEnabled = false;  // Start with fade OFF
+        this.fadeEnabled = true;
         this.gateEnabled = true;
         this.minDb = -100.0;
         this.maxDb = 0.0;
@@ -517,11 +517,6 @@ class AnalyserView {
     initGL() {
         this.gl = this.getAvailableContext(this.canvas, ['webgl', 'experimental-webgl']);
         const gl = this.gl;
-        
-        if (!gl) {
-            console.error('Failed to get WebGL context');
-            return false;
-        }
 
         this.has3DVisualizer = (gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS) > 0);
         if (!this.has3DVisualizer) {
@@ -601,10 +596,6 @@ class AnalyserView {
 
     initAxesBuffers() {
         const gl = this.gl;
-        if (!gl) {
-            console.error('WebGL context not available in initAxesBuffers');
-            return;
-        }
         // Extents based on the sonogram plane
         const w = this.sonogram3DGeometrySize;
         const h = this.hBase * this.verticalScale; // scale cube height with verticalScale
@@ -612,16 +603,11 @@ class AnalyserView {
 
         // Axes lines from origin
         this.axesVBO = gl.createBuffer();
+        this._rebuildAxesBox();
 
         // Bounding box (gray) around the sonogram plane extents
         this.boxVBO = gl.createBuffer();
-        if (!this.boxVBO) {
-            console.error('Failed to create boxVBO buffer');
-            return;
-        }
-        
-        // Build axes and box vertices after buffers are created
-        this._rebuildAxesBox();
+        // box vertices are populated in _rebuildAxesBox()
 
         // Tick buffers (generated later when labels created)
         this.tickVBO = gl.createBuffer();
@@ -669,16 +655,7 @@ class AnalyserView {
             x1, y0, z1,   x1, y1, z1,
             x0, y0, z1,   x0, y1, z1,
         ]);
-        if (!this.boxVBO) {
-            console.error('boxVBO is null, cannot bind buffer');
-            return;
-        }
         gl.bindBuffer(gl.ARRAY_BUFFER, this.boxVBO);
-        const error = gl.getError();
-        if (error !== gl.NO_ERROR) {
-            console.error('WebGL error after bindBuffer:', error);
-            return;
-        }
         gl.bufferData(gl.ARRAY_BUFFER, box, gl.DYNAMIC_DRAW);
         this.boxVertexCount = box.length / 3;
     }
@@ -905,7 +882,6 @@ class AnalyserView {
         this.minDb = min;
         this.maxDb = max;
     }
-
 
     draw_() {
         if (!this.isRendering) return;
@@ -1369,72 +1345,6 @@ function initializeSpectrogram() {
         maxDbValue.textContent = maxDbSlider.value;
 
         spectrogramAnalyserView.setDbRange(parseFloat(minDbSlider.value), parseFloat(maxDbSlider.value));
-        
-        // Update colormap spectrum
-        updateColormapSpectrum(parseFloat(minDbSlider.value), parseFloat(maxDbSlider.value));
-    }
-
-    // MusicLab Colormap generation with dynamic range compression
-    function updateColormapSpectrum(minDb, maxDb) {
-        const canvas = document.getElementById('colormap-canvas');
-        if (!canvas) return;
-        
-        const ctx = canvas.getContext('2d');
-        const width = canvas.width = canvas.offsetWidth;
-        const height = canvas.height = 20;
-        
-        // Create gradient with MusicLab colormap (HSV-based)
-        const imageData = ctx.createImageData(width, height);
-        const data = imageData.data;
-        
-        // Full range is -120dB to 0dB, user range is minDb to maxDb
-        const fullRangeDb = 120; // Total -120 to 0
-        const userRangeDb = maxDb - minDb;
-        
-        for (let x = 0; x < width; x++) {
-            // Calculate position in user's compressed range
-            const userPosition = x / (width - 1); // 0 to 1 across slider width
-            
-            // Map to the actual dB value within user's range
-            const actualDb = minDb + (userPosition * userRangeDb);
-            
-            // Convert to full spectrum position (0 to 1 across full -120 to 0 range)
-            const fullSpectrumPosition = (actualDb + 120) / fullRangeDb;
-            
-            // MusicLab HSV colormap: hue from 240° (blue) to 0° (red)
-            const hue = (1.0 - Math.max(0, Math.min(1, fullSpectrumPosition))) * 240;
-            const saturation = 0.8;
-            const value = 1.0;
-            
-            // Convert HSV to RGB
-            const c = value * saturation;
-            const hPrime = hue / 60;
-            const x1 = c * (1 - Math.abs((hPrime % 2) - 1));
-            const m = value - c;
-            
-            let r, g, b;
-            if (hPrime < 1) { r = c; g = x1; b = 0; }
-            else if (hPrime < 2) { r = x1; g = c; b = 0; }
-            else if (hPrime < 3) { r = 0; g = c; b = x1; }
-            else if (hPrime < 4) { r = 0; g = x1; b = c; }
-            else if (hPrime < 5) { r = x1; g = 0; b = c; }
-            else { r = c; g = 0; b = x1; }
-            
-            r = Math.round((r + m) * 255);
-            g = Math.round((g + m) * 255);
-            b = Math.round((b + m) * 255);
-            
-            // Fill entire height with same color
-            for (let y = 0; y < height; y++) {
-                const index = (y * width + x) * 4;
-                data[index] = r;     // Red
-                data[index + 1] = g; // Green  
-                data[index + 2] = b; // Blue
-                data[index + 3] = 255; // Alpha
-            }
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
     }
 
     if (minDbSlider) minDbSlider.addEventListener('input', updateRange);

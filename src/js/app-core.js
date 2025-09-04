@@ -62,28 +62,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // --- ES6 MODULE SYSTEM INITIALIZATION (Phase 2) ---
-    try {
-        // Try to initialize Phase 1 ES6 modules first
-        if (window.Config?.features?.es6Modules) {
-            const { MobileDetection } = await import('/src/utils/mobile-detection.js');
-            const { ThemeManager } = await import('/src/core/theme-manager.js');
-            const { getComponentRegistry } = await import('/src/core/component-registry.js');
-            
-            console.log('✓ Phase 2: ES6 modules loaded successfully');
-            console.log('- MobileDetection:', MobileDetection);
-            console.log('- ThemeManager:', ThemeManager);
-            console.log('- ComponentRegistry:', getComponentRegistry());
-            
-            // Initialize mobile optimizations after modules load
-            optimizeMobileUI();
-        } else {
-            // Fallback mobile optimization without ES6 modules
-            optimizeMobileUI();
-        }
-    } catch (error) {
-        console.log('ES6 modules not available, using vanilla JS fallback:', error);
-        optimizeMobileUI();
-    }
+    // Note: ES6 modules disabled until st02-modularization is fully implemented
+    // Currently using vanilla JS approach for stability
+    console.log('Using vanilla JS initialization (ES6 modules deferred to st02-modularization)');
+    optimizeMobileUI();
 
     // --- THEME MANAGEMENT ---
 

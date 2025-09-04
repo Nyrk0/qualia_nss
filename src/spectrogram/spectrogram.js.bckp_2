@@ -1,0 +1,143 @@
+'use strict';
+
+// Shaders (inlined)
+const commonVertexShader = `
+  attribute vec3 gPosition;
+  attribute vec2 gTexCoord0;
+  varying vec2 texCoord;
+  varying vec3 color;
+  void main() {
+    gl_Position = vec4(gPosition.x, gPosition.y, gPosition.z, 1.0);
+    texCoord = gTexCoord0;
+    color = vec3(1.0);
+  }
+`;
+
+// Simple line shaders for axes/cube
+const lineVertexShader = `
+  attribute vec3 gPosition;
+  uniform mat4 worldViewProjection;
+  void main() {
+    gl_Position = worldViewProjection * vec4(gPosition, 1.0);
+  }
+`;
+
+const lineFragmentShader = `
+  #ifdef GL_ES
+  precision highp float;
+  #endif
+  uniform vec4 uColor;
+  void main() {
+    gl_FragColor = uColor;
+  }
+`;
+
+const sonogramVertexShader = `
+  #ifdef GL_ES
+  precision highp float;
+  #endif
+  attribute vec3 gPosition;
+  attribute vec2 gTexCoord0;
+  uniform sampler2D vertexFrequencyData;
+  uniform float vertexYOffset;
+  uniform mat4 worldViewProjection;
+  uniform float verticalScale;
+  uniform float hBase;        // base axis height
+  uniform float dbfsOffset;   // calibration offset in dB
+  uniform float u_minDb;
+  uniform float u_maxDb;
+  varying vec2 texCoord;
+  varying vec3 color;
+
+  vec3 convertHSVToRGB(in float hue, in float saturation, in float lightness) {
+    float chroma = lightness * saturation;
+    float hueDash = hue / 60.0;
+    float x = chroma * (1.0 - abs(mod(hueDash, 2.0) - 1.0));
+    vec3 hsv = vec3(0.0);
+    if(hueDash < 1.0) {
+      hsv.r = chroma;
+      hsv.g = x;
+    } else if (hueDash < 2.0) {
+      hsv.r = x;
+      hsv.g = chroma;
+    } else if (hueDash < 3.0) {
+      hsv.g = chroma;
+      hsv.b = x;
+    } else if (hueDash < 4.0) {
+      hsv.g = x;
+      hsv.b = chroma;
+    } else if (hueDash < 5.0) {
+      hsv.r = x;
+      hsv.b = chroma;
+    } else if (hueDash < 6.0) {
+      hsv.r = chroma;
+      hsv.b = x;
+    }
+    return hsv;
+  }
+
+  void main() {
+    float x = pow(256.0, gTexCoord0.x - 1.0);
+    vec4 sample = texture2D(vertexFrequencyData, vec2(x, gTexCoord0.y + vertexYOffset));
+    float db = -100.0 + sample.a * 100.0;
+    float dbCal = clamp(db + dbfsOffset, -120.0, 0.0);
+    float range = u_maxDb - u_minDb;
+    float y01 = 0.0;
+    if (range > 0.0) {
+        y01 = (dbCal - u_minDb) / range;
+    }
+    y01 = clamp(y01, 0.0, 1.0);
+    float yScale = verticalScale * hBase;
+    vec4 newPosition = vec4(gPosition.x, gPosition.y + yScale * y01, gPosition.z, 1.0);
+    gl_Position = worldViewProjection * newPosition;
+    texCoord = gTexCoord0;
+    float hue = 360.0 - (y01 * 360.0);
+    color = convertHSVToRGB(hue, 1.0, 1.0);
+  }
+`;
+
+const sonogramFragmentShader = `
+  #ifdef GL_ES
+  precision highp float;
+  #endif
+  varying vec2 texCoord;
+  uniform sampler2D frequencyData;
+  uniform float yoffset;
+  uniform bool u_enableFade;
+  uniform bool u_enableGate;
+  uniform float u_minDb;
+  uniform float u_maxDb;
+  uniform float dbfsOffset;
+
+  void main() {
+    float x = pow(256.0, texCoord.x - 1.0);
+    float y = texCoord.y + yoffset;
+    vec4 sample = texture2D(frequencyData, vec2(x, y));
+    float db = -100.0 + sample.a * 100.0;
+    float dbCal = clamp(db + dbfsOffset, -120.0, 0.0);
+    float range = u_maxDb - u_minDb;
+    float normalized_val = 0.0;
+    if (range > 0.0) {
+        normalized_val = (dbCal - u_minDb) / range;
+    }
+    normalized_val = clamp(normalized_val, 0.0, 1.0);
+    float fade_effect = pow(cos((1.0 - texCoord.y) * 0.5 * 3.1415926535), 0.5);
+    float final_fade = u_enableFade ? fade_effect : 1.0;
+    float value = normalized_val * final_fade;
+    float h = (1.0 - value) * 0.7;
+    float s = 0.8;
+    float v;
+    if (u_enableGate) {
+        v = value > 0.1 ? 1.0 : 0.0;
+    } else {
+        v = value;
+    }
+    vec3 hsv = vec3(h, s, v);
+    vec4 K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);
+    vec3 p = abs(fract(hsv.xxx + K.xyz) * 6.0 - K.www);
+    vec3 rgb = hsv.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), hsv.y);
+    gl_FragColor = vec4(rgb, 1.0);
+  }
+`;
+
+// ... (rest of the file is unchanged) ...

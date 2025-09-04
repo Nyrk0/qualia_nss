@@ -27,10 +27,28 @@ DirectoryIndex index.html index.htm
     Header always set X-XSS-Protection "1; mode=block"
 </IfModule>
 
-# Pretty URLs - redirect to index.html for root access
+# Serve manifest.json with correct MIME type
+<Files "manifest.json">
+    ForceType application/manifest+json
+</Files>
+
+# Enable CORS for development (if mod_headers is available)
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+</IfModule>
+
+# API Routes - redirect /api/* to /api/*.php
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^$ /index.html [L]
+RewriteRule ^api/([^/]+)/?$ api/$1.php [L,QSA]
+
+# Pretty URLs - redirect to index.html for root access and SPA routing
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteRule ^ index.html [L]
 
 # Note: Directory restrictions moved to Apache main config

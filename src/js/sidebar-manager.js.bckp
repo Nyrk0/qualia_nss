@@ -169,35 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
         'spectrogram': `
             <div id="sidebar-canvas">
                 <div id="sidebar-content">
-                    <div class="analysis-mode-controls" style="display: flex !important; flex-direction: row !important; align-items: center; gap: 20px;">
-                        <div class="form-check form-switch" title="Toggle the temporal fade-out effect. When off, the history will not fade.">
-                            <input class="form-check-input" type="checkbox" role="switch" id="spectro-fade-toggle">
-                            <label class="form-check-label" for="spectro-fade-toggle">Fade</label>
-                        </div>
-                        <div class="form-check form-switch" title="Toggle the visual brightness gate. When off, low-level signals and noise floor will be visible.">
-                            <input class="form-check-input" type="checkbox" role="switch" id="spectro-bright-toggle" checked>
-                            <label class="form-check-label" for="spectro-bright-toggle">Bright</label>
-                        </div>
-                    </div>
-                    <div class="analysis-mode-controls" style="border-top: 1px solid var(--border-color); margin-top: 10px; padding-top: 10px;">
-                        <label class="form-check-label">Dynamic Range (dBFS)</label>
-                        <div class="range-slider-wrapper">
-                            <div class="range-slider-values">
-                                <span id="range-min-value">-100</span>
-                                <span id="range-max-value">0</span>
-                            </div>
-                            <div class="range-slider-track"></div>
-                            <input type="range" class="form-range" min="-120" max="0" value="-100" id="spectro-min-db">
-                            <input type="range" class="form-range" min="-120" max="0" value="0" id="spectro-max-db">
-                        </div>
-                        <div class="colormap-spectrum" id="dynamic-range-colormap">
-                            <canvas id="colormap-canvas" width="200" height="20"></canvas>
-                            <div class="colormap-labels">
-                                <span class="colormap-label-left">Min</span>
-                                <span class="colormap-label-right">Max</span>
-                            </div>
-                        </div>
-                    </div>
                     <div class="accordion" id="sidebarAccordion">
                 <!-- 1. Experiment Setup -->
                 <div class="accordion-item">

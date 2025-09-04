@@ -7,20 +7,15 @@
 document.addEventListener('DOMContentLoaded', async () => {
     
     // --- COMPONENT REGISTRY INTEGRATION ---
+    // Note: ES6 component registry disabled until st02-modularization is fully implemented
     let componentRegistry = null;
-    try {
-        // Try to load component registry with ES6 import
-        if (window.Config?.features?.es6Modules) {
-            const { getComponentRegistry } = await import('/src/core/component-registry.js');
-            componentRegistry = getComponentRegistry();
-        }
-    } catch (error) {
-        console.warn('ES6 component registry not available, using fallback:', error);
-    }
     
-    // Fallback to global if ES6 failed
-    if (!componentRegistry && window.getComponentRegistry) {
+    // Use global component registry if available
+    if (window.getComponentRegistry) {
         componentRegistry = window.getComponentRegistry();
+        console.log('Using global component registry');
+    } else {
+        console.log('Component registry not available, using direct script loading');
     }
     
     // --- MODULE HTML TEMPLATES ---
@@ -132,29 +127,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- SPECTROGRAM SCRIPT LOADING HELPER ---
     const loadSpectrogramScript = async () => {
-        // Load tone-control component first using component registry
+        // Load tone-control component
         try {
             if (componentRegistry) {
                 console.log('Loading tone-control component via registry...');
                 await componentRegistry.load('tone-control');
                 console.log('✓ tone-control component loaded via registry');
             } else {
-                console.warn('Component registry not available, falling back to direct script loading');
-                // Fallback to direct script loading
+                console.log('Loading tone-control component via direct script loading...');
+                // Direct script loading (current standard method)
                 await new Promise((resolve, reject) => {
                     const toneScript = document.createElement('script');
                     toneScript.src = '/src/components/tone-control/tone-control.js';
+                    toneScript.type = 'module';  // Enable ES6 module loading
                     toneScript.onload = resolve;
                     toneScript.onerror = reject;
                     document.head.appendChild(toneScript);
                 });
-                console.log('✓ tone-control component loaded via fallback');
+                console.log('✓ tone-control component loaded successfully');
             }
         } catch (error) {
             console.warn('Failed to load tone-control component:', error);
         }
         
-        // Now load spectrogram script
+        // Load spectrogram script
         const script = document.createElement('script');
         script.src = 'src/spectrogram/spectrogram.js';
         script.onload = () => {

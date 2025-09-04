@@ -98,3 +98,113 @@
     justify-content: space-between;
     width: 150px;
 }
+
+/* New styles for analysis mode controls */
+.analysis-mode-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    background-color: var(--panel-bg-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.analysis-mode-controls .form-check-label {
+    font-size: 0.85rem;
+}
+
+.range-slider-wrapper {
+    position: relative;
+    height: 40px;
+    display: flex;
+    align-items: center;
+}
+
+/* Colormap spectrum below range slider */
+.colormap-spectrum {
+    margin-top: 10px;
+    width: 100%;
+}
+
+#colormap-canvas {
+    width: 100%;
+    height: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+}
+
+.colormap-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    margin-top: 2px;
+    color: var(--text-secondary-color);
+}
+
+.range-slider-values {
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    font-size: 0.8rem;
+    color: var(--text-color);
+}
+
+.range-slider-wrapper input[type=range] {
+    position: absolute;
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    pointer-events: none; /* Input element is transparent, only thumb is interactive */
+}
+
+/* Hide the native tracks */
+input[type=range]::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  background: none;
+}
+
+input[type=range]::-moz-range-track {
+  -moz-appearance: none;
+  background: none;
+}
+
+#spectro-min-db {
+    z-index: 3; /* Left thumb on top */
+}
+
+#spectro-max-db {
+    z-index: 2; /* Right thumb below left */
+}
+
+.range-slider-wrapper input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    pointer-events: auto; /* Thumb is interactive */
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    cursor: pointer;
+}
+
+.range-slider-wrapper input[type=range]::-moz-range-thumb {
+    pointer-events: auto;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    cursor: pointer;
+}
+
+.range-slider-track {
+    position: absolute;
+    width: 100%;
+    height: 4px;
+    background-color: #26303b; /* Neutral grey from tone-control */
+    border-radius: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1; /* Base layer for thumbs */
+}
