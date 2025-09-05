@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qualia-NSS Development Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #333;
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: #667eea;
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4ade80;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-desc {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        .modules-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header h2 {
+            color: #e0e0e0;
+            font-size: 1.8rem;
+        }
+
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #5a67d8;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .module-card {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid #333;
+            transition: all 0.2s ease;
+        }
+
+        .module-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .module-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #e0e0e0;
+        }
+
+        .module-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-healthy {
+            background: #064e3b;
+            color: #4ade80;
+        }
+
+        .status-warning {
+            background: #451a03;
+            color: #fbbf24;
+        }
+
+        .status-error {
+            background: #450a0a;
+            color: #f87171;
+        }
+
+        .status-missing {
+            background: #374151;
+            color: #9ca3af;
+        }
+
+        .module-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .metric {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.75rem;
+            background: #2a2a2a;
+            border-radius: 6px;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: #a0a0a0;
+            text-align: center;
+        }
+
+        .module-files {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .file-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: #2a2a2a;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .file-present {
+            color: #4ade80;
+        }
+
+        .file-missing {
+            color: #9ca3af;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            border-top: 1px solid #333;
+            margin-top: 3rem;
+        }
+
+        .last-updated {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>🎛️ Qualia-NSS Dashboard</h1>
+        <p>Audio Analysis Toolkit - Development Status</p>
+    </header>
+
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Modules</h3>
+                <div class="stat-value" id="total-modules">-</div>
+                <div class="stat-desc">Active modules in src/</div>
+            </div>
+            <div class="stat-card">
+                <h3>Healthy Modules</h3>
+                <div class="stat-value" id="healthy-modules">-</div>
+                <div class="stat-desc">Pass all health checks</div>
+            </div>
+            <div class="stat-card">
+                <h3>Documentation</h3>
+                <div class="stat-value" id="docs-coverage">-</div>
+                <div class="stat-desc">Modules with README.md</div>
+            </div>
+            <div class="stat-card">
+                <h3>Last Commit</h3>
+                <div class="stat-value" id="last-commit">-</div>
+                <div class="stat-desc">Days since last change</div>
+            </div>
+        </div>
+
+        <section class="modules-section">
+            <div class="section-header">
+                <h2>📁 Module Status</h2>
+                <button class="refresh-btn" onclick="refreshDashboard()">🔄 Refresh</button>
+            </div>
+            <div class="modules-grid" id="modules-grid">
+                <!-- Modules will be populated here -->
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <div class="last-updated" id="last-updated">Loading...</div>
+        <div>Built with ❤️ for the Qualia-NSS development team</div>
+    </footer>
+
+    <script>
+        // Dashboard data
+        let dashboardData = {
+            modules: [],
+            stats: {
+                total: 0,
+                healthy: 0,
+                documented: 0,
+                lastCommit: 0
+            }
+        };
+
+        // Initialize dashboard
+        async function initDashboard() {
+            await loadDashboardData();
+            renderDashboard();
+            updateLastUpdated();
+        }
+
+        // Load data from API endpoints (fallback to mock data)
+        async function loadDashboardData() {
+            try {
+                // Try to load from API endpoints
+                const modulesResponse = await fetch('/api/modules');
+                const statsResponse = await fetch('/api/stats');
+
+                if (modulesResponse.ok && statsResponse.ok) {
+                    dashboardData.modules = await modulesResponse.json();
+                    dashboardData.stats = await statsResponse.json();
+                } else {
+                    // Fallback to mock data
+                    await loadMockData();
+                }
+            } catch (error) {
+                console.warn('API not available, using mock data:', error);
+                await loadMockData();
+            }
+        }
+
+        // Mock data for demonstration
+        async function loadMockData() {
+            dashboardData.modules = [
+                {
+                    name: 'speakers-spl',
+                    title: 'Speakers SPL',
+                    status: 'healthy',
+                    files: {
+                        index: true,
+                        html: true,
+                        css: true,
+                        readme: true
+                    },
+                    lastModified: '2025-09-05',
+                    description: 'Speaker SPL measurement and analysis'
+                },
+                {
+                    name: '7band-levelmeter',
+                    title: '7-Band Level Meter',
+                    status: 'warning',
+                    files: {
+                        index: true,
+                        html: true,
+                        css: false,
+                        readme: true
+                    },
+                    lastModified: '2025-09-04',
+                    description: 'Real-time 7-band audio level monitoring'
+                },
+                {
+                    name: 'filters',
+                    title: 'Audio Filters',
+                    status: 'healthy',
+                    files: {
+                        index: true,
+                        html: true,
+                        css: true,
+                        readme: false
+                    },
+                    lastModified: '2025-09-03',
+                    description: 'Audio filter design and analysis'
+                }
+            ];
+
+            dashboardData.stats = {
+                total: dashboardData.modules.length,
+                healthy: dashboardData.modules.filter(m => m.status === 'healthy').length,
+                documented: dashboardData.modules.filter(m => m.files.readme).length,
+                lastCommit: 1
+            };
+        }
+
+        // Render dashboard
+        function renderDashboard() {
+            renderStats();
+            renderModules();
+        }
+
+        // Render statistics cards
+        function renderStats() {
+            document.getElementById('total-modules').textContent = dashboardData.stats.total;
+            document.getElementById('healthy-modules').textContent = dashboardData.stats.healthy;
+            document.getElementById('docs-coverage').textContent = `${dashboardData.stats.documented}/${dashboardData.stats.total}`;
+            document.getElementById('last-commit').textContent = `${dashboardData.stats.lastCommit}d`;
+        }
+
+        // Render modules grid
+        function renderModules() {
+            const grid = document.getElementById('modules-grid');
+            grid.innerHTML = '';
+
+            dashboardData.modules.forEach(module => {
+                const moduleCard = createModuleCard(module);
+                grid.appendChild(moduleCard);
+            });
+        }
+
+        // Create module card element
+        function createModuleCard(module) {
+            const card = document.createElement('div');
+            card.className = 'module-card';
+
+            const statusClass = `status-${module.status}`;
+            const statusText = module.status.charAt(0).toUpperCase() + module.status.slice(1);
+
+            card.innerHTML = `
+                <div class="module-header">
+                    <div class="module-name">${module.title}</div>
+                    <div class="module-status ${statusClass}">${statusText}</div>
+                </div>
+
+                <div class="module-metrics">
+                    <div class="metric">
+                        <div class="metric-value">${module.files.index ? '✅' : '❌'}</div>
+                        <div class="metric-label">index.js</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${module.files.readme ? '✅' : '❌'}</div>
+                        <div class="metric-label">README</div>
+                    </div>
+                </div>
+
+                <div class="module-files">
+                    <div class="file-indicator ${module.files.html ? 'file-present' : 'file-missing'}">
+                        <span>${module.files.html ? '✅' : '❌'}</span>
+                        <span>HTML</span>
+                    </div>
+                    <div class="file-indicator ${module.files.css ? 'file-present' : 'file-missing'}">
+                        <span>${module.files.css ? '✅' : '❌'}</span>
+                        <span>CSS</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem; font-size: 0.9rem; color: #888;">
+                    ${module.description}
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Update last updated timestamp
+        function updateLastUpdated() {
+            const now = new Date();
+            const timeString = now.toLocaleString();
+            document.getElementById('last-updated').textContent = `Last updated: ${timeString}`;
+        }
+
+        // Refresh dashboard
+        async function refreshDashboard() {
+            const refreshBtn = document.querySelector('.refresh-btn');
+            const originalText = refreshBtn.textContent;
+
+            refreshBtn.textContent = '🔄 Refreshing...';
+            refreshBtn.disabled = true;
+
+            try {
+                await loadDashboardData();
+                renderDashboard();
+                updateLastUpdated();
+                refreshBtn.textContent = '✅ Refreshed!';
+            } catch (error) {
+                console.error('Refresh failed:', error);
+                refreshBtn.textContent = '❌ Refresh Failed';
+            } finally {
+                setTimeout(() => {
+                    refreshBtn.textContent = originalText;
+                    refreshBtn.disabled = false;
+                }, 2000);
+            }
+        }
+
+        // Auto-refresh every 5 minutes
+        setInterval(refreshDashboard, 5 * 60 * 1000);
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>

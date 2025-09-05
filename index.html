@@ -52,7 +52,7 @@
     <header class="glass-header">
         <nav class="main-navbar">
             <div class="nav-left">
-                <a href="#" class="logo" onclick="showWelcome(); return false;" title="Qualia-NSS Professional Audio Toolkit">
+                <a href="#" class="logo" onclick="loadHome(); setActiveNav(this); return false;" title="Qualia-NSS Professional Audio Toolkit">
                     <span class="logo-text">QUALIA</span>
                     <img src="assets/src/four_leaf_clover.svg" alt="Qualia Logo" class="logo-clover">
                     <span class="logo-text">NSS</span>
@@ -164,7 +164,8 @@
     
     <!-- Modular App Architecture -->
     <script type="module" src="/src/js/app-core.js"></script>
-    <script src="/src/js/ui-utils.js"></script>
+    <script type="module" src="/src/js/ui-utils.js"></script>
+    <script type="module" src="/src/home/home-module.js"></script>
     <script src="/src/js/sidebar-manager.js"></script>
     <script src="/src/js/module-loader.js"></script>
     <script src="/src/js/navigation.js"></script>
@@ -296,6 +297,13 @@
             console.log('Loading Wiki module...'); 
             if (typeof window.loadModule === 'function') {
                 window.loadModule('wiki');
+            }
+        };
+        
+        window.loadHome = window.loadHome || function() { 
+            console.log('Loading Home module...'); 
+            if (typeof window.loadModule === 'function') {
+                window.loadModule('home');
             }
         };
     </script>

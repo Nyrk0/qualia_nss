@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // --- MODULE HTML TEMPLATES ---
     const moduleHTML = {
-        home: `<div id="home-module-root" class="home-content"></div>`,
         'speakers-spl': `<div class="module-content">
     <div id="speakers-spl-root" class="spl-viewer"></div>
 </div>`,
@@ -200,40 +199,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 currentModule.instance.destroy();
             }
 
-            // Handle home module special case (full-width, no sidebar)
+            // Remove home-page class and add sidebar back to content wrapper
             const contentWrapper = document.getElementById('content-wrapper');
-            if (moduleName === 'home') {
-                if (contentWrapper) {
-                    contentWrapper.classList.add('home-page');
-                    // Remove sidebar for home module
-                    const sidebar = document.getElementById('sidebar');
-                    if (sidebar) {
-                        sidebar.remove();
-                    }
-                }
-                
-                // Load HomeModule template and initialize
-                const mainContent = document.getElementById('main-content');
-                if (mainContent && window.HomeModule) {
-                    window.HomeModule.render(mainContent);
-                    
-                    // Set current module info
-                    currentModule = {
-                        name: 'home',
-                        instance: window.HomeModule
-                    };
-                    
-                    // Store in localStorage for persistence
-                    localStorage.setItem('lastModule', 'home');
-                    console.log('HomeModule loaded successfully');
-                    return;
-                } else {
-                    console.error('HomeModule not available or main-content not found');
-                    return;
-                }
-            }
-
-            // Remove home-page class and add sidebar back to content wrapper for other modules
             if (contentWrapper) {
                 contentWrapper.classList.remove('home-page');
                 
@@ -332,36 +299,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (moduleName === 'wiki') return 'src/wiki-utils/index.js';
                     return `src/${moduleName}/index.js`;
                 })();
-
-                // Check if script already loaded to prevent duplicate class declarations
-                const existingScript = document.querySelector(`script[src="${scriptSrc}"]`);
-                if (existingScript) {
-                    // Script already loaded, just initialize the module
-                    const toPascal = (name) => name
-                        .split('-')
-                        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-                        .join('');
-                    const expectedClassName = `${toPascal(moduleName)}Module`;
-                    let ModuleClass = window[expectedClassName];
-                    
-                    // Backward compatibility for legacy export name
-                    if (!ModuleClass && moduleName === '7band-levelmeter') {
-                        ModuleClass = window.TestsModule || window.SevenBandLevelmeterModule;
-                    }
-                    if (ModuleClass) {
-                        const instance = new ModuleClass();
-                        currentModule = { name: moduleName, instance };
-                        window.currentModule = currentModule;
-                        instance.init();
-                    }
-                    // Remember last opened module
-                    try { localStorage.setItem('lastModule', moduleName); } catch(_) {}
-                    // Reflect active nav
-                    if (window.setNavActiveForModule) {
-                        window.setNavActiveForModule(moduleName);
-                    }
-                    return;
-                }
 
                 const script = document.createElement('script');
                 script.src = scriptSrc;

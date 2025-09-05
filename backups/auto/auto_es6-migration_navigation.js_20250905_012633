@@ -38,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const setNavActiveForModule = (moduleName) => {
         try {
             const map = {
-                'home': '.logo',
                 'speakers-spl': '.navbar-nav .nav-link:nth-child(1)',
                 'filters': '.navbar-nav .nav-link:nth-child(2)',
                 'cabinets': '.navbar-nav .nav-link:nth-child(3)',
@@ -61,27 +60,40 @@ document.addEventListener('DOMContentLoaded', () => {
      * Sets up home page layout with full-width content
      */
     window.showWelcome = () => {
-        // Use new HomeModule system
-        if (typeof window.loadModule === 'function') {
-            window.loadModule('home');
-        } else {
-            console.warn('loadModule not available, falling back to legacy welcome');
-            // Legacy fallback (remove this once fully migrated)
-            const mainContent = document.getElementById('main-content');
-            if (mainContent) {
-                mainContent.innerHTML = `
-                    <div class="welcome-hero">
-                        <h1 class="hero-title">
-                            <span class="text-gradient">Qualia-NSS</span>
-                            <small class="text-muted d-block">Professional Audio Analysis Toolkit</small>
-                        </h1>
-                        <div class="hero-description">
-                            <p class="lead">Choose an analysis module from the navigation above to begin your audio engineering workflow.</p>
-                        </div>
-                    </div>
-                `;
+        // Destroy current module if exists
+        if (window.currentModule && window.currentModule.instance) {
+            window.currentModule.instance.destroy();
+            window.currentModule = null;
+        }
+        
+        // Set up home page layout
+        const contentWrapper = document.getElementById('content-wrapper');
+        if (contentWrapper) {
+            // Add home-page class for styling
+            contentWrapper.classList.add('home-page');
+            
+            // Remove sidebar if it exists
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.remove();
             }
         }
+        
+        const mainContent = document.getElementById('main-content');
+        if (mainContent) {
+            // Add full-width class for home page
+            mainContent.classList.add('full-width');
+            mainContent.innerHTML = `
+                <h1>Welcome</h1>
+                <p>QUALIA•NSS blueprint will be loaded here.</p>
+            `;
+        }
+        
+        // Set logo as active when showing welcome
+        const logo = document.querySelector('.logo');
+        window.setActiveNav(logo);
+        // Set localStorage to remember home page
+        try { localStorage.setItem('lastModule', '__HOME__'); } catch(_) {}
     };
 
     // --- MODULE NAVIGATION FUNCTIONS ---
@@ -107,29 +119,21 @@ document.addEventListener('DOMContentLoaded', () => {
     window.loadSpectrogram = () => window.loadModule('spectrogram');
     /** Load Wiki module */
     window.loadWiki = () => window.loadModule('wiki');
-    /** Load Home module */
-    window.loadHome = () => window.loadModule('home');
 
     // Auto-restore last opened module if available
     try {
         const last = localStorage.getItem('lastModule');
-        if (last === 'home' || last === '__HOME__' || !last) {
-            // Load home module by default or if explicitly set
-            window.loadModule('home');
-            setTimeout(() => setNavActiveForModule('home'), 0);
-        } else if (last && window.loadModule) {
-            // Restore last used module
+        if (last === '__HOME__') {
+            window.showWelcome();
+        } else if (last && window.moduleHTML && (last in window.moduleHTML)) {
             window.loadModule(last);
+            // Ensure navbar reflects restored module immediately
             setTimeout(() => setNavActiveForModule(last), 0);
         } else {
-            // Fallback to home module
-            window.loadModule('home');
-            setTimeout(() => setNavActiveForModule('home'), 0);
+            window.showWelcome();
         }
     } catch (_) {
-        // Fallback to home module on error
-        window.loadModule('home');
-        setTimeout(() => setNavActiveForModule('home'), 0);
+        window.showWelcome();
     }
 
     console.log('Navigation initialized.');
