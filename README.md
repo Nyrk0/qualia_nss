@@ -1,41 +1,89 @@
-# Qualia-NSS: Near-field Speaker Simulator
+# Qualia-NSS: Natural Surround Sound
 
-A professional web-based audio analysis toolkit providing real-time visualization and measurement capabilities for audio engineering applications. Built with modular architecture and modern web technologies for precision audio analysis.
+A DIY psychoacoustic loudspeaker design toolkit providing web-based analysis tools for enthusiasts to create immersive stereo systems without DSP equipment or complex crossovers.
 
-## ✨ Features
+## Core Mission
 
-- **🎛️ Real-Time 7-Band Psychoacoustic Analysis** - Professional audio monitoring across critical frequency bands
-- **🌈 3D WebGL Spectrogram Visualization** - Advanced 3D spectrogram based on Google Chrome Music Lab with interactive controls
-- **📊 Spectrum Analysis** - Real-time frequency domain analysis with configurable parameters
-- **🔍 Comb Filtering Detection** - Sophisticated acoustic artifact detection using cepstrum analysis
-- **📈 SPL Curve Analysis** - Upload and analyze Sound Pressure Level data from measurement equipment
-- **🎨 Advanced UI** - Professional interface with accordion sidebars, theme system, and responsive design
+**Creative Stereo Design Through Psychoacoustics**
+- Research-driven speaker complementarity analysis
+- Simple, proven cabinet designs (no crossovers)
+- Budget optimization: speakers over electronics
+- Immersive listening without DSP complexity
 
-## 🏗️ Architecture
+## Design Philosophy
 
-### Modular Frontend Architecture
+### Speaker Selection Focus
+- **Psychoacoustic Band Analysis**: 7-band monitoring for frequency response optimization
+- **Complementarity Matching**: Tools to ensure left/right speaker synergy
+- **Phase Alignment**: Detection of comb filtering and temporal artifacts
+- **SPL Curve Analysis**: Real-world performance validation
 
-The application uses a **fully modular architecture** with separate concerns:
+### Simple Architecture
+- **No Crossovers**: Full-range driver approach
+- **Minimal Enclosures**: Focus on proven designs (sealed, ported, open-baffle)
+- **Component Quality**: Budget allocation to driver selection and matching
+
+## Analysis Tools for DIY Enthusiasts
+
+### 1. **Psychoacoustic Analyzer** - Band Response Optimization
+- Real-time 7-band analysis (Sub-bass, Bass, Low Mids, Mids, Upper Mids, Presence, Brilliance)
+- Speaker placement and room interaction monitoring
+- Frequency response curve generation
+
+### 2. **Complementarity Matcher** - Stereo Pair Analysis
+- Left/right channel comparison tools
+- Phase coherence measurement
+- Timbre matching validation
+
+### 3. **Comb Filter Detector** - Acoustic Artifact Prevention
+- Room reflection analysis
+- Speaker placement optimization
+- Standing wave identification
+
+### 4. **SPL Measurement Suite** - Real-World Performance
+- Upload professional SPL measurements
+- Compare against DIY implementations
+- Power response analysis
+
+## Technical Architecture
+
+**Web-Based Accessibility**: No expensive measurement equipment required
+**Real-Time Feedback**: Instant analysis during speaker setup
+**Modular Design**: Easy addition of new analysis modules
+**Cross-Platform**: Works on any modern browser
+
+## Psychoacoustic Research Integration
+
+- **Fletcher-Munson Curves**: Perceptual frequency weighting
+- **Critical Band Theory**: 7-band analysis foundation
+- **Head-Related Transfer Functions**: Immersive positioning cues
+- **Binaural Processing**: Stereo image optimization
+
+This toolkit empowers DIY audiophiles to achieve professional-quality immersive listening through informed speaker design and precise acoustic measurements.
+
+## Architecture and Project Structure
+
+The application uses a **fully modular architecture** with a clear separation of concerns, making it maintainable and scalable. All modules leverage the **Web Audio API** for real-time processing.
+
+Below is the consolidated project structure, serving as the single source of truth:
 
 ```
-src/
-├── js/                     # JavaScript modules
-│   ├── app-core.js        # Core initialization & theme management
-│   ├── ui-utils.js        # UI utilities & scroll effects  
-│   ├── sidebar-manager.js # Advanced sidebar templates
-│   ├── module-loader.js   # Dynamic module loading
-│   └── navigation.js      # Navigation & routing
-├── styles/                # CSS modules
-│   ├── core.css          # Variables, fonts, typography
-│   ├── layout.css        # Main content & sidebar layouts
-│   ├── navigation.css    # Header & navbar styling
-│   ├── components.css    # UI components & forms
-│   ├── utilities.css     # Helper classes & effects
-│   ├── responsive.css    # Media queries & mobile
-│   └── modules/          # Module-specific styles
-└── spectrogram/          # Integrated spectrogram module
-    ├── index.html        # HTML fragment
-    └── spectrogram.js    # WebGL 3D implementation
+qualia-nss/
+├── src/                    # Core modular application source
+│   ├── js/                # Main JavaScript modules (loader, router, etc.)
+│   ├── styles/            # Global and component-level CSS
+│   ├── components/        # Reusable components (e.g., tone-control)
+│   └── ...                # Other core component directories
+├── standalone-modules/     # Self-contained feature modules with their own HTML/JS/CSS
+│   ├── 7band-level-meter/ # Psychoacoustic multi-band analysis
+│   ├── comb-filtering/    # Acoustic artifact detection
+│   └── ...                # Other standalone tools
+├── assets/                 # Static assets (e.g., sample data, images)
+├── dev/                    # Development guides, rules, and todos
+├── docs/                   # In-depth documentation and reports
+├── api/                    # Backend API endpoints (e.g., health checks)
+├── index.html              # Main application entry point
+└── README.md               # This file
 ```
 
 ### Audio Processing Pipeline
@@ -46,7 +94,7 @@ All modules leverage the **Web Audio API** for real-time processing:
 - Real-time FFT analysis with configurable windowing
 - Professional frequency domain processing and visualization
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Option A: HTTP Server (Recommended)
 
@@ -66,9 +114,9 @@ npx http-server -p 8080
 - Modules include CORS-safe fallbacks for local development
 - Some features may require HTTP server for full functionality
 
-## 🧩 Audio Analysis Modules
+## Audio Analysis Modules
 
-### 1. 🎛️ **Spectrogram** - 3D WebGL Visualization
+### 1. **Spectrogram** - 3D WebGL Visualization
 **Purpose**: Advanced real-time spectrogram with 3D visualization capabilities
 
 **Features**:
@@ -78,9 +126,9 @@ npx http-server -p 8080
 - **DSP Controls** - Echo cancellation, noise suppression, auto gain control
 - **Advanced Sidebar** - Bootstrap accordion with organized control sections
 
-**Status**: ✅ **Fully Integrated** - Complete modular architecture integration
+**Status**: **Fully Integrated** - Complete modular architecture integration
 
-### 2. 📊 **7-Band Level Meter** - Psychoacoustic Monitoring
+### 2. **7-Band Level Meter** - Psychoacoustic Monitoring
 **Purpose**: Real-time multi-band RMS level monitoring with calibration
 
 **Features**:
@@ -89,9 +137,9 @@ npx http-server -p 8080
 - Professional calibration capabilities
 - Real-time visual feedback
 
-**Status**: ✅ **Functional** - Ready for modular integration
+**Status**: **Fully Integrated** - Complete modular architecture integration
 
-### 3. 📈 **Spectrum Analyzer** - Frequency Analysis
+### 3. **Spectrum Analyzer** - Frequency Analysis
 **Purpose**: Real-time frequency spectrum visualization
 
 **Features**:
@@ -99,9 +147,9 @@ npx http-server -p 8080
 - Logarithmic frequency scaling (20Hz - 20kHz)
 - Real-time amplitude and phase analysis
 
-**Status**: ✅ **Functional** - Ready for modular integration
+**Status**: **Functional** - Ready for modular integration
 
-### 4. 🔍 **Comb-Filtering Detection** - Acoustic Analysis
+### 4. **Comb-Filtering Detection** - Acoustic Analysis
 **Purpose**: Professional acoustic artifact detection
 
 **Features**:
@@ -110,16 +158,16 @@ npx http-server -p 8080
 - Confidence scoring and temporal smoothing
 - ES6 module structure with comprehensive API
 
-**Status**: ✅ **Library Ready** - Available for integration
+**Status**: **Standalone Module** - Available in `/standalone-modules/comb-filtering/`
 
-### 5. 🎚️ **Additional Modules** - Professional Tools
+### 5. **Additional Modules** - Professional Tools
 - **Filters** - Audio filter design and analysis
 - **Cabinets** - Speaker cabinet modeling tools  
 - **Tests** - Audio measurement and testing suite
 
-**Status**: 🚧 **In Development** - UI templates ready
+**Status**: **Fully Integrated** - Complete modular architecture with working functionality
 
-## 🎨 User Interface
+## User Interface
 
 ### Modern Professional Design
 - **Responsive Layout** - Optimized for desktop, tablet, and mobile
@@ -132,7 +180,7 @@ npx http-server -p 8080
 - **State Persistence** - Settings and preferences saved across sessions
 - **Keyboard Shortcuts** - Professional workflow optimization
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Frontend**: Vanilla JavaScript (ES6+) with modular architecture
 - **UI Framework**: Bootstrap 5 (CSS-only) + Bootstrap Icons
@@ -141,29 +189,7 @@ npx http-server -p 8080
 - **Build System**: None - Pure web standards for maximum compatibility
 - **Deployment**: Static hosting optimized for CDN delivery
 
-## 📁 Project Structure
-
-```
-qualia-nss/
-├── src/                    # Modular application source
-│   ├── js/                # JavaScript modules  
-│   ├── styles/            # CSS modules
-│   └── spectrogram/       # Integrated spectrogram
-├── modules/               # Legacy standalone modules
-│   ├── 7band-level-meter/ # Multi-band analysis
-│   ├── spectrum-analyzer/ # Frequency analysis
-│   └── comb-filtering/    # Artifact detection
-├── docs/                  # Documentation & samples
-├── assets/                # Sample data & resources
-├── dev/                   # Development documentation
-│   ├── st01-modularization/ # Modularization strategy
-│   └── dev_directives/    # Development methodologies
-├── index.html             # Application entry point
-├── CLAUDE.md              # AI development guidance
-└── CHANGELOG.md           # Project history
-```
-
-## 🔧 Development
+## Development
 
 ### Architecture Benefits
 - **Maintainability** - Clear separation of concerns across 13+ modular files
@@ -177,7 +203,7 @@ qualia-nss/
 - **Comprehensive Documentation** - Architecture guides and development directives
 - **Testing** - Module lifecycle validation and cross-browser compatibility
 
-## 🚀 Deployment
+## Deployment
 
 ### Production Ready
 - **Static Hosting** - Optimized for CDN deployment
@@ -191,7 +217,7 @@ qualia-nss/
 - **Web Audio API** - For real-time audio processing
 - **ES6+ Support** - Modern JavaScript features
 
-## 📊 Audio Analysis Capabilities
+## Audio Analysis Capabilities
 
 ### Professional Features
 - **Real-Time Processing** - Low-latency audio analysis pipeline
@@ -206,25 +232,30 @@ qualia-nss/
 - **FFT Sizes** - Configurable from 512 to 8192 samples
 - **Sampling Rates** - Auto-detection with device capability matching
 
-## 🤝 Contributing
+## Contributing
 
 This project uses a **staged development methodology** with comprehensive documentation:
 
-1. **Review Architecture** - See `dev_directives/modular_architecture_guide.md`
+1. **Review Architecture** - See `dev/RULES/03_ARCHITECTURE_GUIDE.md`
 2. **Follow Safe Development** - Backup and incremental development practices
 3. **Module Integration** - Use established patterns for new modules
 4. **Testing** - Validate across browsers and audio devices
 
-## 📜 License
+## License
 
 This project is developed for professional audio analysis applications. See individual module directories for specific licensing information.
 
-## 🔗 Links
+## Links
 
-- **Documentation** - Complete guides in `/dev/dev_directives/`
+- **Documentation** - Complete guides in `/dev/RULES/`
 - **Sample Data** - Audio samples and SPL curves in `/assets/data/`
-- **Chrome Music Lab Reference** - `/docs/chrome-music-lab/` (for 3D spectrogram implementation)
+
+## References
+
+The 3D spectrogram implementation is based on the work found in Google's Chrome Music Lab. The original resource is preserved in the `/docs/chrome-music-lab/` directory for historical context.
+
+- Google. (n.d.). *Spectrogram*. Chrome Music Lab. Retrieved from https://musiclab.chromeexperiments.com/Spectrogram/
 
 ---
 
-*Professional web-based audio analysis toolkit built with modern web technologies and modular architecture principles.*Test workflow trigger
+*Professional web-based audio analysis toolkit built with modern web technologies and modular architecture principles.*

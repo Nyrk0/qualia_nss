@@ -80,8 +80,9 @@ All reusable UI components are maintained in `/src/components/` as the single so
 
 **Prototyping Workflow**:
 - `/standalone-modules/` = Fast development with relaxed rules (inline styles permitted)
+- Includes comb-filtering, spectrum-analyzer, and development versions of integrated modules
 - Once proven → Refactor into proper modules following strict theme-first rules
-- Move to `/src/components/` or `/src/modules/` with CSS variables only
+- Move to `/src/[module-name]/` or `/src/components/` with CSS variables only
 
 ### 5.2. Prefer Reusability
 Before writing new CSS, check existing stylesheets (`components.css`, `utilities.css`) for a class that already provides the desired functionality.

@@ -1,7 +1,0 @@
-{
-  "on_start": [
-    "read /Users/admin/Documents/Developer/qualia_nss/AGENTS.md",
-    "read /Users/admin/Documents/Developer/qualia_nss/dev/RULES/rules-index.md",
-    "echo '🎯 Qualia-NSS project rules loaded."
-  ]
-}

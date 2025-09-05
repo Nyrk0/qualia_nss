@@ -1,115 +1,48 @@
-# AGENTS.md - Universal AI Assistant Instructions
+# AGENTS.md - AI Assistant Entry Point
 
 **Project**: Qualia-NSS - Web-based Audio Analysis Toolkit  
-**Version**: 3.0  
-**Compatible**: Claude, Gemini, GPT, and other AI assistants  
-**Last Updated**: 2025-09-03
+**Last Updated**: 2025-09-05
 
 ---
 
-## 🎯 Project Overview
+## 🚀 Quick Start for AI Assistants
 
-Qualia-NSS is a professional web-based audio analysis toolkit for audio engineering applications. It functions as a **modular single-page application (SPA)** built with vanilla JavaScript, avoiding frameworks for maximum compatibility and performance.
+**For complete project context, execute this command:**
 
-### Core Technologies
-- **Frontend**: Vanilla JavaScript (ES6+), HTML5, CSS3
-- **UI Framework**: Bootstrap 5 (CSS-only) with custom themeable system
-- **Audio Processing**: Web Audio API for real-time analysis
-- **Graphics**: WebGL (3D spectrogram), Chart.js (2D plotting)
-- **Architecture**: Modular SPA with dynamic module loading
-
-### Key Features
-- 3D WebGL Spectrogram with Google Chrome Music Lab implementation
-- Real-time 7-band psychoacoustic level meter
-- Professional frequency domain processing
-- Progressive Web App (PWA) with mobile optimization
-
----
-
-## 📚 Development Rules & Guides
-
-All development rules have been consolidated into the `/dev/RULES/` directory. Please refer to these documents as the single source of truth.
-
-- **`dev/RULES/01_CORE_WORKFLOW.md`**: The complete development workflow, including staged development, safety protocols, AI assistant rules, debugging, and deployment.
-- **`dev/RULES/02_UI_UX_STANDARDS.md`**: All standards for UI/UX, including the theme-first principle, component architecture, and styling rules.
-- **`dev/RULES/03_ARCHITECTURE_GUIDE.md`**: The complete guide to the application's modular architecture, including JavaScript/CSS structure, module responsibilities, loading order, and documentation pipelines.
-
----
-
-## 🔧 Development Commands
-
-### Starting the Application
 ```bash
-# Recommended: HTTP server (required for ES6 modules)
-python3 -m http.server 8080
-# or
-npx http-server -p 8080
-
-# Access: http://localhost:8080/
+/Users/admin/Documents/Developer/qualia_nss/load-context.sh
 ```
 
-### No Build Process Required
-- Pure vanilla JavaScript with ES6 modules
-- No package.json, npm scripts, or build tools required
-- Changes take effect immediately after browser refresh
-- Direct file opening has limited functionality due to CORS
+This script loads all current development rules, architecture guides, and critical instructions dynamically.
 
 ---
 
-## 🏗️ Core Architecture Snippets
+## 🎯 Project Summary
 
-### JavaScript Load Order (CRITICAL)
-1. `src/js/app-core.js`
-2. `src/js/ui-utils.js`  
-3. `src/js/sidebar-manager.js`
-4. `src/js/module-loader.js`
-5. `src/js/navigation.js`
+Qualia-NSS is a professional web-based audio analysis toolkit built as a **modular SPA with vanilla JavaScript** (no frameworks, no build process).
 
-### CSS Load Order (CRITICAL)
-1. `src/styles/core.css`
-2. `src/styles/layout.css`
-3. `src/styles/navigation.css`
-4. `src/styles/components.css`
-5. `src/styles/utilities.css`
-6. `src/styles/responsive.css`
-7. `src/styles/modules/*.css`
-
-### Module Lifecycle Pattern
-```javascript
-class NewModuleModule {
-    constructor() { /* Initialize state */ }
-    async init() { /* Setup UI, events, load data */ }
-    destroy() { /* Cleanup resources */ }
-}
-window.NewModuleModule = NewModuleModule; // Global exposure REQUIRED
-```
+**Core Technologies**: Vanilla JS (ES6+), Web Audio API, WebGL, Bootstrap 5 CSS-only
 
 ---
 
-## 🎨 Mandatory UI/UX Rules
-
-- **Theme First**: ALL styling MUST use CSS variables from `src/styles/core.css`. No hardcoded colors, fonts, or spacing.
-- **Inline Styles**: Forbidden in main app | ALLOWED in `/standalone-modules/` for prototyping.
-- **Semantic Hierarchy**: Use `<h1>` -> `<h2>` -> `<h3>` correctly.
-- **JavaScript & Styles**: JS toggles classes; CSS defines the styles for those classes. JS must not directly manipulate `element.style`.
-
----
-
-## 🚨 Critical AI Assistant Rules
+## 🚨 Critical Rules (Always Active)
 
 ### **MANDATORY USER APPROVAL BEFORE COMMITS** ⚠️
-- **CRITICAL REQUIREMENT**: ALL AI assistants MUST obtain explicit user approval before ANY git commit or push operations.
-- **Process**: Present a summary of changes and ask "May I commit and push these changes?". Wait for a clear "yes" or "approve".
+- **CRITICAL**: Get explicit user approval before ANY `git commit` or `git push`
+- **Process**: Ask "May I commit and push these changes?" and wait for clear "yes"
 
-### **HTTP Server Testing Restriction**
-- **NEVER start HTTP servers for testing purposes.**
-- Make code changes based on analysis only. Do not claim functionality "works" without explicit user verification.
-
-### **Task Planning Process**
-1.  **Propose a Plan**: Create a todo subject for user approval.
-2.  **Document the Plan**: Write the approved plan to a file in `dev/todos/`.
-3.  **Implement**: Follow the plan.
+### **Key Restrictions**
+- **No HTTP servers for testing** - analyze code only, user verifies functionality
+- **Theme-first styling** - use CSS variables from `src/styles/core.css`, no hardcoded values
+- **ES6+ required** in `/src/` (except `/standalone-modules/` which allows prototyping freedom)
 
 ---
 
-**This file serves as the single source of truth for all AI assistants working with Qualia-NSS. Follow these guidelines exactly to maintain architectural coherence and quality standards.**
+## 📋 Development Workflow
+
+1. **Load full context**: Run the load-context.sh script above
+2. **Plan tasks**: Use TodoWrite tool for complex work
+3. **Follow architecture**: Modular SPA patterns, no inline styles
+4. **Get approval**: Before any git operations
+
+**Execute the load-context.sh script for complete project guidelines.**

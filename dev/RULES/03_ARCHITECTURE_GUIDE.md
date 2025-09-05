@@ -40,21 +40,39 @@ dev/dev_stages/
 ## 2. Architecture Structure
 
 ```
-src/
-├── js/                         # JavaScript modular architecture
-│   ├── app-core.js            # Core initialization & theme management
-│   ├── ui-utils.js            # UI utilities & scroll effects
-│   ├── sidebar-manager.js     # Sidebar templates & management
-│   ├── module-loader.js       # Module loading & templates
-│   └── navigation.js          # Navigation state & routing
-└── styles/                    # CSS modular architecture
-    ├── core.css               # Variables, fonts, typography
-    ├── layout.css             # Main content, sidebar, grid
-    ├── navigation.css         # Header, navbar, theme toggle
-    ├── components.css         # Buttons, forms, controls
-    ├── utilities.css          # Scroll effects, utilities
-    ├── responsive.css         # Media queries, mobile
-    └── modules/               # Module-specific styles
+Project Root/
+├── src/                       # Main application source
+│   ├── js/                    # Core JavaScript architecture
+│   │   ├── app-core.js        # Core initialization & theme management
+│   │   ├── ui-utils.js        # UI utilities & scroll effects
+│   │   ├── sidebar-manager.js # Sidebar templates & management
+│   │   ├── module-loader.js   # Module loading & templates
+│   │   └── navigation.js      # Navigation state & routing
+│   ├── styles/                # CSS modular architecture
+│   │   ├── core.css           # Variables, fonts, typography
+│   │   ├── layout.css         # Main content, sidebar, grid
+│   │   ├── navigation.css     # Header, navbar, theme toggle
+│   │   ├── components.css     # Buttons, forms, controls
+│   │   ├── utilities.css      # Scroll effects, utilities
+│   │   ├── responsive.css     # Media queries, mobile
+│   │   └── modules/           # Module-specific styles only
+│   ├── 7band-levelmeter/      # Integrated: Level meter module
+│   ├── cabinets/              # Integrated: Speaker cabinet tools
+│   ├── filters/               # Integrated: Audio filter tools
+│   ├── speakers-spl/          # Integrated: SPL measurement
+│   └── spectrogram/           # Integrated: 3D WebGL spectrogram
+├── standalone-modules/         # Prototyping & development modules
+│   ├── 7band-level-meter/     # Standalone development version
+│   ├── comb-filtering/        # Standalone: Comb filtering detection
+│   ├── spectrogram/           # Standalone development version
+│   └── spectrum-analyzer/     # Standalone: Frequency analysis
+├── dev/                       # Development documentation & tools
+│   ├── dev_stages/            # KISS methodology & stage documentation
+│   ├── RULES/                 # Development rules & guidelines
+│   └── todos/                 # Task planning & documentation
+├── api/                       # Backend API (Docker environment)
+├── database/                  # Database schemas & migrations
+└── tests/                     # Testing suite & utilities
 ```
 
 ## 3. JavaScript Module Responsibilities
@@ -106,11 +124,59 @@ A two-tier system separates visualization colors from UI colors.
 
 > **CRITICAL RULE**: Module colormaps and component colormaps MUST remain completely separate systems.
 
-### Documentation Pipeline
+### Documentation Pipeline & Standards
 
 1.  **Implement Code**: Write and test new features.
 2.  **Update Documentation (MANDATORY)**: After testing, update the core architecture documents in `dev/RULES/`, then module-specific `README.md` files, and finally inline code comments (JSDoc).
 3.  **Validate Consistency**: Before committing, ensure code and documentation are aligned.
+
+#### Documentation Standards Requirements
+
+**All technical documentation MUST include both ASCII and Mermaid diagram formats when visual explanations are needed.**
+
+- **ASCII Diagrams**: For direct reading in text editors, terminals, and plain markdown viewers
+- **Mermaid Diagrams**: For enhanced web rendering in GitHub wiki and web applications
+
+**Documentation Structure Template:**
+```markdown
+# Title
+
+## Overview
+Brief description of the topic.
+
+## ASCII Diagram
+```
+┌─────────┐    ┌─────────┐
+│ Input   │───▶│ Process │
+└─────────┘    └─────────┘
+```
+
+## Mermaid Diagram
+```mermaid
+graph LR
+    A[Input] --> B[Process]
+```
+
+## Detailed Explanation
+...
+```
+
+**ASCII Diagram Requirements:**
+- Use box characters: `┌─┐ │ └─┘ ├─┤ ┬─┴`
+- Arrows: `→ ← ↑ ↓ ↔ ↕`
+- Maximum 80 characters wide
+- Clear visual hierarchy and logical flow
+
+**Mermaid Diagram Types:**
+- `graph` - Flowcharts and directed graphs
+- `sequenceDiagram` - Interaction flows  
+- `classDiagram` - Object relationships
+- `stateDiagram` - State transitions
+
+**Location-Specific Requirements:**
+- **Wiki Files (`src/wiki/`)**: MUST include both ASCII and Mermaid formats
+- **Documentation (`docs/`)**: MUST include ASCII diagrams for direct reading
+- **Module READMEs**: MUST include ASCII architecture diagrams, SHOULD include Mermaid
 
 ## 7. Development Guidelines
 
