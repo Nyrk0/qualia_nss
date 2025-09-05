@@ -9,7 +9,4 @@ self.addEventListener('activate', function(event) {
     console.log('📝 Wiki Service Worker activated');
 });
 
-self.addEventListener('fetch', function(event) {
-    // Pass through all requests for now
-    return;
-});
+// No fetch event handler - avoids navigation overhead from no-op handler

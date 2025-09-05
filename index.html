@@ -210,6 +210,30 @@
                 }
             }
             
+            // Initialize theme toggle (critical for theme functionality)
+            const themeToggleButton = document.getElementById('theme-toggle');
+            if (themeToggleButton) {
+                const body = document.body;
+                
+                // Apply saved theme from localStorage
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'light') {
+                    body.classList.add('light-theme');
+                }
+                
+                // Add event listener
+                themeToggleButton.addEventListener('click', () => {
+                    body.classList.toggle('light-theme');
+                    
+                    // Save preference to localStorage
+                    if (body.classList.contains('light-theme')) {
+                        localStorage.setItem('theme', 'light');
+                    } else {
+                        localStorage.removeItem('theme');
+                    }
+                });
+            }
+            
             // Initialize the app core if available
             if (typeof window.AppCore !== 'undefined') {
                 window.AppCore.init();
