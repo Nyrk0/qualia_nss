@@ -300,6 +300,36 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return `src/${moduleName}/index.js`;
                 })();
 
+                // Check if script already loaded to prevent duplicate class declarations
+                const existingScript = document.querySelector(`script[src="${scriptSrc}"]`);
+                if (existingScript) {
+                    // Script already loaded, just initialize the module
+                    const toPascal = (name) => name
+                        .split('-')
+                        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+                        .join('');
+                    const expectedClassName = `${toPascal(moduleName)}Module`;
+                    let ModuleClass = window[expectedClassName];
+                    
+                    // Backward compatibility for legacy export name
+                    if (!ModuleClass && moduleName === '7band-levelmeter') {
+                        ModuleClass = window.TestsModule || window.SevenBandLevelmeterModule;
+                    }
+                    if (ModuleClass) {
+                        const instance = new ModuleClass();
+                        currentModule = { name: moduleName, instance };
+                        window.currentModule = currentModule;
+                        instance.init();
+                    }
+                    // Remember last opened module
+                    try { localStorage.setItem('lastModule', moduleName); } catch(_) {}
+                    // Reflect active nav
+                    if (window.setNavActiveForModule) {
+                        window.setNavActiveForModule(moduleName);
+                    }
+                    return;
+                }
+
                 const script = document.createElement('script');
                 script.src = scriptSrc;
                 script.onload = () => {
