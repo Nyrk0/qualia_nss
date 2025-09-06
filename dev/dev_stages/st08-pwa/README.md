@@ -43,7 +43,7 @@ When implementing this stage:
 - st00-wireframe: UI foundation
 - st01-backend-server: API services
 - st02-modularization: Component architecture
-- st03-documentation-system: Content management
+- st03-wiki-system: Wiki content management
 - st04-spectrogram: Core audio features
 - st05-mic-calibration: Hardware integration
 - st06-comb-filtering: Audio processing

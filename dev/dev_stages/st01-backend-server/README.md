@@ -95,7 +95,7 @@ Each sub-stage targets specific, limited functionality:
 ### Stage Dependencies
 - **st00-wireframe**: App shell architecture foundation
 - **st02-modularization**: Frontend-backend communication patterns  
-- **st03-documentation-system**: Wiki processing requirements
+- **st03-wiki-system**: Wiki submodule processing requirements
 - **Existing Dockerfile**: Container configuration base
 
 ## Development Status

@@ -117,7 +117,7 @@ Each sub-stage builds incrementally:
 ### 5.1. Prerequisites
 - **st00-wireframe**: App shell architecture understanding
 - **st02-modularization**: Frontend-backend integration patterns
-- **st03-documentation-system**: Wiki processing requirements
+- **st03-wiki-system**: Wiki submodule processing requirements
 - **Existing Dockerfile**: Docker container configuration
 
 ### 5.2. Integration Points

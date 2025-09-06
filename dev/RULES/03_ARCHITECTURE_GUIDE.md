@@ -18,7 +18,7 @@ dev/dev_stages/
 ├── st00-wireframe/          # Foundation: UI/UX wireframes and app shell
 ├── st01-backend-server/     # Infrastructure: Docker backend, APIs, database
 ├── st02-modularization/     # Architecture: Component separation patterns
-├── st03-documentation-system/ # Content: Wiki integration and documentation
+├── st03-wiki-system/         # Content: Wiki submodule and content management
 ├── st04-spectrogram/        # Feature: Audio visualization implementation
 ├── st05-mic-calibration/    # Hardware: Device interface patterns
 ├── st06-comb-filtering/     # Processing: Audio algorithm implementation
@@ -204,7 +204,7 @@ graph LR
 - **st00-wireframe**: For UI/UX foundation and layout changes
 - **st01-backend-server**: For Docker backend architecture, API integration, and server-side processing patterns
 - **st02-modularization**: For component architecture and separation patterns  
-- **st03-documentation-system**: For documentation and wiki integration approaches
+- **st03-wiki-system**: For wiki submodule integration and content management approaches
 - **st04-spectrogram**: For audio visualization implementation patterns
 - **st05-mic-calibration**: For hardware interface and calibration patterns
 - **st06-comb-filtering**: For audio processing and algorithm implementation

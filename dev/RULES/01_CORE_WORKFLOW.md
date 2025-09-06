@@ -63,7 +63,7 @@ All development MUST follow the **Keep It Simple Stable** staged approach docume
 *   **st00-wireframe**: UI/UX foundation and wireframe patterns
 *   **st01-backend-server**: Docker backend architecture, API integration, and server-side processing patterns
 *   **st02-modularization**: Component separation and modular architecture
-*   **st03-documentation-system**: Documentation and wiki integration patterns
+*   **st03-wiki-system**: Wiki submodule integration and content management patterns
 *   **st04-spectrogram**: Audio visualization implementation patterns
 *   **st05-mic-calibration**: Hardware interface patterns
 *   **st06-comb-filtering**: Audio processing algorithm patterns
